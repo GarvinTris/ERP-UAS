@@ -1,0 +1,6 @@
+{
+  "name": "PT Rona Karsa Apparel — Fashion ERP",
+  "description": "Web-Based Enterprise Resource Planning (ERP) terintegrasi bergaya Odoo 17.0 untuk PT Rona Karsa Apparel dengan alur Order to Cash, Procure to Pay, POS Retail, Return & Credit Note, Akuntansi, dan pengujian T-01 hingga T-36.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,1997 @@
+# MASTER PROMPT — WEBSITE ERP FASHION & APPAREL
+## PT RONA KARSA APPAREL | ELEGANT FASHION ENTERPRISE ERP
+
+Bertindaklah sebagai **Senior UI/UX Designer, Product Designer, Full-Stack Developer, ERP System Architect, dan Business Analyst** yang berpengalaman membangun aplikasi ERP profesional seperti Odoo.
+
+Tugasmu adalah merancang dan membangun aplikasi web ERP untuk perusahaan fashion retail bernama **PT Rona Karsa Apparel**.
+
+Aplikasi harus memiliki desain premium, elegan, modern, mudah digunakan, responsif untuk desktop, serta memiliki fitur yang saling terhubung. Sistem ini bukan sekadar landing page atau prototype visual. Bangun aplikasi yang memiliki navigasi, halaman, form, tabel, interaksi, validasi, penyimpanan data, dan alur transaksi yang berfungsi.
+
+---
+
+# 1. IDENTITAS DAN TUJUAN APLIKASI
+
+**Nama perusahaan:** PT Rona Karsa Apparel  
+**Industri:** Fashion & Apparel Retail  
+**Jenis aplikasi:** Web-Based Enterprise Resource Planning (ERP)  
+**Referensi pengalaman pengguna:** Odoo Web Version 17.0  
+**Bahasa:** Bahasa Indonesia untuk penjelasan, dengan istilah ERP berbahasa Inggris seperti Dashboard, Sales Order, Quotation, Inventory, Purchase Order, Customer Invoice, Vendor Bill, dan Journal Entries.  
+**Mata uang:** Indonesian Rupiah (IDR/Rp)  
+**Pajak simulasi:** PPN efektif 11%.
+
+PT Rona Karsa Apparel merupakan perusahaan fashion casual essentials yang menjual produk pakaian dan aksesori berdasarkan ukuran dan warna.
+
+Perusahaan memiliki:
+- Gudang pusat Jakarta dengan kode WH-JKT.
+- Toko retail Bandung dengan kode STORE-BDG.
+- Penjualan retail melalui kasir.
+- Penjualan B2B kepada pelanggan komunitas dan perusahaan.
+- Penjualan melalui kanal e-commerce.
+- Tim Sales, Warehouse, Procurement, Finance, Cashier, dan Owner.
+
+Tujuan aplikasi:
+1. Mengintegrasikan seluruh aktivitas operasional perusahaan.
+2. Mengelola penjualan dan pelanggan.
+3. Mengelola pembelian dan pemasok.
+4. Mengelola persediaan berdasarkan SKU, ukuran, warna, dan lokasi.
+5. Mengelola kasir retail melalui Point of Sale.
+6. Mengelola invoice, pembayaran, dan akuntansi.
+7. Mengelola retur dan Credit Note.
+8. Menyediakan dashboard untuk pemilik usaha.
+9. Menerapkan hak akses dan audit log.
+10. Menyediakan pengalaman pengguna yang konsisten seperti ERP profesional.
+
+**PENTING:** Jangan menyalin kode sumber, logo, ikon berlisensi, atau aset Odoo. Buat aplikasi dengan identitas visual PT Rona Karsa Apparel sendiri, tetapi gunakan pola navigasi dan pengalaman penggunaan ERP yang terinspirasi Odoo Web 17.0.
+
+---
+
+# 2. ARAH DESAIN DAN VISUAL IDENTITY
+
+Saya ingin desain yang terlihat seperti perpaduan antara perusahaan fashion premium dan software ERP modern.
+
+Jangan membuat tampilannya seperti template dashboard admin gratis, aplikasi kasir sederhana, atau website toko online biasa.
+
+Gunakan konsep:
+
+**ELEGANT FASHION ENTERPRISE**
+
+### 2.1 Warna utama
+
+Gunakan palet warna berikut secara konsisten:
+
+- Deep Black: #171717
+- Soft Black: #242424
+- Warm Cream: #F5F0E8
+- Ivory White: #FFFEFC
+- Pure White: #FFFFFF
+- Warm Gray: #E8E4DE
+- Muted Gray: #8C8983
+- Border Gray: #E7E3DD
+- Success Green: #54745B
+- Warning Amber: #C18B42
+- Error Red: #B94B4B
+
+Aturan penggunaan:
+- Hitam digunakan untuk sidebar, header tertentu, tombol utama, dan teks penting.
+- Cream digunakan sebagai latar belakang lembut dan elemen identitas fashion.
+- Putih digunakan untuk card, tabel, form, dan area kerja.
+- Abu-abu digunakan untuk border, teks sekunder, dan pemisah.
+- Warna hijau, kuning, dan merah hanya digunakan untuk status dan notifikasi.
+
+Jangan menggunakan terlalu banyak warna mencolok, gradient berlebihan, atau efek neon.
+
+### 2.2 Tipografi
+
+Gunakan kombinasi tipografi:
+- Heading: DM Sans, Manrope, atau font sans-serif modern.
+- Body: Inter atau font sans-serif yang mudah dibaca.
+- Judul halaman harus jelas dan memiliki hierarki visual.
+- Angka finansial harus mudah dibaca.
+- Nomor dokumen dan SKU dapat menggunakan gaya tabular atau monospaced.
+
+### 2.3 Gaya visual
+
+Gunakan:
+- Clean layout.
+- Minimalist premium interface.
+- Elegant editorial design pada halaman login.
+- White space yang cukup.
+- Card dengan radius sekitar 10–14 px.
+- Border tipis dan shadow sangat halus.
+- Ikon sederhana dan konsisten.
+- Tabel profesional dengan baris yang rapi.
+- Tombol dengan ukuran dan posisi konsisten.
+- Micro-interaction yang halus.
+- Animasi transisi ringan.
+
+Hindari:
+- Dashboard penuh card tanpa hierarki.
+- Warna-warni yang tidak konsisten.
+- Font terlalu dekoratif pada area kerja ERP.
+- Sidebar terlalu lebar.
+- Elemen yang saling bertumpuk.
+- Tampilan yang terlalu mirip website e-commerce.
+- Tombol yang hanya menjadi dekorasi.
+
+### 2.4 Layout utama ERP
+
+Gunakan struktur layout seperti Odoo Web 17.0:
+
+**Top Navigation Bar**
+- Logo PT Rona Karsa Apparel.
+- App Switcher.
+- Nama aplikasi yang sedang dibuka.
+- Global Search.
+- Notifications.
+- Quick Create.
+- User Profile.
+- Company Information.
+
+**Left Sidebar**
+- Menu aplikasi.
+- Submenu.
+- Menu aktif diberi highlight.
+- Sidebar dapat diperbesar atau diperkecil.
+- Menu mengikuti hak akses pengguna.
+
+**Main Content**
+- Breadcrumb.
+- Judul halaman.
+- Tombol Create.
+- Search.
+- Filters.
+- Group By.
+- List View.
+- Kanban View jika relevan.
+- Form View.
+- Status Bar.
+- Smart Buttons.
+- Activity Log.
+
+Buat pengalaman desktop sebagai prioritas utama karena referensi PDF menggunakan Odoo Web versi browser desktop.
+
+---
+
+# 3. HALAMAN LOGIN — FASHION BRAND EXPERIENCE
+
+Buat halaman login yang terlihat premium dan berbeda dari dashboard ERP biasa.
+
+Halaman ini merupakan kesan pertama pengguna saat membuka aplikasi.
+
+### 3.1 Layout login
+
+Gunakan layout dua kolom.
+
+**Kolom kiri — Fashion Brand Visual**
+- Background hitam atau cream.
+- Foto editorial fashion yang menampilkan pakaian casual essentials.
+- Model fashion dengan styling sederhana dan elegan.
+- Komposisi foto seperti kampanye fashion premium.
+- Logo PT Rona Karsa Apparel.
+- Tagline: "Elegance in Every Detail."
+- Deskripsi singkat: "One integrated platform to manage every part of your fashion business."
+
+Gunakan foto fashion yang relevan dan memiliki kualitas visual tinggi. Jangan menampilkan gambar fashion yang terlalu ramai.
+
+**Kolom kanan — Login Form**
+- Background ivory atau putih.
+- Judul "Welcome Back".
+- Subjudul "Sign in to your workspace".
+- Input Email / Username.
+- Input Password.
+- Icon untuk show/hide password.
+- Checkbox Remember Me.
+- Forgot Password.
+- Tombol Sign In berwarna hitam.
+- Informasi kecil "PT Rona Karsa Apparel — Enterprise Workspace".
+
+### 3.2 Login behavior
+
+Login harus berfungsi.
+
+Buat autentikasi berdasarkan akun dan role pengguna.
+
+Setelah login berhasil:
+- Pengguna masuk ke dashboard sesuai role.
+- Menu yang tampil mengikuti izin akses.
+- Nama dan role pengguna tampil di profile.
+- Pengguna dapat logout.
+- Halaman yang membutuhkan autentikasi tidak dapat dibuka tanpa login.
+- Sediakan akun demo untuk setiap role.
+
+Jangan membuat login yang selalu berhasil tanpa memeriksa akun.
+
+Untuk demonstrasi, sediakan akun uji yang dapat digunakan oleh tim.
+
+---
+
+# 4. APP SWITCHER — HOME ERP
+
+Setelah login, tampilkan halaman Home dengan App Switcher yang terinspirasi Odoo.
+
+Tampilkan aplikasi dalam bentuk grid ikon yang konsisten dan elegan.
+
+Aplikasi yang wajib tersedia:
+
+1. Dashboard
+2. CRM
+3. Sales
+4. Point of Sale
+5. Purchase
+6. Inventory
+7. Invoicing
+8. Accounting
+9. Contacts
+10. Products
+11. Reporting
+12. Settings
+13. Audit Log
+
+Setiap aplikasi harus memiliki:
+- Ikon.
+- Nama aplikasi.
+- Deskripsi singkat.
+- Navigasi menuju modul.
+- Hak akses berdasarkan role.
+
+Jangan menampilkan semua menu secara bebas kepada seluruh pengguna. Pengguna hanya boleh melihat aplikasi yang diizinkan untuk rolenya.
+
+---
+
+# 5. DAFTAR ROLE DAN HAK AKSES
+
+Buat sistem Role-Based Access Control (RBAC).
+
+Role yang tersedia:
+
+### A. Owner / Administrator
+Akses:
+- Dashboard keseluruhan.
+- CRM.
+- Sales.
+- POS.
+- Purchase.
+- Inventory.
+- Invoicing.
+- Accounting.
+- Contacts.
+- Products.
+- Reporting.
+- Audit Log.
+- Settings.
+- User Management.
+
+### B. Sales
+Akses:
+- Dashboard penjualan terbatas.
+- CRM.
+- Contacts.
+- Products.
+- Quotations.
+- Sales Orders.
+- Melihat status pengiriman.
+- Melihat invoice terkait sesuai izin.
+
+Tidak boleh:
+- Membuka seluruh jurnal akuntansi.
+- Mengubah stok secara manual.
+- Mengubah transaksi yang sudah Confirmed tanpa prosedur revisi.
+
+### C. Warehouse
+Akses:
+- Inventory.
+- Products.
+- Stock Overview.
+- Reservations.
+- Delivery Orders.
+- Receipts.
+- Quality Inspection.
+- Returns Inspection.
+- Internal Transfers.
+- Stock Move History.
+
+Tidak boleh:
+- Membuat Customer Invoice.
+- Mengubah jurnal.
+- Mengakses informasi keuangan yang tidak diperlukan.
+
+### D. Finance
+Akses:
+- Dashboard keuangan.
+- Invoicing.
+- Accounting.
+- Customer Invoice.
+- Vendor Bill.
+- Register Payment.
+- Journal Entries.
+- General Ledger.
+- Credit Note.
+- Reporting.
+- Audit Log.
+
+### E. Cashier
+Akses:
+- Point of Sale.
+- Produk yang tersedia untuk toko.
+- Checkout.
+- Payment.
+- Receipt.
+- Riwayat transaksi POS miliknya.
+
+Tidak boleh:
+- Membuka seluruh data AR/AP.
+- Membuka seluruh jurnal perusahaan.
+- Mengubah stok secara manual.
+- Mengubah harga produk tanpa izin.
+
+### F. Procurement
+Akses:
+- Purchase.
+- Vendor Contacts.
+- RFQ.
+- Purchase Orders.
+- Receipt Status.
+- Vendor Pricelist.
+- Inventory (read-only sesuai kebutuhan).
+
+Pastikan hak akses benar-benar diterapkan pada halaman dan data, bukan hanya menyembunyikan tombol.
+
+---
+
+# 6. MODUL DASHBOARD
+
+Buat dashboard utama dengan tampilan premium, profesional, dan informatif.
+
+Judul: **Business Overview**
+
+Subjudul: "Monitor your business performance in one place."
+
+### 6.1 KPI Cards
+
+Tampilkan enam KPI utama:
+
+1. Net Sales
+2. PPN
+3. Gross Sales
+4. Inventory Value
+5. Accounts Receivable / Accounts Payable
+6. Units Sold
+
+Setiap KPI menampilkan:
+- Nilai utama.
+- Label.
+- Periode.
+- Perubahan dibandingkan periode sebelumnya jika tersedia.
+- Ikon kecil.
+- Klik untuk membuka data sumber.
+
+### 6.2 Grafik
+
+Buat visualisasi:
+- Sales Performance.
+- Revenue Trend.
+- Sales by Product.
+- Sales by Location.
+- Inventory Distribution.
+- Payment Status.
+
+### 6.3 Informasi operasional
+
+Tampilkan:
+- Recent Sales Orders.
+- Recent POS Transactions.
+- Low Stock Products.
+- Pending Deliveries.
+- Pending Receipts.
+- Outstanding Customer Invoices.
+- Outstanding Vendor Bills.
+- Recent Returns.
+- Pending Approvals.
+
+### 6.4 Filter
+
+Sediakan filter:
+- Date Range.
+- Product.
+- SKU.
+- Location.
+- Sales Channel.
+- Customer.
+- Vendor.
+- Document Status.
+
+### 6.5 Drill-down
+
+Ketika pengguna mengklik angka KPI atau grafik, sistem harus menampilkan daftar dokumen sumber yang membentuk angka tersebut.
+
+Contoh:
+- Klik Net Sales → daftar Customer Invoice dan POS Transactions.
+- Klik Inventory Value → daftar persediaan berdasarkan SKU dan lokasi.
+- Klik AR → daftar Customer Invoice yang belum lunas.
+- Klik Units Sold → detail produk dan kuantitas terjual.
+
+Terapkan pembatasan data sesuai role.
+
+---
+
+# 7. MODUL CRM
+
+Nama halaman: **CRM Pipeline**
+
+Buat tampilan Kanban yang elegan seperti Odoo.
+
+Kolom:
+1. New
+2. Qualified
+3. Proposition
+4. Won
+5. Lost
+
+Setiap kartu lead menampilkan:
+- Lead Name.
+- Customer.
+- Contact Person.
+- Email.
+- Phone.
+- Expected Revenue.
+- Priority.
+- Salesperson.
+- Next Activity.
+- Creation Date.
+
+Fitur:
+- Create Lead.
+- Edit Lead.
+- Search.
+- Filter.
+- Group By.
+- Drag and Drop Stage.
+- Add Activity.
+- Add Notes.
+- Schedule Meeting.
+- Convert to Opportunity.
+- Convert to Quotation.
+- View Lead History.
+
+Saat Lead dikonversi menjadi Opportunity, riwayat asal Lead tidak boleh hilang.
+
+Tambahkan Smart Button:
+- Related Opportunities.
+- Quotations.
+- Sales Orders.
+- Activities.
+
+Sediakan halaman Detail Lead dengan tab:
+- General Information.
+- Internal Notes.
+- Activities.
+- Related Documents.
+- Chatter / History.
+
+---
+
+# 8. MODUL SALES
+
+Nama aplikasi: **Sales**
+
+Submenu:
+- Quotations.
+- Sales Orders.
+- Customers.
+- Products.
+- Sales Reporting.
+
+### 8.1 Quotation List
+
+Tampilkan tabel dengan kolom:
+- Number.
+- Customer.
+- Order Date.
+- Expiration Date.
+- Salesperson.
+- Untaxed Amount.
+- Tax.
+- Total.
+- Status.
+
+Status:
+- Draft.
+- Sent.
+- Confirmed.
+- Cancelled.
+
+Fitur:
+- Create Quotation.
+- Edit.
+- Duplicate dengan kontrol agar tidak membuat transaksi ganda.
+- Search.
+- Filter.
+- Group By.
+- Export jika diizinkan.
+- Open Detail.
+
+### 8.2 Quotation Form
+
+Field:
+- Quotation Number.
+- Customer.
+- Contact.
+- Order Date.
+- Expiration Date.
+- Payment Terms.
+- Pricelist.
+- Warehouse.
+- Salesperson.
+
+Product Order Lines:
+
+| Field | Keterangan |
+|---|---|
+| Product | Nama produk |
+| SKU | Kode varian unik |
+| Size | Ukuran |
+| Color | Warna |
+| Quantity | Jumlah |
+| Unit Price | Harga satuan |
+| Discount | Diskon |
+| Tax | PPN |
+| Subtotal | Nilai sebelum pajak |
+
+Sistem harus menghitung otomatis:
+- Untaxed Amount.
+- Discount.
+- PPN efektif 11%.
+- Total.
+
+Tombol:
+- Save.
+- Send by Email.
+- Confirm.
+- Cancel.
+- Create Invoice (hanya berdasarkan kuantitas yang sudah dikirim).
+- Print Quotation.
+
+### 8.3 Sales Order Detail
+
+Setelah Quotation dikonfirmasi, dokumen berubah menjadi Sales Order.
+
+Tampilkan status bar:
+Draft → Sent → Confirmed → Done.
+
+Setelah Confirmed:
+- Dokumen terkunci.
+- Harga dan diskon tidak boleh diubah secara sembarangan.
+- Sistem membuat reservasi stok.
+- Reservasi dilakukan berdasarkan SKU dan lokasi.
+- On Hand tidak berkurang saat reservasi.
+- Available Stock berkurang.
+- Sistem mencatat audit log.
+
+Tambahkan Smart Buttons:
+- Delivery.
+- Invoice.
+- Customer.
+- Stock Reservation.
+- Related Activities.
+
+### 8.4 Credit Validation
+
+Sebelum konfirmasi pesanan kredit, lakukan pemeriksaan:
+
+Credit Exposure = Open Receivable + Gross New Order.
+
+Jika hasilnya melebihi Credit Limit, konfirmasi harus ditolak.
+
+Pelanggan dengan payment terms TUNAI dan credit limit Rp0 tidak boleh membuat transaksi kredit.
+
+Tampilkan modal validasi:
+- Credit Limit.
+- Open Receivable.
+- New Order Amount.
+- Total Credit Exposure.
+- Remaining Credit.
+- Validation Result.
+
+Gunakan notifikasi yang jelas ketika transaksi ditolak.
+
+### 8.5 Discount Approval
+
+- Diskon sampai 10% dapat dilakukan Sales.
+- Diskon di atas 10% memerlukan persetujuan Manager.
+- Diskon tanpa persetujuan tidak boleh dikonfirmasi.
+- Perubahan harga setelah Confirmed harus melalui proses revisi yang tercatat.
+
+---
+
+# 9. MODUL INVENTORY
+
+Nama aplikasi: **Inventory**
+
+Submenu:
+- Overview.
+- Products.
+- Product Variants.
+- Stock Overview.
+- Stock Reservations.
+- Delivery Orders.
+- Receipts.
+- Quality Inspection.
+- Internal Transfers.
+- Stock Move History.
+- Inventory Reporting.
+
+### 9.1 Stock Overview
+
+Tampilkan tabel:
+
+| Product | SKU | Size | Color | Location | On Hand | Reserved | Available |
+|---|---|---|---|---|---:|---:|---:|
+
+Lokasi:
+- WH-JKT.
+- STORE-BDG.
+
+Buat filter:
+- Product.
+- SKU.
+- Size.
+- Color.
+- Location.
+- Stock Status.
+
+### 9.2 Product Variants
+
+Setiap kombinasi ukuran dan warna harus mempunyai SKU unik.
+
+Contoh:
+- Kaos Essential Hitam S.
+- Kaos Essential Hitam M.
+- Kaos Essential Hitam L.
+- Kaos Essential Putih M.
+- Hoodie Fleece Abu M.
+- Hoodie Fleece Abu L.
+- Dress Denim Biru S.
+- Dress Denim Biru M.
+- Dress Denim Biru L.
+
+Jangan menggabungkan stok semua ukuran menjadi satu jumlah stok produk.
+
+### 9.3 Stock Reservation
+
+Saat Sales Order dikonfirmasi:
+- Sistem memeriksa Available Stock.
+- Sistem melakukan reservasi berdasarkan SKU.
+- On Hand tetap sama.
+- Reserved bertambah.
+- Available berkurang.
+- Sistem menolak reservasi jika stok tersedia tidak mencukupi.
+
+### 9.4 Delivery Orders
+
+Tampilkan:
+- Delivery Number.
+- Source Sales Order.
+- Customer.
+- Source Location.
+- Scheduled Date.
+- SKU.
+- Demand Quantity.
+- Reserved Quantity.
+- Done Quantity.
+- Backorder Quantity.
+- Status.
+
+Sediakan pengiriman parsial.
+
+Contoh:
+Sales Order memesan 3 unit, tetapi gudang mengirim 2 unit.
+
+Hasil:
+- Done Quantity = 2.
+- Backorder = 1.
+- Stok fisik berkurang 2 unit setelah validasi.
+- HPP untuk 2 unit dicatat.
+- Sisa 1 unit tetap menjadi backorder.
+
+### 9.5 Receipts dan Quality Inspection
+
+Tampilkan:
+- Receipt Number.
+- Purchase Order.
+- Vendor.
+- SKU.
+- Ordered Quantity.
+- Received Quantity.
+- Accepted Quantity.
+- Rejected Quantity.
+- Remaining Quantity.
+
+Barang yang diterima harus melewati inspeksi.
+
+Hanya Accepted Quantity yang boleh menambah stok persediaan dan menjadi dasar kuantitas Vendor Bill.
+
+Barang rejected tidak boleh dihitung sebagai barang diterima baik.
+
+### 9.6 Internal Transfers
+
+Buat halaman transfer antar lokasi.
+
+Field:
+- Transfer Number.
+- Source Location.
+- Destination Location.
+- SKU.
+- Quantity.
+- Requested By.
+- Date.
+- Status.
+
+Alur:
+Draft → Confirmed → Done.
+
+Validasi:
+- Stok asal harus mencukupi.
+- Kuantitas yang keluar harus sama dengan kuantitas yang masuk.
+- Total stok perusahaan tidak berubah.
+- Nilai total persediaan tidak berubah.
+- Setiap transfer memiliki Stock Move History.
+
+---
+
+# 10. MODUL PURCHASE
+
+Nama aplikasi: **Purchase**
+
+Submenu:
+- Requests for Quotation.
+- Purchase Orders.
+- Vendors.
+- Vendor Pricelist.
+- Purchase Reporting.
+
+### 10.1 RFQ List
+
+Kolom:
+- RFQ Number.
+- Vendor.
+- Order Date.
+- Expected Arrival.
+- Total.
+- Status.
+
+### 10.2 RFQ / Purchase Order Form
+
+Field:
+- PO Number.
+- Vendor.
+- Vendor Reference.
+- Order Date.
+- Expected Arrival.
+- Payment Terms.
+- Destination Warehouse.
+- Buyer.
+
+Order Lines:
+- Product.
+- SKU.
+- Size.
+- Color.
+- Quantity.
+- Unit Cost.
+- Tax.
+- Subtotal.
+
+Tampilkan:
+- Untaxed Amount.
+- PPN Masukan.
+- Total.
+
+Status:
+Draft → RFQ Sent → Confirmed → Receipt → Done.
+
+### 10.3 Three-Way Matching
+
+Vendor Bill harus dicocokkan dengan:
+1. Purchase Order.
+2. Receipt.
+3. Accepted Quantity.
+
+Sistem tidak boleh membukukan Vendor Bill melebihi jumlah barang yang diterima dan lolos inspeksi.
+
+Tampilkan perbandingan:
+- Ordered Quantity.
+- Received Quantity.
+- Accepted Quantity.
+- Already Billed.
+- Billable Quantity.
+
+Jika jumlah tagihan melebihi Accepted Quantity, tampilkan error dan tolak posting.
+
+---
+
+# 11. MODUL INVOICING
+
+Nama aplikasi: **Invoicing**
+
+Submenu:
+- Customer Invoices.
+- Credit Notes.
+- Payments.
+- Customer Statements.
+
+### 11.1 Customer Invoice List
+
+Kolom:
+- Invoice Number.
+- Customer.
+- Invoice Date.
+- Due Date.
+- Untaxed Amount.
+- Tax.
+- Total.
+- Amount Paid.
+- Residual.
+- Status.
+
+Status:
+- Draft.
+- Posted.
+- Partially Paid.
+- Paid.
+- Cancelled.
+
+### 11.2 Customer Invoice Form
+
+Field:
+- Invoice Number.
+- Customer.
+- Source Sales Order.
+- Delivery Reference.
+- Invoice Date.
+- Due Date.
+- Payment Terms.
+- Invoice Lines.
+
+Invoice hanya boleh dibuat berdasarkan kuantitas barang yang sudah dikirim dan belum ditagih.
+
+Contoh:
+Pesanan 3 unit, yang sudah dikirim 2 unit.
+
+Sistem hanya mengizinkan invoice untuk 2 unit.
+
+Tampilkan:
+- Delivered Quantity.
+- Already Invoiced.
+- Quantity to Invoice.
+- Unit Price.
+- Tax.
+- Subtotal.
+- Total.
+
+Tambahkan Smart Buttons:
+- Sales Order.
+- Delivery Order.
+- Payment.
+- Journal Entries.
+
+---
+
+# 12. MODUL ACCOUNTING
+
+Nama aplikasi: **Accounting**
+
+Submenu:
+- Overview.
+- Customer Invoices.
+- Vendor Bills.
+- Register Payment.
+- Journal Entries.
+- General Ledger.
+- Accounts Receivable.
+- Accounts Payable.
+- Tax Reporting.
+
+### 12.1 Journal Entries
+
+Tampilkan:
+- Journal Number.
+- Reference.
+- Date.
+- Journal.
+- Source Document.
+- Status.
+- Debit.
+- Credit.
+
+Tabel jurnal:
+| Account | Label | Debit | Credit |
+|---|---|---:|---:|
+
+Aturan:
+- Total Debit harus sama dengan Total Credit.
+- Jurnal yang sudah diposting tidak boleh diubah sembarangan.
+- Posting ulang tidak boleh menciptakan jurnal ganda.
+- Setiap jurnal terhubung dengan dokumen sumber.
+
+### 12.2 General Ledger
+
+Tampilkan:
+- Account Code.
+- Account Name.
+- Date.
+- Reference.
+- Debit.
+- Credit.
+- Balance.
+
+### 12.3 Register Payment
+
+Field:
+- Payment Reference.
+- Invoice / Bill.
+- Payment Date.
+- Journal.
+- Payment Method.
+- Amount.
+- Remaining Balance.
+
+Dukung pembayaran:
+- Cash.
+- Bank Transfer.
+- Non-cash payment sesuai simulasi.
+
+Dukung pembayaran parsial.
+
+Contoh:
+Invoice Rp333.000 dibayar Rp200.000.
+
+Hasil:
+- Amount Paid = Rp200.000.
+- Residual = Rp133.000.
+- Status = Partially Paid.
+
+Jika pembayaran kedua Rp133.000 diterima:
+- Residual = Rp0.
+- Status = Paid.
+
+---
+
+# 13. MODUL POINT OF SALE
+
+Nama aplikasi: **Point of Sale**
+
+Buat halaman kasir yang berbeda dari tampilan tabel ERP biasa.
+
+Desain harus sangat praktis, cepat, dan mudah digunakan oleh Cashier.
+
+### 13.1 POS Layout
+
+Gunakan dua area utama.
+
+**Area kiri — Product Catalog**
+- Search Product.
+- Scan SKU.
+- Category Filter.
+- Product Image.
+- Product Name.
+- SKU.
+- Size.
+- Color.
+- Unit Price.
+- Available Stock.
+- Add to Cart.
+
+**Area kanan — Shopping Cart**
+- Product.
+- SKU.
+- Quantity.
+- Unit Price.
+- Discount.
+- Subtotal.
+- Remove Item.
+
+Bagian bawah:
+- Untaxed Subtotal.
+- PPN 11%.
+- Grand Total.
+- Customer.
+- Payment Method.
+- Pay Button.
+
+### 13.2 POS Checkout
+
+Ketika kasir menekan Pay:
+- Sistem memvalidasi stok STORE-BDG.
+- Sistem memvalidasi jumlah barang.
+- Sistem menghitung subtotal.
+- Sistem menghitung PPN.
+- Sistem menghitung total.
+- Sistem memproses pembayaran.
+- Sistem mengurangi stok toko.
+- Sistem mencatat pendapatan penjualan.
+- Sistem mencatat PPN keluaran.
+- Sistem mencatat HPP.
+- Sistem mengurangi nilai persediaan.
+- Sistem membuat jurnal yang seimbang.
+- Sistem menghasilkan struk.
+
+Semua perubahan harus diproses sebagai satu transaksi bisnis yang konsisten.
+
+Jangan membuat stok berkurang tanpa transaksi pembayaran berhasil.
+
+Jangan membuat jurnal ganda apabila tombol Pay diklik berulang atau permintaan diproses ulang.
+
+### 13.3 Stock Validation
+
+Jika stok toko hanya 2 tetapi kasir menjual 3 unit:
+- Transaksi harus ditolak.
+- Tampilkan pesan "Insufficient Stock".
+- Tampilkan stok tersedia.
+- Jangan mengurangi stok.
+- Jangan membuat jurnal penjualan.
+- Jangan membuat struk transaksi berhasil.
+
+### 13.4 Receipt
+
+Buat tampilan struk yang dapat dicetak.
+
+Isi:
+- Logo PT Rona Karsa Apparel.
+- Receipt Number.
+- Date and Time.
+- Cashier.
+- Store Location.
+- Product Details.
+- Quantity.
+- Price.
+- Subtotal.
+- PPN.
+- Total.
+- Payment Method.
+- Amount Paid.
+- Change jika ada.
+
+---
+
+# 14. MODUL CUSTOMER RETURNS & CREDIT NOTE
+
+Buat halaman khusus untuk mengelola retur pelanggan.
+
+Nama halaman: **Customer Returns**
+
+Field:
+- Return Number.
+- Original Sales Order.
+- Original Delivery.
+- Original Invoice.
+- Customer.
+- Return Date.
+- Product.
+- SKU.
+- Delivered Quantity.
+- Returned Quantity.
+- Inspected Quantity.
+- Accepted Quantity.
+- Rejected Quantity.
+- Reason.
+- Inspection Notes.
+
+Alur:
+1. Customer mengajukan retur.
+2. Warehouse menerima barang fisik.
+3. Warehouse melakukan inspeksi.
+4. Warehouse menentukan Accepted atau Rejected.
+5. Hanya barang yang diterima baik boleh kembali menjadi stok.
+6. Sistem membalik HPP sesuai kuantitas yang sah.
+7. Finance membuat Credit Note.
+8. Credit Note mengurangi piutang pelanggan.
+
+Credit Note tidak boleh melebihi jumlah retur yang sudah diterima dan divalidasi.
+
+Tampilkan Smart Buttons:
+- Original Sales Order.
+- Delivery.
+- Original Invoice.
+- Stock Return.
+- Credit Note.
+- Journal Entries.
+
+---
+
+# 15. MODUL CONTACTS
+
+Nama aplikasi: **Contacts**
+
+Pisahkan:
+- Customers.
+- Vendors.
+- All Contacts.
+
+Tampilkan:
+- Contact ID.
+- Name.
+- Contact Type.
+- Email.
+- Phone.
+- Address.
+- City.
+- Credit Limit.
+- Payment Terms.
+- Open Receivable.
+- Status.
+
+Customer Form:
+- Customer Information.
+- Contact Details.
+- Address.
+- Credit Limit.
+- Payment Terms.
+- Sales History.
+- Invoices.
+- Payments.
+- Activities.
+
+Vendor Form:
+- Vendor Information.
+- Contact Details.
+- Payment Terms.
+- Purchase Orders.
+- Vendor Bills.
+- Payment History.
+
+Sediakan pencarian, filter, grouping, dan form detail.
+
+---
+
+# 16. MODUL PRODUCTS & VARIANTS
+
+Nama aplikasi: **Products**
+
+Produk fashion wajib memiliki:
+- Product Name.
+- Product Category.
+- SKU.
+- Size.
+- Color.
+- Sales Price.
+- Cost.
+- Vendor.
+- Product Image.
+- Barcode jika tersedia.
+- Active / Archived Status.
+
+Gunakan Product Variant untuk setiap kombinasi ukuran dan warna.
+
+Contoh:
+- AP-TS-BLK-S.
+- AP-TS-BLK-M.
+- AP-TS-BLK-L.
+- AP-TS-WHT-M.
+- AP-HD-GRY-M.
+- AP-HD-GRY-L.
+- AP-DR-BLU-S.
+- AP-DR-BLU-M.
+- AP-DR-BLU-L.
+- AP-PT-BEI-M.
+- AP-PT-BEI-L.
+- AP-OT-CRM-F.
+- AP-SC-BLK-F.
+- AP-CAP-NVY-F.
+- AP-BAG-CNV-F.
+
+SKU tidak boleh duplikat.
+
+Sediakan:
+- Product List.
+- Product Detail.
+- Product Variant Table.
+- Stock by Location.
+- Sales Price.
+- Cost.
+- Vendor Information.
+- Product Image Gallery.
+
+Gunakan gambar produk fashion yang konsisten, tetapi jangan membuat gambar dekoratif menggantikan data produk.
+
+---
+
+# 17. MODUL REPORTING
+
+Buat halaman Reporting dengan beberapa laporan:
+
+### Sales Reports
+- Sales by Period.
+- Sales by Product.
+- Sales by SKU.
+- Sales by Customer.
+- Sales by Channel.
+- Sales by Location.
+
+### Inventory Reports
+- Stock on Hand.
+- Reserved Stock.
+- Available Stock.
+- Stock Valuation.
+- Stock Movement.
+- Low Stock Report.
+
+### Purchase Reports
+- Purchase by Vendor.
+- Purchase by Product.
+- Received Quantity.
+- Accepted Quantity.
+- Vendor Bill Status.
+
+### Financial Reports
+- Accounts Receivable.
+- Accounts Payable.
+- Revenue.
+- Tax.
+- Journal Summary.
+- Payment Status.
+
+Semua laporan harus memiliki filter dan dapat ditelusuri ke dokumen sumber sesuai hak akses.
+
+---
+
+# 18. MODUL AUDIT LOG
+
+Buat halaman **Audit Log**.
+
+Setiap aktivitas penting harus tercatat.
+
+Kolom:
+- Log ID.
+- Date & Time.
+- User.
+- Role.
+- Action.
+- Module.
+- Document Number.
+- Previous Value.
+- New Value.
+- Description.
+- Result.
+
+Aktivitas yang harus dicatat:
+- Create Document.
+- Update Document.
+- Change Price.
+- Change Discount.
+- Confirm Sales Order.
+- Approve Discount.
+- Validate Delivery.
+- Validate Receipt.
+- Register Payment.
+- Post Journal.
+- Create Credit Note.
+- Validate Return.
+- Validate Transfer.
+- Login.
+- Logout.
+- Unauthorized Access.
+- Duplicate Posting Attempt.
+
+Audit Log harus dapat dicari dan difilter.
+
+Log tidak boleh dapat diubah oleh pengguna biasa.
+
+---
+
+# 19. SETTINGS & CONFIGURATION
+
+Buat aplikasi Settings yang memuat:
+
+### General Settings
+- Company Profile.
+- Company Name.
+- Company Address.
+- Currency.
+- Tax Configuration.
+- Warehouse Configuration.
+
+### User Management
+- User List.
+- Create User.
+- Edit User.
+- Assign Role.
+- Activate / Deactivate User.
+- Reset Password.
+
+### Access Rights
+- Role.
+- Module.
+- View Permission.
+- Create Permission.
+- Edit Permission.
+- Delete Permission.
+- Approve Permission.
+- Post Permission.
+
+### Document Sequences
+Buat nomor dokumen otomatis dan unik untuk:
+- Lead.
+- Quotation.
+- Sales Order.
+- Delivery Order.
+- Purchase Order.
+- Receipt.
+- Customer Invoice.
+- Vendor Bill.
+- Payment.
+- Journal Entry.
+- Return.
+- Credit Note.
+- Internal Transfer.
+- POS Receipt.
+
+Setiap dokumen harus memiliki nomor unik dan tidak boleh terjadi duplikasi.
+
+---
+
+# 20. BUSINESS PROCESS — EMPAT SIKLUS UTAMA
+
+Implementasikan empat siklus utama perusahaan berikut dan integrasikan dengan Purchase to Pay.
+
+## SIKLUS 1 — SALES / ORDER TO CASH
+
+Alur:
+
+Lead → Opportunity → Quotation → Sales Order → Stock Reservation → Delivery Order → Customer Invoice → Register Payment.
+
+Ketentuan:
+- Lead dapat dikonversi menjadi Opportunity tanpa kehilangan riwayat.
+- Quotation menggunakan SKU varian yang tepat.
+- Diskon maksimal 10% tanpa persetujuan Manager.
+- PPN efektif 11%.
+- Credit exposure tidak boleh melebihi credit limit.
+- Customer TUNAI tidak boleh menggunakan kredit.
+- Konfirmasi SO membuat reservasi stok.
+- Reservasi tidak mengurangi On Hand.
+- Pengiriman parsial harus menghasilkan Backorder.
+- Stok baru berkurang ketika Delivery divalidasi.
+- HPP dicatat ketika barang dikirim.
+- Invoice hanya boleh dibuat berdasarkan barang yang benar-benar sudah dikirim dan belum ditagih.
+- Pembayaran parsial harus menyisakan saldo yang benar.
+
+## SIKLUS 2 — RETAIL / POINT OF SALE
+
+Alur:
+
+Product Selection → SKU Validation → Cart → Stock Validation → Payment → Receipt → Stock Deduction → Accounting Journal.
+
+Ketentuan:
+- SKU harus sesuai ukuran dan warna.
+- Stok menggunakan STORE-BDG.
+- Stok tidak boleh negatif.
+- Transaksi gagal jika stok tidak cukup.
+- Pembayaran berhasil memicu pembaruan stok dan akuntansi.
+- Pendapatan, PPN keluaran, HPP, dan pengurangan persediaan dicatat.
+- Tidak boleh ada jurnal ganda.
+
+## SIKLUS 3 — RETURNS & CREDIT NOTE
+
+Alur:
+
+Return Request → Physical Receipt → Inspection → Accepted / Rejected → Return Stock Movement → HPP Reversal → Credit Note → AR Adjustment.
+
+Ketentuan:
+- Barang retur tidak langsung masuk stok.
+- Barang harus melalui inspeksi Warehouse.
+- Hanya Accepted Quantity yang menambah stok.
+- HPP dibalik berdasarkan jumlah yang sah.
+- Credit Note harus berdasarkan retur yang telah diterima.
+- Credit Note tidak boleh melebihi jumlah retur yang sah.
+
+## SIKLUS 4 — INTERNAL TRANSFER
+
+Alur:
+
+Transfer Request → Source Stock Validation → Confirmation → Stock Movement → Destination Receipt → Completed.
+
+Ketentuan:
+- Transfer dari STORE-BDG ke WH-JKT atau sebaliknya.
+- Stok lokasi asal berkurang.
+- Stok lokasi tujuan bertambah dengan jumlah sama.
+- Total stok perusahaan tidak berubah.
+- Nilai persediaan total tidak berubah.
+- Transfer melebihi stok asal harus ditolak.
+- Setiap transfer memiliki move history.
+
+## TAMBAHAN — PROCUREMENT / PROCURE TO PAY
+
+Alur:
+
+Reordering → RFQ → Purchase Order → Receipt → Quality Inspection → Vendor Bill → Register Payment.
+
+Ketentuan:
+- Vendor Bill mengikuti Three-Way Matching.
+- Kuantitas tagihan tidak boleh melebihi Accepted Quantity yang belum ditagih.
+- Barang gagal inspeksi tidak boleh menjadi dasar tagihan.
+- Pembayaran vendor mendukung pembayaran parsial.
+- Semua jurnal harus seimbang.
+
+---
+
+# 21. DATA SEED PERUSAHAAN
+
+Gunakan data realistis berikut sebagai data awal aplikasi.
+
+## 21.1 Customers
+
+| ID | Nama | Kota | Credit Limit | Payment Terms |
+|---|---|---|---:|---|
+| C01 | PT Sinar Kampus | Jakarta | Rp1.000.000 | NET14 |
+| C02 | Rani Putri | Bandung | Rp400.000 | NET14 |
+| C03 | CV Atma Studio | Jakarta | Rp1.500.000 | NET14 |
+| C04 | Dina Maharani | Bandung | Rp0 | TUNAI |
+| C05 | PT Cakra Kreasi | Jakarta | Rp2.000.000 | NET30 |
+| C06 | Mira Lestari | Bekasi | Rp500.000 | NET14 |
+
+## 21.2 Vendors
+
+| ID | Vendor | Kota |
+|---|---|---|
+| V01 | PT Rajut Nusantara | Bandung |
+| V02 | CV Denim Karya | Jakarta |
+| V03 | PT Celana Prima | Tangerang |
+| V04 | UD Aksesori Satu | Bandung |
+
+## 21.3 Product Master
+
+| SKU | Product | Size | Color | Sales Price | Cost |
+|---|---|---|---|---:|---:|
+| AP-TS-BLK-S | Kaos Essential Hitam | S | Hitam | Rp150.000 | Rp80.000 |
+| AP-TS-BLK-M | Kaos Essential Hitam | M | Hitam | Rp150.000 | Rp80.000 |
+| AP-TS-BLK-L | Kaos Essential Hitam | L | Hitam | Rp150.000 | Rp80.000 |
+| AP-TS-WHT-M | Kaos Essential Putih | M | Putih | Rp150.000 | Rp80.000 |
+| AP-HD-GRY-M | Hoodie Fleece Abu | M | Abu-abu | Rp320.000 | Rp190.000 |
+| AP-HD-GRY-L | Hoodie Fleece Abu | L | Abu-abu | Rp320.000 | Rp190.000 |
+| AP-DR-BLU-S | Dress Denim Biru | S | Biru | Rp450.000 | Rp280.000 |
+| AP-DR-BLU-M | Dress Denim Biru | M | Biru | Rp450.000 | Rp280.000 |
+| AP-DR-BLU-L | Dress Denim Biru | L | Biru | Rp450.000 | Rp280.000 |
+| AP-PT-BEI-M | Celana Chino Beige | M | Beige | Rp270.000 | Rp155.000 |
+| AP-PT-BEI-L | Celana Chino Beige | L | Beige | Rp270.000 | Rp155.000 |
+| AP-OT-CRM-F | Outer Linen Cream | All Size | Cream | Rp390.000 | Rp220.000 |
+| AP-SC-BLK-F | Scarf Katun Hitam | All Size | Hitam | Rp120.000 | Rp60.000 |
+| AP-CAP-NVY-F | Topi Canvas Navy | All Size | Navy | Rp110.000 | Rp55.000 |
+| AP-BAG-CNV-F | Tote Bag Canvas | All Size | Natural | Rp90.000 | Rp40.000 |
+
+## 21.4 Warehouse
+
+- WH-JKT = Gudang Jakarta.
+- STORE-BDG = Toko Bandung.
+
+## 21.5 Opening Stock
+
+| SKU | WH-JKT | STORE-BDG |
+|---|---:|---:|
+| AP-TS-BLK-S | 8 | 3 |
+| AP-TS-BLK-M | 4 | 2 |
+| AP-TS-BLK-L | 0 | 2 |
+| AP-TS-WHT-M | 6 | 3 |
+| AP-HD-GRY-M | 2 | 1 |
+| AP-HD-GRY-L | 3 | 1 |
+| AP-DR-BLU-S | 2 | 0 |
+| AP-DR-BLU-M | 4 | 1 |
+| AP-DR-BLU-L | 1 | 1 |
+| AP-PT-BEI-M | 5 | 2 |
+| AP-PT-BEI-L | 4 | 1 |
+| AP-OT-CRM-F | 3 | 1 |
+| AP-SC-BLK-F | 10 | 6 |
+| AP-CAP-NVY-F | 7 | 3 |
+| AP-BAG-CNV-F | 12 | 8 |
+
+Kontrol baseline:
+- Total stok perusahaan = 106 unit.
+- Nilai persediaan = Rp11.140.000.
+- Sales Order S00007 telah dikonfirmasi.
+- S00007 menahan 3 unit AP-TS-BLK-M di WH-JKT.
+- On Hand tetap 4.
+- Reserved = 3.
+- Available = 1.
+
+Jangan mengurangi On Hand hanya karena reservasi.
+
+## 21.6 Existing Documents
+
+- LEAD-001: Lead dari C03, permintaan 2 Dress Denim M, status New.
+- S00007: Sales Order C01, 3 AP-TS-BLK-M × Rp150.000, status Confirmed.
+- PO00007: Purchase Order V01, 4 AP-HD-GRY-M × Rp190.000, status Confirmed.
+
+Data awal piutang, utang, pembayaran, pajak, dan penjualan = Rp0.
+
+Saldo bank awal = Rp5.000.000.
+
+Opening ledger:
+- Debit Persediaan: Rp11.140.000.
+- Debit Bank: Rp5.000.000.
+- Kredit Modal: Rp16.140.000.
+
+Gunakan data tersebut secara konsisten untuk seed awal dan pengujian.
+
+---
+
+# 22. BUSINESS RULES WAJIB
+
+Implementasikan aturan berikut sebagai validasi sistem, bukan hanya teks informasi.
+
+| Rule | Ketentuan |
+|---|---|
+| SR-02 | Invoice pelanggan hanya untuk barang yang telah dikirim dan belum ditagih |
+| SR-04 | Stok tidak boleh negatif dan reservasi mengurangi Available |
+| SR-06 | Vendor Bill tidak boleh melebihi Accepted Quantity |
+| SR-07 | Retur harus melalui inspeksi sebelum stok kembali |
+| SR-08 | Diskon maksimal 10% tanpa persetujuan Manager |
+| SR-09 | POS memicu stok dan jurnal sekali saja |
+| SR-10 | Credit Exposure tidak boleh melebihi Credit Limit |
+| SR-11 | Setiap kombinasi ukuran-warna mempunyai SKU unik |
+| SR-12 | Transfer tidak mengubah stok total perusahaan |
+| SR-13 | Pembayaran parsial tidak langsung berstatus Paid |
+| SR-14 | Dashboard menampilkan KPI yang dapat ditelusuri |
+| SR-15 | Nomor dokumen dan posting harus idempoten |
+| SR-16 | Hak akses dan aktivitas pengguna harus diaudit |
+
+Tambahkan validasi untuk:
+- SKU duplikat.
+- Stok negatif.
+- Credit limit terlampaui.
+- Customer TUNAI menggunakan kredit.
+- Invoice melebihi barang terkirim.
+- Vendor Bill melebihi barang accepted.
+- POS melebihi stok toko.
+- Retur masuk stok tanpa inspeksi.
+- Credit Note melebihi retur yang diterima.
+- Transfer melebihi stok sumber.
+- Jurnal tidak seimbang.
+- Posting ganda.
+- Diskon tanpa approval.
+- Akses modul tanpa izin.
+
+Setiap pelanggaran harus menghasilkan pesan validasi yang jelas dan tidak boleh merusak data.
+
+---
+
+# 23. 16 KELOMPOK LAYAR WAJIB SESUAI PDF
+
+Bangun seluruh kelompok layar berikut:
+
+1. S-01 Beranda App Switcher.
+2. S-02 Form Contacts.
+3. S-03 Form Products / Variants.
+4. S-04 CRM Pipeline (Kanban).
+5. S-05 Quotation / Sales Order Form.
+6. S-06 Delivery Order Form.
+7. S-07 Stock Overview & Transfers.
+8. S-08 RFQ / Purchase Order Form.
+9. S-09 Receipt / Quality Acceptance Form.
+10. S-10 Customer Invoice Form.
+11. S-11 Vendor Bill Form.
+12. S-12 Register Payment Dialog.
+13. S-13 Journal Entries / General Ledger.
+14. S-14 Point of Sale Checkout.
+15. S-15 Customer Returns & Credit Note.
+16. S-16 Sales & Inventory Dashboard.
+
+Semua layar harus mengikuti struktur ERP yang konsisten:
+- Page Header.
+- Search / Filters / Group By.
+- List, Kanban, atau Form sesuai kebutuhan.
+- Status Bar.
+- Field utama.
+- Action Buttons.
+- Smart Buttons.
+- Related Documents.
+- Log Notes.
+- Audit / History.
+
+Jangan hanya membuat halaman utama untuk setiap modul. Buat juga halaman detail, form create/edit, dialog validasi, dan tampilan status dokumen.
+
+---
+
+# 24. INTERAKSI DAN FITUR YANG HARUS BERFUNGSI
+
+Pastikan seluruh tombol penting memiliki fungsi nyata.
+
+Contoh:
+
+- App Switcher membuka aplikasi.
+- Sidebar membuka submenu.
+- Create membuka form baru.
+- Save menyimpan data.
+- Cancel membatalkan input.
+- Search mencari data.
+- Filter menyaring data.
+- Group By mengelompokkan data.
+- Kanban card dapat dibuka.
+- Form detail dapat diedit sesuai izin.
+- Confirm menjalankan validasi bisnis.
+- Validate menjalankan mutasi stok.
+- Register Payment memperbarui saldo.
+- Pay menyelesaikan transaksi POS.
+- Print Receipt membuka struk.
+- Smart Buttons membuka dokumen terkait.
+- Logout mengakhiri sesi.
+
+Buat dialog konfirmasi untuk tindakan penting.
+
+Tampilkan toast notification untuk:
+- Success.
+- Warning.
+- Error.
+- Access Denied.
+- Validation Failed.
+
+Jangan membuat tombol yang terlihat aktif tetapi tidak menjalankan apa pun.
+
+---
+
+# 25. DATABASE DAN PERSISTENSI
+
+Bangun struktur data yang mendukung seluruh hubungan transaksi.
+
+Entitas utama yang diperlukan:
+- Users.
+- Roles.
+- Permissions.
+- Customers.
+- Vendors.
+- Products.
+- Product Variants.
+- Warehouses.
+- Stock Locations.
+- Stock Quantities.
+- Stock Reservations.
+- Stock Moves.
+- CRM Leads.
+- Opportunities.
+- Quotations.
+- Sales Orders.
+- Sales Order Lines.
+- Delivery Orders.
+- Delivery Lines.
+- Purchase Orders.
+- Purchase Order Lines.
+- Receipts.
+- Quality Inspections.
+- Customer Invoices.
+- Vendor Bills.
+- Credit Notes.
+- Payments.
+- POS Sessions.
+- POS Transactions.
+- POS Transaction Lines.
+- Journal Entries.
+- Journal Entry Lines.
+- Audit Logs.
+- Document Sequences.
+
+Relasi antarentitas harus benar.
+
+Contoh:
+- Sales Order terhubung ke Customer.
+- Sales Order terhubung ke Delivery Order.
+- Delivery Order terhubung ke Stock Moves.
+- Delivery Order menjadi dasar Customer Invoice.
+- Purchase Order terhubung ke Receipt.
+- Receipt terhubung ke Quality Inspection.
+- Accepted Quantity menjadi dasar Vendor Bill.
+- POS Transaction terhubung ke Stock Moves dan Journal Entries.
+- Customer Return terhubung ke Delivery, Invoice, Stock Return, dan Credit Note.
+
+Gunakan database persisten. Data harus tetap tersedia setelah refresh atau pengguna login kembali.
+
+Jika lingkungan AI Studio menyediakan integrasi database atau backend, gunakan mekanisme tersebut. Jika belum tersedia, jelaskan kebutuhan konfigurasi dan siapkan struktur integrasinya. Jangan mengklaim data telah tersimpan permanen jika sebenarnya hanya berada di browser memory atau local state.
+
+---
+
+# 26. ATURAN AKUNTANSI DAN IDEMPOTENCY
+
+Pastikan setiap transaksi akuntansi seimbang.
+
+Contoh pencatatan:
+
+**Customer Invoice**
+- Debit Accounts Receivable.
+- Kredit Sales Revenue.
+- Kredit Output VAT.
+
+**Delivery**
+- Debit Cost of Goods Sold.
+- Kredit Inventory.
+
+**Vendor Bill**
+- Debit Inventory atau akun biaya yang sesuai.
+- Debit Input VAT.
+- Kredit Accounts Payable.
+
+**Customer Payment**
+- Debit Cash / Bank.
+- Kredit Accounts Receivable.
+
+**Vendor Payment**
+- Debit Accounts Payable.
+- Kredit Cash / Bank.
+
+**POS**
+- Debit Cash / Bank.
+- Kredit Sales Revenue.
+- Kredit Output VAT.
+- Debit Cost of Goods Sold.
+- Kredit Inventory.
+
+**Customer Return**
+- Debit Sales Return / akun terkait.
+- Debit Output VAT reversal sesuai nilai yang dikreditkan.
+- Kredit Accounts Receivable melalui Credit Note.
+- Debit Inventory.
+- Kredit Cost of Goods Sold untuk pembalikan HPP.
+
+Gunakan mekanisme idempotency key atau kontrol transaksi setara agar:
+- Posting dokumen yang sama tidak membuat jurnal baru.
+- Pembayaran yang sama tidak tercatat dua kali.
+- POS tidak memotong stok dua kali.
+- Retur tidak mengembalikan stok dua kali.
+- Transfer tidak menciptakan mutasi ganda.
+
+Setiap jurnal harus memiliki referensi dokumen sumber.
+
+---
+
+# 27. PENGUJIAN WAJIB
+
+Siapkan aplikasi agar dapat menjalankan seluruh skenario T-01 sampai T-36 dari PDF.
+
+Kelompok pengujian meliputi:
+- Login dan hak akses.
+- Contacts dan credit limit.
+- Product Variant dan SKU unik.
+- CRM Lead Conversion.
+- Quotation dan Sales Order.
+- Discount Approval.
+- Stock Reservation.
+- Partial Delivery dan Backorder.
+- Internal Transfer.
+- Purchase Order.
+- Receipt dan Quality Acceptance.
+- Customer Invoice.
+- Vendor Bill.
+- Partial Payment.
+- Journal Entries.
+- POS Checkout.
+- Return Inspection.
+- Credit Note.
+- Dashboard Drill-down.
+- Audit Log.
+- Duplicate Posting Prevention.
+
+Untuk setiap test, sediakan:
+- Test ID.
+- Test Scenario.
+- Preconditions.
+- Action.
+- Expected Result.
+- Actual Result.
+- Pass / Fail.
+
+Jangan mengubah data baseline secara diam-diam antar-test. Sediakan mekanisme reset seed atau fixture pengujian agar hasil tes dapat direproduksi.
+
+---
+
+# 28. RESPONSIVE DESIGN DAN DETAIL UX
+
+Prioritas:
+1. Desktop 1440 px.
+2. Laptop 1280 px.
+3. Tablet.
+4. Mobile untuk akses dasar jika memungkinkan.
+
+Untuk desktop:
+- Sidebar tetap rapi.
+- Tabel tidak terpotong.
+- Form memiliki grouping yang jelas.
+- Dashboard memanfaatkan ruang secara proporsional.
+
+Untuk layar lebih kecil:
+- Sidebar menjadi drawer.
+- Tabel dapat di-scroll horizontal.
+- Form menjadi satu kolom.
+- Tombol utama tetap mudah dijangkau.
+
+Tambahkan:
+- Loading state.
+- Empty state.
+- Error state.
+- Confirmation dialog.
+- Success feedback.
+- Skeleton loading jika diperlukan.
+- Tooltip pada ikon.
+- Breadcrumb.
+- Pagination.
+- Sorting.
+- Search.
+- Filter chips.
+
+---
+
+# 29. ATURAN PENTING SAAT MEMBANGUN APLIKASI
+
+Ikuti instruksi ini dengan ketat:
+
+1. Jangan hanya membuat landing page.
+2. Jangan hanya membuat dashboard statis.
+3. Jangan membuat semua menu mengarah ke halaman kosong.
+4. Jangan menghilangkan modul yang diminta dalam PDF.
+5. Jangan mengganti alur bisnis dengan alur yang lebih sederhana tanpa alasan.
+6. Jangan menghilangkan validasi stok, kredit, pajak, dan akuntansi.
+7. Jangan membuat data transaksi yang tidak saling terhubung.
+8. Jangan menggunakan tombol dekoratif.
+9. Jangan mengubah angka baseline tanpa proses transaksi.
+10. Jangan menghapus histori dokumen.
+11. Jangan membiarkan pengguna mengakses modul tanpa izin.
+12. Jangan membuat posting ganda.
+13. Jangan membuat SKU yang sama untuk dua varian.
+14. Jangan membuat stok negatif.
+15. Jangan mengizinkan invoice melebihi barang yang dikirim.
+16. Jangan mengizinkan Vendor Bill melebihi Accepted Quantity.
+17. Jangan membuat barang retur masuk stok sebelum inspeksi.
+18. Jangan mengizinkan transfer melebihi stok asal.
+19. Jangan membuat jurnal yang tidak seimbang.
+20. Jangan mengorbankan fungsionalitas demi tampilan.
+
+---
+
+# 30. STRATEGI PENGERJAAN BERTAHAP
+
+Bangun aplikasi secara bertahap, tetapi pertahankan satu sistem desain dan satu arsitektur yang konsisten.
+
+**Tahap 1 — Foundation**
+- Setup project.
+- Design system.
+- Login.
+- Authentication.
+- Role permissions.
+- App Switcher.
+- Main Layout.
+- Sidebar.
+- Topbar.
+
+**Tahap 2 — Master Data**
+- Contacts.
+- Products.
+- Product Variants.
+- Warehouse.
+- Opening Stock.
+
+**Tahap 3 — Sales & CRM**
+- CRM Pipeline.
+- Lead.
+- Opportunity.
+- Quotation.
+- Sales Order.
+- Credit Validation.
+- Discount Approval.
+- Stock Reservation.
+
+**Tahap 4 — Purchase & Inventory**
+- RFQ.
+- Purchase Order.
+- Receipt.
+- Quality Inspection.
+- Stock Overview.
+- Delivery Order.
+- Backorder.
+- Internal Transfer.
+
+**Tahap 5 — Accounting & Invoicing**
+- Customer Invoice.
+- Vendor Bill.
+- Three-Way Matching.
+- Register Payment.
+- Journal Entries.
+- General Ledger.
+- Accounts Receivable.
+- Accounts Payable.
+
+**Tahap 6 — POS & Returns**
+- POS Catalog.
+- Cart.
+- Checkout.
+- Payment.
+- Receipt.
+- Stock Deduction.
+- Return Inspection.
+- Credit Note.
+
+**Tahap 7 — Reporting & Audit**
+- Dashboard.
+- KPI.
+- Charts.
+- Drill-down.
+- Reporting.
+- Audit Log.
+
+**Tahap 8 — Final Quality**
+- Test seluruh alur.
+- Periksa role access.
+- Periksa validasi.
+- Periksa hubungan dokumen.
+- Periksa tampilan desktop.
+- Periksa data persistence.
+- Perbaiki bug.
+- Siapkan deployment.
+
+Jangan mengulang atau merombak tampilan yang sudah disetujui tanpa alasan. Gunakan komponen yang reusable agar seluruh modul terlihat konsisten.
+
+---
+
+# 31. HASIL AKHIR YANG SAYA INGINKAN
+
+Saya menginginkan aplikasi web ERP yang memiliki:
+
+- Halaman login fashion premium.
+- Identitas PT Rona Karsa Apparel.
+- Warna hitam, cream, dan putih yang elegan.
+- Home App Switcher seperti Odoo.
+- Dashboard profesional.
+- CRM Pipeline.
+- Sales dan Quotation.
+- Sales Order.
+- Purchase dan RFQ.
+- Inventory dan Stock Overview.
+- Product Variants.
+- Delivery Order.
+- Receipt dan Quality Inspection.
+- Internal Transfer.
+- Invoicing.
+- Accounting.
+- Vendor Bill.
+- Customer Invoice.
+- Register Payment.
+- Journal Entries.
+- General Ledger.
+- Point of Sale.
+- Customer Returns.
+- Credit Note.
+- Contacts.
+- Products.
+- Reporting.
+- Audit Log.
+- Settings.
+- Role-Based Access Control.
+
+Seluruh modul harus memiliki hubungan data dan alur transaksi yang jelas.
+
+Hasil akhir harus terlihat seperti **ERP enterprise untuk perusahaan fashion modern**, bukan sekadar website fashion dan bukan dashboard template biasa.
+
+---
+
+# 32. INSTRUKSI PERTAMA UNTUK AI STUDIO
+
+Sebelum mulai membangun seluruh aplikasi:
+
+1. Analisis seluruh kebutuhan di atas.
+2. Buat struktur arsitektur aplikasi.
+3. Buat daftar halaman dan route.
+4. Buat struktur database dan relasi data.
+5. Buat role dan permission matrix.
+6. Buat design system berdasarkan warna hitam, cream, dan putih.
+7. Buat rancangan halaman Login.
+8. Buat rancangan App Switcher dan Main ERP Layout.
+9. Pastikan seluruh modul dan 16 kelompok layar sudah masuk dalam rencana.
+
+Kemudian mulai implementasi secara bertahap.
+
+**Jangan berhenti pada analisis atau wireframe. Lanjutkan ke implementasi aplikasi yang benar-benar dapat dijalankan.**
+
+Jika terdapat batasan lingkungan atau integrasi yang belum tersedia, jelaskan dengan jujur dan berikan langkah implementasi yang diperlukan.
+
+Jika ada bagian yang belum jelas, pertahankan ketentuan PDF dan jangan mengarang aturan bisnis baru.
+
+Prioritas utama:
+
+**FUNCTIONALITY → DATA INTEGRITY → BUSINESS RULES → USER EXPERIENCE → VISUAL DESIGN**
+
+Namun, seluruh aspek tersebut harus diwujudkan dalam satu aplikasi yang konsisten dan profesional.
+
+**Mulailah dengan membangun fondasi desain dan halaman login PT Rona Karsa Apparel, lalu lanjutkan ke ERP Main Layout dan seluruh modul secara bertahap.**
