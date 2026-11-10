@@ -57,7 +57,7 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ---
 
-## 4. Format Wajib Decision Defense (Handout Hal. 48)
+## 4. Decision Defense
 
 | Masalah/Konflik SR | Opsi Dipertimbangkan | Keputusan + F/S | Trade-Off / Siapa Dirugikan | Bukti Pengujian |
 |---|---|---|---|---|
