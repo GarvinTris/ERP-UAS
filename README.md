@@ -21,7 +21,36 @@
 
 ---
 
-## 2. Akun Uji Demo Sesuai Role (RBAC)
+## 2. Tautan Penting
+### 2.1
+(App Maintainence)
+### 2.2 Video Demo
+https://youtu.be/Y2ya9xjc-BA?si=JZ-UyldUdpYbGV76
+### 2.3 Presentasi
+https://canva.link/fvkc86emy5kr8yw
+---
+
+## 3. Cara Menjalankan Aplikasi
+
+### 3.1 Prasyarat
+# Hapus lockfile atau node_modules yang belum lengkap (jika ada)
+rm -rf node_modules package-lock.json
+### 3.2 Instalasi
+npm install --legacy-peer-deps
+
+### 3.3 Konfigurasi Environment
+-
+### 3.4 Load Seed Data & Reset Baseline
+-
+### 3.5 Menjalankan Aplikasi
+# Jalankan server lokal
+npm run dev
+### 3.6 Deployment
+Vercel 
+(Link Deployment)
+---
+
+## 4. Akun Uji Demo Sesuai Role (RBAC)
 
 Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung pada halaman Login:
 
@@ -36,7 +65,17 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ---
 
-## 3. Cakupan 16 Kelompok Layar (S-01 s/d S-16)
+## 5. Arsitektur & Model Data
+-
+### 5.1 Diagram Arsitektur
+-
+### 5.2 Diagram Data (ERD)
+(Gambar ERD Diagram)
+### 5.3 Architecture Note
+-
+---
+
+## 6. Cakupan 16 Kelompok Layar (S-01 s/d S-16)
 
 1. **S-01 Beranda App Switcher:** Grid 13 modul aplikasi bergaya Odoo 17.0 dengan indikator hak akses dan badge dinamis.
 2. **S-02 Form Contacts:** Master pelanggan C01–C06 dan vendor V01–V04, limit kredit, dan termin pembayaran.
@@ -55,9 +94,15 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 15. **S-15 Customer Returns & Credit Note:** Inspeksi fisik retur gudang, pembalikan persediaan & HPP, dan penerbitan Credit Note.
 16. **S-16 Sales & Inventory Dashboard:** 6 KPI utama (Net Sales, PPN, Gross Sales, Inventory, AR/AP, Unit Sold), filter kanal, dan penelusuran drill-down.
 
+### 6.1 Wireframe Checklist
+
 ---
 
-## 4. Decision Defense
+## 7. Pemetaan Fitur (F-01 s/d F-21)
+
+---
+
+## 8. Decision Defense
 
 | Masalah/Konflik SR | Opsi Dipertimbangkan | Keputusan + F/S | Trade-Off / Siapa Dirugikan | Bukti Pengujian |
 |---|---|---|---|---|
@@ -70,7 +115,7 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ---
 
-## 5. Rangkuman Pengujian Skenario T-01 s.d. T-36
+## 9. Test Results T-01 s.d. T-36
 
 Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dijalankan secara instan dengan 1 klik atau satu per satu:
 
@@ -111,26 +156,88 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 - **T-35 (Passed):** Quotation dengan diskon 15% tanpa otorisasi Manajer -> Konfirmasi ditahan (SR-08).
 - **T-36 (Passed):** Pelunasan utang Vendor Bill Rp632.700 via Bank -> AP menjadi Rp0, Bank berkurang Rp632.700, status Paid.
 
+### 9.1 Tabel Hasil Pengujian (Expected vs Actual, Status, Bukti)
+-
+### 9.2 Catatan Fixture & Baseline Seed
+-
+### 9.3 Defect Log
+-
 ---
 
-## 6. Jawaban Pertanyaan Refleksi (Handout Hal. 49)
+## 10. Tim & Kolaborasi
 
-### Refleksi 1: Konflik antar pemangku kepentingan mana yang paling sulit diselesaikan?
+### 10.1 Role Assignment Sheet
+
+| No | Nama Mahasiswa | NIM | Anggota | Peran Fungsional | Modul / Area yang Dimiliki | Fokus Pekerjaan |
+|---|---|---|---|---|---|---|
+| 1 | Garvin Triskie | ... | Anggota 1 | Product Owner, Project Manager & Business Analyst | Sales / CRM, co-owner Point of Sale | Dokumentasi GitHub, analisa SR, analisa business rule, memastikan aplikasi berjalan lancar, review UI/UX dan tombol testing |
+| 2 | Mikha Sula | ... | Anggota 2 | Lead AI Developer | Database, arsitektur | Database Supabase, ERD, diagram arsitektur, integrasi Supabase ke frontend |
+| 3 | Naura Syafira | ... | Anggota 3 | UI/UX, QA & Deployment Lead | Accounting / Invoicing, co-owner Point of Sale | Frontend UI/UX, pengujian semua fitur terhadap SR, perbaikan hasil temuan |
+
+### 10.2 Team Agreement
+
+| No | Topik | Kesepakatan |
+|---|---|---|
+| 1 | Jadwal rapat | ... |
+| 2 | Prosedur persetujuan keputusan | ... |
+| 3 | Jika ada anggota terlambat | ... |
+| 4 | Pembagian kerja di GitHub (branch, commit, merge) | ... |
+| 5 | Media komunikasi | ... |
+
+Disepakati oleh: Garvin Triskie, Mikha Sula, Naura Syafira
+Tanggal: ...
+
+### 10.3 Tabel Kontribusi
+
+| Anggota | Role | Modul / Area | F-xx yang Dibangun | T-xx yang Diuji | Kontribusi Utama | Commit Penting |
+|---|---|---|---|---|---|---|
+| Garvin Triskie | PO / PM / BA | Sales / CRM, co-owner POS | ... | ... | Dokumentasi GitHub, analisa SR dan business rule, pengecekan aplikasi, review UI/UX dan tombol testing | ... |
+| Mikha Sula | Lead AI Developer | Database, arsitektur | ... | ... | Database Supabase, ERD (ongoing), arsitektur, integrasi Supabase ke frontend | ... |
+| Naura Syafira | UI/UX, QA & Deployment Lead | Accounting / Invoicing, co-owner POS | ... | ... | Frontend UI/UX, pengujian fitur terhadap SR, perbaikan | ... |
+
+### 10.4 Riwayat Perubahan Kepemilikan/Peran
+
+| No | Tahap | Tanggal | Pihak | Perubahan / Aktivitas | Alasan / Hasil |
+|---|---|---|---|---|---|
+| 1 | Awal pembangunan | ... | Naura Syafira | Membangun frontend UI/UX dan mencari desain yang cocok | Menentukan tampilan aplikasi |
+| 2 | Pengujian awal | ... | Naura Syafira → Garvin Triskie | Naura menguji lalu menyerahkan hasil ke Garvin | Garvin mengecek dan meminta perbaikan |
+| 3 | Perbaikan 1 | ... | Naura Syafira | Tombol testing otomatis diganti pengujian manual | Pengujian harus dijalankan sendiri dengan bukti, bukan diasumsikan lulus |
+| 4 | Perbaikan 2 | ... | Naura Syafira | Memperbaiki input yang tidak tepat (nilai Rp100.000 berubah menjadi Rp33.000) | Nilai input harus sesuai angka yang dimasukkan |
+| 5 | Perbaikan 3 | ... | Naura Syafira | Membatasi satu user hanya ke satu peran | Sesuai SR-16 (hak akses minimal per peran) |
+| 6 | Pembangunan database | ... | Mikha Sula | Membangun database Supabase, ERD (ongoing), dan integrasi Supabase ke frontend | Data persisten dan siap deploy via Vercel + Supabase |
+
+---
+
+## 11. AI-Tool Usage Note
+
+### 11.1 Daftar Tool yang Digunakan
+AI Studio, Emergent SH, Claude
+### 11.2 Contoh Output AI yang Salah dan Perbaikannya
+
+---
+
+## 12. Jawaban Pertanyaan Refleksi
+
+### 12.1 Refleksi 1: Konflik antar pemangku kepentingan mana yang paling sulit diselesaikan?
 Konflik paling sengit terjadi antara **Nadya Kinasih (Manajer Penjualan - SR-01)** yang menuntut penagihan penuh sejak order disetujui demi percepatan arus kas, melawan **Fajar Pratama (Kepala Keuangan - SR-02)** yang melarang keras penagihan mendahului pengiriman barang nyata.
 
 - **Nilai yang dikorbankan:** Kecepatan penagihan di muka oleh Sales dikorbankan demi kepatuhan pengakuan pendapatan dan perlindungan reputasi pelanggan.
 - **Mitigasi:** Sistem menerapkan otomatisasi pengiriman bertahap dengan pelacakan *Backorder* (F-08), di mana penagihan dapat langsung diterbitkan secara instan begitu sebagian barang keluar dari gudang (F-09), tanpa harus menunggu seluruh order selesai.
 
-### Refleksi 2: Pada bagian mana AI tool menghasilkan UI yang tampak benar tetapi melanggar aturan bisnis?
+### 12.2 Refleksi 2: Pada bagian mana AI tool menghasilkan UI yang tampak benar tetapi melanggar aturan bisnis?
 1. **Reservasi Stok (SR-04):** UI default AI kerap memotong `on_hand` begitu SO dikonfirmasi. Perbaikan: `on_hand` tetap utuh, hanya `reserved` yang bertambah dan `available` yang berkurang. Pemotongan fisik baru terjadi saat pengiriman tervalidasi.
 2. **Three-Way Matching (SR-06):** AI sering langsung membuat Vendor Bill dari seluruh kuantitas PO. Perbaikan: Kuantitas tagihan wajib diverifikasi terhadap barang yang lolos inspeksi (`accepted_qty`), bukan barang yang rusak atau belum tiba.
 3. **Idempotensi Transaksi (SR-15):** Tombol klik ganda pada pengiriman atau pembayaran rawan membuat mutasi ganda. Perbaikan: Status penguncian dokumen (`locked`/`done`) dan verifikasi keunikan referensi jurnal.
 
 ---
 
-## 7. Rekomendasi Pengembangan Masa Depan (Now / Next / Later)
+## 13. Rekomendasi Pengembangan Masa Depan (Now / Next / Later)
 
 - **Performance (Now):** Optimasi caching client-side IndexedDB untuk riwayat ribuan mutasi stok toko retail.
 - **Functions (Next):** Integrasi pemindaian barcode kamera untuk kasir POS dan serah terima gudang mobile.
 - **Efficacy (Next):** Rekonsiliasi mutasi rekening bank otomatis via integrasi API Bank Mandiri/BCA.
 - **Convenience (Later):** Modul Customer Loyalty Poin terpadu pada POS kasir retail (F-21) dan integrasi omnichannel e-commerce.
+
+---
+
+## 14. Integritas Akademik & Orisinalitas Kode
