@@ -28,6 +28,7 @@
 https://youtu.be/Y2ya9xjc-BA?si=JZ-UyldUdpYbGV76
 ### 2.3 Presentasi
 https://canva.link/fvkc86emy5kr8yw
+
 ---
 
 ## 3. Cara Menjalankan Aplikasi
