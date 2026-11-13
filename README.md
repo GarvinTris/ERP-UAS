@@ -34,21 +34,46 @@ https://canva.link/fvkc86emy5kr8yw
 ## 3. Cara Menjalankan Aplikasi
 
 ### 3.1 Prasyarat
-# Hapus lockfile atau node_modules yang belum lengkap (jika ada)
+
+Hapus lockfile atau `node_modules` yang belum lengkap (jika ada):
+
+```bash
 rm -rf node_modules package-lock.json
+```
+
 ### 3.2 Instalasi
+
+```bash
 npm install --legacy-peer-deps
+```
 
 ### 3.3 Konfigurasi Environment
+
+```bash
 -
+```
+
 ### 3.4 Load Seed Data & Reset Baseline
+
+```bash
 -
+```
+
 ### 3.5 Menjalankan Aplikasi
-# Jalankan server lokal
+
+Jalankan server lokal:
+
+```bash
 npm run dev
+```
+
 ### 3.6 Deployment
-Vercel 
+
+Vercel
+
+```text
 (Link Deployment)
+```
 
 ---
 
