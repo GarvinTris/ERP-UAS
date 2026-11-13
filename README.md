@@ -313,3 +313,23 @@ Konflik paling sengit terjadi antara **Nadya Kinasih (Manajer Penjualan - SR-01)
 ---
 
 ## 14. Integritas Akademik & Orisinalitas Kode
+
+### 14.1 Pernyataan Orisinalitas
+Kami menyatakan bahwa aplikasi ERP PT Rona Karsa Apparel ini dibangun oleh kelompok kami sendiri. Kami tidak menyalin kode sumber maupun aset (logo, ikon, gambar, stylesheet) dari Odoo. Odoo Web 17.0 hanya dijadikan acuan struktur dan pengalaman pengguna (app switcher, tampilan List/Kanban/Form, status bar, smart button), sesuai ketentuan handout.
+
+### 14.2 Kolaborasi
+Kolaborasi dilakukan di dalam kelompok (Garvin Triskie, Mikha Sula, Naura Syafira). Kami tidak membagikan atau menerima kode, prompt, maupun solusi dari kelompok lain. Diskusi dengan kelompok lain, jika ada, terbatas pada konsep.
+
+### 14.3 Penggunaan AI
+Pembangunan fitur dibantu AI coding tool. Seluruh tool yang digunakan diungkapkan di Bagian 11. Hasil keluaran AI kami tinjau dan uji terhadap aturan bisnis SR-xx; kesalahan yang ditemukan dicatat di Bagian 9.3 (Defect Log) dan 11.2.
+
+### 14.4 Pemahaman Anggota
+Setiap anggota bersedia menjelaskan seluruh bagian aplikasi, Decision Log, dan keputusan lintas modul secara langsung saat presentasi dan tanya jawab, termasuk modul yang tidak dikerjakannya.
+
+### 14.5 Referensi
+- Handout Skenario Mahasiswa — PT Rona Karsa Apparel (Fashion & Apparel)
+- DJP, PMK 131/2024 (pajak.go.id/node/113453) — asumsi PPN efektif 11%
+- Odoo 17.0 Documentation: Invoicing Policies dan Automatic Inventory Valuation
+
+### 14.6 Catatan Data
+Semua nama perusahaan, tokoh, dan data transaksi bersifat fiktif dan hanya untuk pembelajaran. Simulasi perpajakan tidak menggantikan proses perpajakan riil.
