@@ -180,11 +180,11 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 
 | No | Topik | Kesepakatan |
 |---|---|---|
-| 1 | Jadwal rapat | ... |
-| 2 | Prosedur persetujuan keputusan | ... |
-| 3 | Jika ada anggota terlambat | ... |
-| 4 | Pembagian kerja di GitHub (branch, commit, merge) | ... |
-| 5 | Media komunikasi | ... |
+| 1 | Jadwal rapat | Rapat dilakukan dengan mencari waktu yang cocok bersama. Karena anggota lain sibuk, koordinasi lebih banyak lewat chat daripada rapat tatap muka. |
+| 2 | Prosedur persetujuan keputusan | Belum ada prosedur formal. Keputusan teknis dan bisnis dikonsultasikan ke Garvin (Anggota 1) sebagai Product Owner. |
+| 3 | Jika ada anggota terlambat | Tidak ada sanksi atau mekanisme khusus. Tiap anggota mengerjakan bagiannya sendiri dan menyerahkan hasil sesuai tenggat yang diminta Garvin. |
+| 4 | Pembagian kerja di GitHub (branch, commit, merge) | Anggota lain mengerjakan bagiannya di luar repository dan mengirim hasilnya lewat WhatsApp ke Garvin, lalu Garvin yang memasukkannya ke GitHub. Branch dan merge antar anggota belum dipakai. |
+| 5 | Media komunikasi | WhatsApp (chat) |
 
 Disepakati oleh: Garvin Triskie, Mikha Sula, Naura Syafira
 Tanggal: ...
