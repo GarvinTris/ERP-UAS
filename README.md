@@ -100,7 +100,78 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ---
 
-## 7. Pemetaan Fitur (F-01 s/d F-21)
+## 7. Analisis Kebutuhan & Pemetaan Fitur
+
+### 7.1 Klasifikasi Kebutuhan Pemangku Kepentingan (SR-01 s.d. SR-16)
+
+**Kebijakan Bisnis:** SR-01, SR-02, SR-05, SR-06, SR-08, SR-10
+**Permasalahan Kuantitas Stock:** SR-03, SR-04, SR-07, SR-11, SR-12
+**Monitoring, Transparansi & Jejak Audit:** SR-09, SR-13, SR-14, SR-15, SR-16
+
+### 7.2 Identifikasi Area Konflik
+
+| No | Area Konflik | Pihak Berlawanan | Keputusan Sistem |
+|---|---|---|---|
+| 1 | Invoicing Sales | Sales (SR-01) vs Finance (SR-02) | Invoice berdasarkan kuantitas terkirim (lihat Bagian 8) |
+| 2 | Stok POS vs Gudang | Toko (SR-03) vs Gudang (SR-04) | Stok tidak boleh negatif (lihat Bagian 8) |
+| 3 | Vendor Bill | Purchase (SR-05) vs Finance (SR-06) | Bill dibatasi kuantitas diterima dan lolos QA (lihat Bagian 8) |
+
+### 7.3 Rule to Feature
+
+| SR | Pemangku Kepentingan | Ketentuan | Fitur Terkait | Prioritas |
+|---|---|---|---|---|
+| SR-01 | Nadya Kinasih (Sales) | Penagihan cepat setelah SO dikonfirmasi | F-05 | Must |
+| SR-02 | Fajar Pratama (Finance) | Tagihan hanya untuk barang terkirim dan belum ditagih | F-09 | Must |
+| SR-03 | Salsa Widianti (Store) | Transaksi POS tidak terhenti saat stok komputer kosong | F-16 | Must |
+| SR-04 | Bayu Firmansyah (Warehouse) | Stok tidak negatif; reservasi mengurangi available; POS hanya mengurangi stok toko | F-07, F-08, F-16 | Must |
+| SR-05 | Rizki Wardana (Purchase) | Vendor Bill sebesar seluruh kuantitas PO | F-11 | Must |
+| SR-06 | Fajar Pratama (Finance) | Bill dibatasi kuantitas diterima baik (lolos QC) | F-12, F-13 | Must |
+| SR-07 | Bayu Firmansyah (Warehouse) | Retur menambah stok hanya setelah fisik dicek; Credit Note sesuai retur tervalidasi | F-08, F-17 | Must |
+| SR-08 | Nadya Kinasih (Sales) | Diskon ≤ 10% diizinkan; di atasnya butuh approval Manajer; dokumen Confirmed terkunci | F-05, F-06 | Must |
+| SR-09 | Salsa Widianti (Store) | POS memicu penjualan, PPN keluaran, HPP, dan stok dalam satu transaksi | F-14, F-16 | Must |
+| SR-10 | Fajar Pratama (Finance) | Piutang terbuka + nilai bruto order baru ≤ credit limit; pelanggan TUNAI tanpa kredit | F-02, F-10 | Must |
+| SR-11 | Bayu Firmansyah (Warehouse) | Setiap kombinasi ukuran-warna punya SKU unik | F-03, F-07 | Must |
+| SR-12 | Rizki Wardana (Purchase) | Transfer antar lokasi tidak mengubah stok total dan nilai persediaan | F-18 | Should |
+| SR-13 | Fajar Pratama (Finance) | Pembayaran parsial mengurangi saldo; Paid hanya jika saldo nol | F-15 | Must |
+| SR-14 | Arga Mahendra (Owner) | Dashboard terpisah (sebelum PPN, PPN, unit, saldo, persediaan) dan dapat ditelusuri | F-19, F-21 (opsional) | Should |
+| SR-15 | Arga Mahendra (Owner) | Nomor dokumen unik; posting, retur, pembayaran, mutasi stok idempoten | F-04, F-14, F-20 | Must |
+| SR-16 | Arga Mahendra (Owner) | Hak akses minimal per peran; perubahan tercatat di audit log | F-01, F-20 | Must |
+
+### 7.4 Prioritas Fitur dan Rencana Pengerjaan
+
+| No | Kode | Fitur | Prioritas | Rencana Pengerjaan | Alasan |
+|---|---|---|---|---|---|
+| 1 | F-03 | Master produk dan SKU varian | Prioritas 1 (Core Bisnis) | 24–25 Okt 2026 | Fondasi katalog agar penjualan dan POS berjalan |
+| 2 | F-02 | Master kontak dan termin kredit | Prioritas 1 | 26–27 Okt 2026 | Basis pelanggan/vendor, batas kredit, termin |
+| 3 | F-04 | CRM Pipeline | Prioritas 1 | 28–29 Okt 2026 | Lead sampai Opportunity |
+| 4 | F-05 | Quotation sampai Sales Order | Prioritas 1 | 30–31 Okt 2026 | Transaksi penjualan utama |
+| 5 | F-06 | Diskon dan penguncian harga | Prioritas 1 | 1–2 Nov 2026 | Otorisasi diskon dan penguncian order Confirmed |
+| 6 | F-07 | Reservasi dan stok tersedia | Prioritas 1 | 2–3 Nov 2026 | Mencegah stok negatif |
+| 7 | F-09 | Customer Invoice berbasis pengiriman | Prioritas 1 | 3–4 Nov 2026 | Faktur akurat sesuai pengiriman fisik |
+| 8 | F-16 | Point of Sale untuk toko | Prioritas 1 | 4–5 Nov 2026 | Kasir real-time, stok dan omzet |
+| 9 | F-17 | Retur barang dan Credit Note | Prioritas 1 | 5–6 Nov 2026 | Retur, pengembalian persediaan, nota kredit |
+| 10 | F-08 | Pengiriman parsial dan Backorder | Prioritas 2 (Operasional) | 6–7 Nov 2026 | Sisa pengiriman dan HPP |
+| 11 | F-10 | Pemeriksaan credit limit | Prioritas 2 | 7–8 Nov 2026 | Blokir order melebihi limit |
+| 12 | F-11 | RFQ dan Purchase Order | Prioritas 2 | 8–9 Nov 2026 | Pengadaan dari vendor |
+| 13 | F-12 | Receipt dan penerimaan diterima baik | Prioritas 2 | 9–10 Nov 2026 | Penerimaan fisik dan stok layak jual |
+| 14 | F-13 | Vendor Bill dengan pencocokan 3 arah | Prioritas 2 | 10–11 Nov 2026 | PO, receipt, dan bill |
+| 15 | F-18 | Transfer lokasi terlacak | Prioritas 3 (Integrasi Sampingan) | 11–12 Nov 2026 | Pindah stok tanpa ubah total |
+| 16 | F-14 | Posting buku besar dan HPP | Prioritas 3 | 12 Nov 2026 | Jurnal otomatis dan HPP |
+| 17 | F-15 | Registrasi pembayaran parsial | Prioritas 3 | 12 Nov 2026 | Pembayaran bertahap sampai lunas |
+| 18 | F-01 | Navigasi aplikasi dan otorisasi | Prioritas 4 (Sistem & Akses) | 13 Nov 2026 | Hak akses per peran |
+| 19 | F-19 | Dashboard operasional | Prioritas 5 (Audit & Review) | 13–14 Nov 2026 | KPI operasional |
+| 20 | F-20 | Audit log dan relasi dokumen | Prioritas 5 | 14 Nov 2026 | Riwayat aktivitas dan tautan dokumen |
+| 21 | F-21 | Loyalty sederhana toko | Opsional | Ditunda / ditiadakan | Fitur tambahan non-kritis |
+
+### 7.5 Peta Cakupan Modul dan Pengujian
+
+| Modul | Fitur | Pengujian |
+|---|---|---|
+| CRM & Sales | F-04, F-05, F-06 | T-07 s.d. T-11, T-34, T-35 |
+| Inventory & Procurement | F-03, F-07, F-08, F-11, F-12, F-18 | T-05, T-06, T-12 s.d. T-19 |
+| Accounting & Invoicing | F-02, F-09, F-10, F-13, F-14, F-15, F-17 | T-03, T-04, T-20 s.d. T-27, T-30, T-31, T-36 |
+| Point of Sale (co-owned) | F-16, F-21 | T-28, T-29 |
+| System & Dashboard | F-01, F-19, F-20 | T-01, T-02, T-32, T-33 |
 
 ---
 
@@ -186,16 +257,15 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 | 4 | Pembagian kerja di GitHub (branch, commit, merge) | Anggota lain mengerjakan bagiannya di luar repository dan mengirim hasilnya lewat WhatsApp ke Garvin, lalu Garvin yang memasukkannya ke GitHub. Branch dan merge antar anggota belum dipakai. |
 | 5 | Media komunikasi | WhatsApp (chat) |
 
-Disepakati oleh: Garvin Triskie, Mikha Sula, Naura Syafira
-Tanggal: ...
-
 ### 10.3 Tabel Kontribusi
 
-| Anggota | Role | Modul / Area | F-xx yang Dibangun | T-xx yang Diuji | Kontribusi Utama | Commit Penting |
+| Anggota | Role | Modul / Area | F-xx yang Dibangun | T-xx yang Diuji | Kontribusi Aktual | Commit Penting |
 |---|---|---|---|---|---|---|
-| Garvin Triskie | PO / PM / BA | Sales / CRM, co-owner POS | ... | ... | Dokumentasi GitHub, analisa SR dan business rule, pengecekan aplikasi, review UI/UX dan tombol testing | ... |
-| Mikha Sula | Lead AI Developer | Database, arsitektur | ... | ... | Database Supabase, ERD (ongoing), arsitektur, integrasi Supabase ke frontend | ... |
-| Naura Syafira | UI/UX, QA & Deployment Lead | Accounting / Invoicing, co-owner POS | ... | ... | Frontend UI/UX, pengujian fitur terhadap SR, perbaikan | ... |
+| Garvin Triskie (Anggota 1) | PO / PM / BA | Sales / CRM, co-owner POS | F-02, F-03 (kolaborasi), F-04, F-05, F-06, F-16 (co-owner), F-21 (opsional, ditunda) | T-07 s.d. T-11, T-34, T-35 | Dokumentasi GitHub, analisa SR dan business rule (Decision Log, rule-to-feature, prioritas fitur), memastikan aplikasi berjalan lancar, review UI/UX dan tombol testing, meminta perbaikan ke Naura (3 kali) | ... |
+| Mikha Sula (Anggota 2) | Lead AI Developer | Database, arsitektur (rencana awal: Purchase / Inventory) | F-07, F-08, F-11, F-12, F-18 (rencana awal; kini sebagai fondasi database) | T-12 s.d. T-19, T-30 | Database Supabase, ERD (ongoing), diagram arsitektur, integrasi Supabase ke frontend | ... |
+| Naura Syafira (Anggota 3) | UI/UX, QA & Deployment Lead | Frontend semua modul, co-owner POS (rencana awal: Accounting / Invoicing) | F-01, F-09, F-10, F-13, F-14, F-15, F-17, F-19, F-20 | T-01 s.d. T-04, T-20 s.d. T-29, T-31 s.d. T-33, T-36 | Frontend UI/UX, pengujian fitur terhadap SR, perbaikan hasil temuan | ... |
+
+Catatan: hasil kerja Mikha dan Naura diserahkan lewat WhatsApp, lalu di-commit ke GitHub oleh Garvin. Perubahan dari rencana awal dicatat di 10.4.
 
 ### 10.4 Riwayat Perubahan Kepemilikan/Peran
 
