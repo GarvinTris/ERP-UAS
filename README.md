@@ -61,11 +61,15 @@ npm install --legacy-peer-deps
 
 ### 3.5 Menjalankan Aplikasi
 
-Jalankan server lokal:
+Jalan kan di terminal 
 
-```bash
 npm run dev
-```
+
+Setelah server Vite aktif, buka browser dan akses:
+
+http://localhost:3000
+
+Aplikasi dapat digunakan secara lokal melalui browser.
 
 ### 3.6 Deployment
 
