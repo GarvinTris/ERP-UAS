@@ -70,7 +70,6 @@ Aplikasi menggunakan seed data sebagai data awal untuk menjalankan dan menguji s
 | Accounting | Data akun dan jurnal |
 | POS | Data transaksi Point of Sale |
 
-Seed data didefinisikan pada file `src/data/seedData.ts`.
 
 **Reset Baseline:** Mengembalikan data aplikasi ke kondisi awal apabila fitur reset tersedia pada aplikasi.
 
