@@ -55,9 +55,24 @@ npm install --legacy-peer-deps
 
 ### 3.4 Load Seed Data & Reset Baseline
 
-```bash
--
-```
+### 3.4 Load Seed Data & Reset Baseline
+
+Aplikasi menggunakan seed data sebagai data awal untuk menjalankan dan menguji setiap modul ERP.
+
+| Komponen | Keterangan |
+|---|---|
+| Customer | Data pelanggan awal |
+| Supplier | Data pemasok awal |
+| Products | Data produk dan varian |
+| Inventory | Data stok gudang dan toko |
+| Sales | Data transaksi penjualan |
+| Purchase | Data transaksi pembelian |
+| Accounting | Data akun dan jurnal |
+| POS | Data transaksi Point of Sale |
+
+Seed data didefinisikan pada file `src/data/seedData.ts`.
+
+**Reset Baseline:** Mengembalikan data aplikasi ke kondisi awal apabila fitur reset tersedia pada aplikasi.
 
 ### 3.5 Menjalankan Aplikasi
 
