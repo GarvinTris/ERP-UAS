@@ -148,6 +148,25 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ### 6.1 Wireframe Checklist
 
+| Layar | Nama | Fitur |
+|---|---|---|
+| S-01 | Beranda App Switcher | F-01 |
+| S-02 | Form Contacts | F-02 | 
+| S-03 | Form Products/Variants | F-03 | 
+| S-04 | CRM Pipeline (Kanban) | F-04 | 
+| S-05 | Quotation/Sales Order | F-05, F-06, F-10 | 
+| S-06 | Delivery Order | F-08 | 
+| S-07 | Stock Overview & Transfers | F-07, F-18 | 
+| S-08 | RFQ/Purchase Order | F-11 | 
+| S-09 | Receipt/Quality Acceptance | F-12 | 
+| S-10 | Customer Invoice | F-09 | 
+| S-11 | Vendor Bill | F-13 | 
+| S-12 | Register Payment | F-15 | 
+| S-13 | Journal Entries/GL | F-14, F-20 | 
+| S-14 | POS Checkout | F-16 | 
+| S-15 | Returns & Credit Note | F-17 | 
+| S-16 | Dashboard | F-19 | 
+
 ---
 
 ## 7. Analisis Kebutuhan & Pemetaan Fitur
@@ -282,7 +301,28 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 ### 9.1 Tabel Hasil Pengujian (Expected vs Actual, Status, Bukti)
 -
 ### 9.2 Catatan Fixture & Baseline Seed
--
+
+- Semua tes dijalankan dari kondisi baseline (Bagian 1 dan 3.4). Lakukan reset sebelum menjalankan ulang.
+- **Urutan penting:** beberapa tes memakai hasil tes sebelumnya.
+  - T-14 (baseline stok) harus dijalankan **sebelum** T-12 (pengiriman mengubah stok).
+  - T-24 → T-25 berurutan (bayar parsial lalu pelunasan pada faktur dari T-20).
+  - T-22 → T-36 berurutan (bill lalu pelunasan utang).
+  - T-12 mengubah stok WH `AP-TS-BLK-M` dari 4 ke 2, yang menjadi dasar T-30 (2→3).
+- Fixture utama:
+
+| Fixture | Nilai awal | Dipakai di |
+|---|---|---|
+| C02 | Limit Rp400.000, NET14 | T-03, T-10 |
+| C03 | Limit mencukupi | T-09 |
+| C04 | Termin TUNAI | T-04 |
+| `AP-TS-BLK-M` WH-JKT | On Hand 4, Reserved 3 (S00007) | T-12, T-13, T-14 |
+| `AP-TS-BLK-L` | STORE-BDG 2, WH-JKT 0 | T-05, T-15, T-29 |
+| Scarf STORE-BDG | 6 unit @Rp120.000 | T-28 |
+| Hoodie M WH-JKT | 2 unit | T-18 |
+| S00007 | Confirmed, 3 unit | T-11, T-12, T-20 |
+| PO00007 | Confirmed, qty 4 | T-16, T-17, T-18 |
+| LEAD-001 | Lead baru | T-07, T-08 |
+
 ### 9.3 Defect Log
 -
 ---
