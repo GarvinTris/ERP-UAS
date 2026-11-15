@@ -62,8 +62,8 @@ VITE_SUPABASE_URL=https://<project-id>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-public-key>
 ```
 
-> Nilai diambil dari Supabase Dashboard → Project Settings → API.
-> Jangan commit file `.env` ke GitHub.
+Nilai diambil dari Supabase Dashboard → Project Settings → API.
+
 
 ### 3.4 Load Seed Data & Reset Baseline
 Menu `Settings → Reset Baseline` atau `ikon refresh`.
