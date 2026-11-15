@@ -54,8 +54,19 @@ npm install --legacy-peer-deps
 ```
 
 ### 3.4 Load Seed Data & Reset Baseline
+Menu `Settings → Reset Baseline` atau `ikon refresh`.
 
+Kondisi baseline setelah reset:
 
+| Item | Nilai |
+|---|---|
+| Total stok | 106 unit |
+| Nilai persediaan | Rp11.140.000 |
+| Kas/Bank Mandiri | Rp5.000.000 |
+| Modal disetor | Rp16.140.000 |
+| Kontak | C01–C06 (pelanggan), V01–V04 (vendor) |
+| Produk | 15 varian SKU |
+| Dokumen awal | S00007 (reservasi 3 unit AP-TS-BLK-M), PO00007, LEAD-001 |
 
 ### 3.5 Menjalankan Aplikasi
 
@@ -270,9 +281,9 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 
 | No | Nama Mahasiswa | NIM | Anggota | Peran Fungsional | Modul / Area yang Dimiliki | Fokus Pekerjaan |
 |---|---|---|---|---|---|---|
-| 1 | Garvin Triskie | ... | Anggota 1 | Product Owner, Project Manager & Business Analyst | Sales / CRM, co-owner Point of Sale | Dokumentasi GitHub, analisa SR, analisa business rule, memastikan aplikasi berjalan lancar, review UI/UX dan tombol testing |
-| 2 | Mikha Sula | ... | Anggota 2 | Lead AI Developer | Database, arsitektur | Database Supabase, ERD, diagram arsitektur, integrasi Supabase ke frontend |
-| 3 | Naura Syafira | ... | Anggota 3 | UI/UX, QA & Deployment Lead | Accounting / Invoicing, co-owner Point of Sale | Frontend UI/UX, pengujian semua fitur terhadap SR, perbaikan hasil temuan |
+| 1 | Garvin Triskie | 03081240059 | Anggota 1 | Product Owner, Project Manager & Business Analyst | Sales / CRM, co-owner Point of Sale | Dokumentasi GitHub, analisa SR, analisa business rule, memastikan aplikasi berjalan lancar, review UI/UX dan tombol testing |
+| 2 | Mikha Sula | 03081240058 | Anggota 2 | Lead AI Developer | Database, arsitektur | Database Supabase, ERD, diagram arsitektur, integrasi Supabase ke frontend |
+| 3 | Naura Syafira | 03081240057 | Anggota 3 | UI/UX, QA & Deployment Lead | Accounting / Invoicing, co-owner Point of Sale | Frontend UI/UX, pengujian semua fitur terhadap SR, perbaikan hasil temuan |
 
 ### 10.2 Team Agreement
 
@@ -298,12 +309,12 @@ Catatan: hasil kerja Mikha dan Naura diserahkan lewat WhatsApp, lalu di-commit k
 
 | No | Tahap | Tanggal | Pihak | Perubahan / Aktivitas | Alasan / Hasil |
 |---|---|---|---|---|---|
-| 1 | Awal pembangunan | ... | Naura Syafira | Membangun frontend UI/UX dan mencari desain yang cocok | Menentukan tampilan aplikasi |
-| 2 | Pengujian awal | ... | Naura Syafira → Garvin Triskie | Naura menguji lalu menyerahkan hasil ke Garvin | Garvin mengecek dan meminta perbaikan |
-| 3 | Perbaikan 1 | ... | Naura Syafira | Tombol testing otomatis diganti pengujian manual | Pengujian harus dijalankan sendiri dengan bukti, bukan diasumsikan lulus |
-| 4 | Perbaikan 2 | ... | Naura Syafira | Memperbaiki input yang tidak tepat (nilai Rp100.000 berubah menjadi Rp33.000) | Nilai input harus sesuai angka yang dimasukkan |
-| 5 | Perbaikan 3 | ... | Naura Syafira | Membatasi satu user hanya ke satu peran | Sesuai SR-16 (hak akses minimal per peran) |
-| 6 | Pembangunan database | ... | Mikha Sula | Membangun database Supabase, ERD (ongoing), dan integrasi Supabase ke frontend | Data persisten dan siap deploy via Vercel + Supabase |
+| 1 | Awal pembangunan | 30/10/2026 | Naura Syafira | Membangun frontend UI/UX dan mencari desain yang cocok | Menentukan tampilan aplikasi |
+| 2 | Pengujian awal | 30/10/2026 | Naura Syafira → Garvin Triskie | Naura menguji lalu menyerahkan hasil ke Garvin | Garvin mengecek dan meminta perbaikan |
+| 3 | Perbaikan 1 | 03/11/2026 | Naura Syafira | Tombol testing otomatis diganti pengujian manual | Pengujian harus dijalankan sendiri dengan bukti, bukan diasumsikan lulus |
+| 4 | Perbaikan 2 | 09/11/2026 | Naura Syafira | Memperbaiki input yang tidak tepat (nilai Rp100.000 berubah menjadi Rp33.000) | Nilai input harus sesuai angka yang dimasukkan |
+| 5 | Pembangunan database | 09/11/2026 | Mikha Sula | Membangun database Supabase, ERD (ongoing) | Perancangan database dan struktur ERD |
+| 6 | Integrasi database | 15/11/2026 | Mikha Sula | mengintegrasikan database ke sistem aplikasi, ERD (ongoing), dan integrasi Supabase ke frontend | Data persisten dan siap deploy via Vercel + Supabase |
 
 ---
 
@@ -313,6 +324,14 @@ Catatan: hasil kerja Mikha dan Naura diserahkan lewat WhatsApp, lalu di-commit k
 AI Studio, Emergent SH, Claude
 ### 11.2 Contoh Output AI yang Salah dan Perbaikannya
 
+| No | Tool | Output AI yang Salah | Aturan yang Dilanggar | Perbaikan |
+|---|---|---|---|---|
+| 1 | AI Studio / Emergent | Konfirmasi SO langsung memotong `on_hand` | SR-04 | `on_hand` tetap; hanya `reserved` naik dan `available` turun. Pemotongan fisik saat delivery divalidasi. |
+| 2 | AI Studio / Emergent | Vendor Bill dibuat dari seluruh qty PO | SR-06 | Qty bill divalidasi terhadap `accepted_qty` hasil QA (Three-Way Match). |
+| 3 | AI Studio / Emergent | Klik ganda pada pengiriman/pembayaran membuat mutasi ganda | SR-15 | Penguncian status `locked`/`done` dan cek keunikan referensi jurnal. |
+| 4 | AI Studio / Emergent | Tombol "Run All Tests" menandai semua tes lulus tanpa menjalankan skenario | Integritas pengujian | Diganti pengujian manual dengan bukti. |
+| 5 | AI Studio / Emergent | Input Rp100.000 berubah menjadi Rp33.000 | Akurasi nominal | Perbaikan penanganan input angka. |
+| 6 | AI Studio / Emergent | Satu akun dapat berpindah ke banyak peran | SR-16 | Satu user dibatasi satu peran. |
 ---
 
 ## 12. Jawaban Pertanyaan Refleksi
