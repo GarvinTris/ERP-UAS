@@ -299,7 +299,50 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 - **T-36 (Passed):** Pelunasan utang Vendor Bill Rp632.700 via Bank -> AP menjadi Rp0, Bank berkurang Rp632.700, status Paid.
 
 ### 9.1 Tabel Hasil Pengujian (Expected vs Actual, Status, Bukti)
--
+
+Expected pada tes aturan (🔒) ditentukan oleh SR-xx. Tes yang bertanda ♻️ ditemukan celah saat peninjauan dan diperbaiki (lihat [9.3 Defect Log](#93-defect-log)), sehingga hasil di bawah adalah hasil setelah perbaikan.
+
+| Tes | Jenis | Fitur | SR | Expected | Actual | Status | Bukti |
+|:---:|:---:|:---:|:---:|---|---|:---:|---|
+| T-01 | Normal | F-01 | SR-16 | Beranda Sales menampilkan `Sales`, `CRM` dan tautan kerja relevan; tidak membuka jurnal. | Login Sales hanya menampilkan modul berwenang; Jurnal tidak tampil. | ✅ Pass | Screenshot home + akun/peran |
+| T-02 | 🔒 Aturan | F-01 | SR-16 | Akses Sales ke Journal Entries ditolak, muncul peringatan, upaya tercatat di audit log. | Akses ditolak (Access Denied) dengan peringatan; upaya tercatat di audit log. | ✅ Pass | Screenshot penolakan + audit log |
+| T-03 | Normal | F-02 | SR-10 | C02 tampil dengan limit Rp400.000 dan NET14. | Form C02 menampilkan limit Rp400.000 dan termin NET14. | ✅ Pass | Screenshot form + baris seed |
+| T-04 | 🔒 Aturan | F-02 | SR-10 | Transaksi kredit untuk C04 (TUNAI) ditolak. | Transaksi kredit C04 ditolak dengan pesan validasi; hanya tunai diizinkan. | ✅ Pass | Screenshot penolakan/validasi |
+| T-05 | Normal | F-03 | SR-11 | Dua SKU berbeda; stok gudang `AP-TS-BLK-M` 4 dan `AP-TS-BLK-L` 0. | Dua SKU tampil terpisah dengan stok WH-JKT 4 dan 0 unit. | ✅ Pass | Screenshot produk berdampingan |
+| T-06 | 🔒 Aturan | F-03 | SR-11 | Pembuatan varian dengan SKU `AP-TS-BLK-M` ditolak; data lama tidak tertimpa. | Validasi keunikan SKU menolak penyimpanan; data lama utuh. | ✅ Pass | Screenshot pesan validasi SKU |
+| T-07 | Normal | F-04 | SR-15 | LEAD-001 menjadi Opportunity, stage `Qualified`, tautan asal dan log tercatat. | Stage berpindah ke `Qualified`, tautan asal dan log tercatat. | ✅ Pass | Screenshot Kanban sebelum/sesudah |
+| T-08 ♻️ | 🔒 Aturan | F-04, F-20 | SR-15 | Konversi ulang Opportunity yang sudah punya Quotation ditolak; tidak ada Quotation ganda (jumlah tetap 1); stage tidak turun; upaya tercatat di audit log. | Konversi ulang ditolak, sistem mengarahkan ke Q00008. Jumlah Quotation tetap 1, stage tetap `Proposition`, audit log `VALIDATION_FAILED`. | ✅ Pass | Jumlah Quotation + audit log |
+| T-09 | Normal | F-05, F-10 | SR-01, SR-10 | C03 order 2 `AP-DR-BLU-M` kredit: subtotal Rp900.000, PPN Rp99.000, total Rp999.000; reservasi 2 unit; limit cukup. | Nilai sesuai; reservasi 2 unit; limit tidak menghambat. | ✅ Pass | Quotation + SO + reservasi |
+| T-10 | 🔒 Aturan | F-10 | SR-10 | Konfirmasi C02 3 `AP-TS-BLK-S` ditolak: eksposur Rp0 + Rp499.500 (bruto termasuk PPN) melebihi limit Rp400.000; tidak ada SO baru. | Modal validasi kredit muncul, order tidak terkonfirmasi, tidak ada SO baru. | ✅ Pass | Screenshot validasi kredit |
+| T-11 | 🔒 Aturan | F-06, F-05, F-20 | SR-08 | Perubahan harga S00007 setelah Confirmed ditolak; harga tetap Rp150.000; tercatat di audit log. | Perubahan ditolak, dokumen terkunci, audit log `BLOCKED` mencatat nilai asli dan nilai yang dicoba. | ✅ Pass | Audit log + harga semula |
+| T-12 | Normal | F-08, F-07, F-14 | SR-04 | Kirim 2 `AP-TS-BLK-M` dari WH-JKT: stok 4→2, backorder 1, HPP Rp160.000, persediaan turun Rp160.000. | Stok 4→2, backorder 1, HPP Rp160.000 terposting. | ✅ Pass | Delivery + backorder + stok + jurnal |
+| T-13 ♻️ | 🔒 Aturan | F-08 | SR-04 | Validasi kirim 4 unit pada pesanan 3 ditolak; stok, mutasi, dan jurnal tidak berubah. | Validasi ditolak (kuantitas 4 melampaui sisa 3); stok tetap 4, tidak ada mutasi/jurnal baru; audit log `VALIDATION_FAILED`. | ✅ Pass | Pesan validasi + jumlah mutasi tetap |
+| T-14 | Normal | F-07 | SR-04 | `AP-TS-BLK-M` WH-JKT: On Hand 4, Reserved 3 (S00007), Available 1. | On Hand 4, Reserved 3, Available 1. | ✅ Pass | Tabel stok + smart button reservasi |
+| T-15 | 🔒 Aturan | F-18 | SR-12 | Transfer 1 `AP-TS-BLK-L` STORE-BDG→WH-JKT tercatat sebagai dua mutasi sama besar; total tetap 2 unit dan nilai persediaan tetap. | STORE 2→1, WH 0→1; stock move sumber dan tujuan tercatat; total dan nilai tetap. | ✅ Pass | Stock move sumber/tujuan + saldo akhir |
+| T-16 | Normal | F-11 | SR-05 | PO00007: subtotal Rp760.000, PPN Rp83.600, total Rp843.600, status `Confirmed`. | Nilai sesuai, status `Confirmed`. | ✅ Pass | Form PO + kalkulasi |
+| T-17 | 🔒 Aturan | F-11, F-20 | SR-08 | Perubahan qty PO00007 4→7 tanpa revisi ditolak; qty tetap 4; tercatat di audit log. | Perubahan ditolak, qty tetap 4, upaya tercatat di audit log. | ✅ Pass | Screenshot penolakan + audit |
+| T-18 | Normal | F-12, F-14 | SR-06 | Terima 3 hoodie M lolos QA: stok WH 2→5, persediaan +Rp570.000, sisa PO 1. | Stok 2→5, persediaan +Rp570.000, sisa PO 1. | ✅ Pass | Receipt + valuasi + jurnal |
+| T-19 | 🔒 Aturan | F-12 | SR-06 | Dengan 3 accepted + 1 rejected, pengakuan 4 accepted diblokir; hanya 3 unit masuk stok; 1 unit rejected tercatat. | 3 unit diakui (stok 2→5), 1 unit rejected tidak masuk stok, sisa PO 1; pengakuan 4 accepted diblokir. | ✅ Pass | Bukti blokir accepted tanpa dukungan inspeksi |
+| T-20 | Normal | F-09 | SR-02 | Invoice 2 `AP-TS-BLK-M`: subtotal Rp300.000, PPN Rp33.000, piutang Rp333.000; sisa 1 belum dapat ditagih. | Nilai sesuai; sisa 1 unit belum dapat ditagih. | ✅ Pass | Invoice + counter SO + AR ledger |
+| T-21 ♻️ | 🔒 Aturan | F-09 | SR-02 | Penagihan 3 unit setelah terkirim 2 ditolak (batas = terkirim − sudah ditagih); tidak ada invoice baru; AR tetap. | Ditolak dengan pesan diminta 3, terkirim 2, sudah ditagih 0, boleh ditagih 2. Penagihan ulang setelah invoice pertama juga ditolak. | ✅ Pass | Penjagaan qty tagih + saldo AR |
+| T-22 | Normal | F-13 | SR-06 | Bill 3 hoodie M: subtotal Rp570.000, PPN masukan Rp62.700, AP Rp632.700; sisa 1 belum dapat ditagih. | Nilai sesuai. | ✅ Pass | Bill + tautan receipt + AP ledger |
+| T-23 | 🔒 Aturan | F-13 | SR-06 | Posting bill 4 hoodie saat accepted 3 ditolak (three-way match). | Ditolak dengan peringatan bahwa qty hanya boleh sebatas accepted (3). | ✅ Pass | Screenshot pemeriksaan three-way match |
+| T-24 | Normal | F-15 | SR-13 | Bayar Rp200.000 atas invoice Rp333.000: sisa Rp133.000, `Partially Paid`, bank +Rp200.000. | Sisa Rp133.000, status `Partially Paid`, bank +Rp200.000. | ✅ Pass | Payment + residual + jurnal |
+| T-25 | 🔒 Aturan | F-15 | SR-13 | Pembayaran Rp133.000 hanya melunasi sisa: saldo tepat Rp0, status `Paid`, jurnal kedua seimbang. | Saldo Rp0, status `Paid`, jurnal Dr Bank / Cr Piutang Rp133.000 seimbang. | ✅ Pass | Saldo akhir + status + jurnal kedua |
+| T-26 | Normal | F-14 | SR-15 | Delivery: Dr HPP / Cr Persediaan Rp160.000; invoice: Dr AR Rp333.000, Cr Sales Rp300.000, Cr PPN Rp33.000. | Jurnal sesuai; total debit = total kredit. | ✅ Pass | Journal entries + kesamaan debit/kredit |
+| T-27 | 🔒 Aturan | F-14, F-20 | SR-15 | Posting ulang `WH/OUT/00007` berstatus `Done` ditolak; jurnal dan mutasi tidak bertambah. | Aksi idempoten; jumlah jurnal dan saldo stok tidak berubah; audit log `BLOCKED`. | ✅ Pass | Jumlah jurnal/saldo sebelum-sesudah |
+| T-28 | Normal | F-16, F-14 | SR-09 | Jual 2 Scarf tunai: net Rp240.000, PPN Rp26.400, struk Rp266.400, stok toko 6→4, HPP Rp120.000. | Nilai sesuai, stok 6→4, jurnal seimbang. | ✅ Pass | Struk + stok + jurnal |
+| T-29 | 🔒 Aturan | F-16 | SR-03, SR-04 | Penjualan 3 `AP-TS-BLK-L` saat stok toko 2 ditolak. Keputusan: SR-04 diprioritaskan, stok tidak boleh negatif. | Ditolak dengan pesan stok toko tidak mencukupi; stok tetap 2; tidak ada struk/jurnal. | ✅ Pass | Screenshot kasir + stok akhir + alasan |
+| T-30 | Normal | F-17, F-14 | SR-07 | Retur 1 kaos M layak: stok WH 2→3, HPP dibalik Rp80.000, credit note Rp166.500. | Stok 2→3, HPP dibalik Rp80.000, credit note Rp166.500, piutang berkurang. | ✅ Pass | Retur + credit note + jurnal pembalikan |
+| T-31 ♻️ | 🔒 Aturan | F-17 | SR-07, SR-15 | Credit note 2 unit saat retur valid 1 unit ditolak (maks. creditable 1); tidak ada mutasi/jurnal baru; credit note kedua untuk retur sama ditolak. | Credit note 2 unit ditolak (maks. 1); stok tetap 3; tidak ada jurnal baru. Credit note kedua ditolak (`BLOCKED`). | ✅ Pass | Maks. qty creditable + mutasi stok |
+| T-32 | Normal | F-19 | SR-14 | Filter transaksi POS T-28: net Rp240.000, PPN Rp26.400, gross Rp266.400, unit 2. | Nilai sesuai. | ✅ Pass | Dashboard + tautan ke POS/stok |
+| T-33 | 🔒 Aturan | F-19, F-20 | SR-16 | Cashier tidak dapat melihat jurnal dan AR perusahaan via dashboard. | Jurnal dan AR global disembunyikan; akses dibatasi ke modul POS. | ✅ Pass | Screenshot filter akses + audit |
+| T-34 | Normal | F-06 | SR-08 | Diskon 10% pada 2 `AP-DR-BLU-M`: subtotal Rp810.000, PPN Rp89.100, total Rp899.100. | Nilai sesuai; diskon diterapkan sebelum pajak. | ✅ Pass | Baris diskon + total + quotation |
+| T-35 | 🔒 Aturan | F-06 | SR-08 | Konfirmasi diskon 15% tanpa Manajer ditolak; status tetap `Draft`. | Konfirmasi ditahan dengan peringatan error; status `Draft`. | ✅ Pass | Status + persetujuan + log |
+| T-36 | Normal | F-15 | SR-13 | Bayar BILL Rp632.700: AP jadi Rp0, bank −Rp632.700, status `Paid`, jurnal seimbang. | Nilai sesuai. | ✅ Pass | Bill + payment + AP ledger |
+
+**Ringkasan:** 36 dari 36 tes Pass (18 tes normal dan 18 tes aturan).
+
 ### 9.2 Catatan Fixture & Baseline Seed
 
 - Semua tes dijalankan dari kondisi baseline (Bagian 1 dan 3.4). Lakukan reset sebelum menjalankan ulang.
@@ -324,7 +367,17 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 | LEAD-001 | Lead baru | T-07, T-08 |
 
 ### 9.3 Defect Log
--
+
+| ID | Tes | Temuan | Aturan | Dampak | Perbaikan | Status |
+|:---:|:---:|---|:---:|---|---|:---:|
+| D-01 | T-08 | Setelah Quotation terbit, stage menjadi `Proposition` dan tombol konversi hilang, sehingga uji konversi ulang tidak bisa dijalankan dari UI. `convertLeadToOpportunity` juga tidak menjaga lead yang sudah terkonversi, sehingga stage dapat turun ke `Qualified`. | SR-15 | Riwayat lead bisa rusak; tes tidak dapat dibuktikan | Tombol "Uji Konversi Ulang (T-08)" ditambahkan; konversi lead yang sudah terhubung ditolak dan dicatat di audit log. | ✅ Fixed |
+| D-02 | T-21 | Batas tagih hanya membandingkan dengan jumlah terkirim, tanpa mengurangi yang sudah ditagih; delivery yang sama bisa ditagih berulang. Tombol uji terkunci pada `WH/OUT/00007`. | SR-02 | Over-billing; piutang dan PPN keluaran berlebih | Batas tagih = terkirim − sudah ditagih (invoice non-cancelled); tombol uji memakai delivery dari invoice terpilih. | ✅ Fixed |
+| D-03 | T-31 | Credit Note dapat diterbitkan berkali-kali untuk satu retur. | SR-07, SR-15 | Jurnal dan pengurangan piutang ganda | Retur yang sudah memiliki `credit_note_id` menolak Credit Note kedua (`BLOCKED`). | ✅ Fixed |
+| D-04 | Test runner | Tombol "Run All Tests" menandai tes lulus tanpa menjalankan skenario. Pada T-08, T-13, T-21, dan T-31 skrip hanya mencatat log lalu menandai lulus. | Integritas pengujian | Hasil tes tidak dapat dipercaya | Pengujian dijalankan manual lewat tombol uji di tiap layar, dengan bukti screenshot dan audit log. | ⚠️ Mitigasi: gunakan uji manual |
+| D-05 | Input nominal | Input Rp100.000 berubah menjadi Rp33.000. | Akurasi nominal | Nilai transaksi salah | Penanganan input angka diperbaiki (09/11/2026). | ✅ Fixed |
+| D-06 | F-01 | Satu akun dapat berpindah ke banyak peran. | SR-16 | Pembatasan hak akses dapat dilewati | Satu user dibatasi satu peran. | ✅ Fixed |
+| D-07 | T-11, T-17 | UI tidak menyediakan field harga/qty yang dapat diedit pada dokumen `Confirmed`; pengujian memakai tombol uji dengan nilai tetap (Rp120.000 dan 7 unit). | SR-08 | Bukti penguncian hanya lewat tombol uji | Diterima sebagai batasan; penguncian dibuktikan lewat penolakan dan audit log. | ℹ️ Diterima |
+
 ---
 
 ## 10. Tim & Kolaborasi
