@@ -244,7 +244,7 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ---
 
-## 8. Decision Defense
+## 8. Decision Log
 
 | Masalah/Konflik SR | Opsi Dipertimbangkan | Keputusan + F/S | Trade-Off / Siapa Dirugikan | Bukti Pengujian |
 |---|---|---|---|---|
