@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   User,
-  UserRole,
   AppModuleId,
   Customer,
   Vendor,
@@ -47,11 +46,11 @@ import {
   INITIAL_AUDIT_LOGS,
   TEST_SCENARIOS_CATALOG,
 } from '../data/seedData';
+import { loadERPState, loadERPAuditLogs, saveERPAuditLog, saveERPState } from '../lib/erpDatabase';
 
 interface ERPContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
-  switchRole: (role: UserRole) => void;
   activeApp: AppModuleId;
   setActiveApp: (app: AppModuleId) => void;
   activeView: string;
@@ -138,7 +137,7 @@ const STORAGE_KEY = 'PT_RONA_KARSA_ERP_STATE_V1';
 
 export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Current user & authentication
-  const [currentUser, setCurrentUser] = useState<User | null>(INITIAL_USERS[0]); // default Owner
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeApp, setActiveApp] = useState<AppModuleId>('home');
   const [activeView, setActiveView] = useState<string>('overview');
   const [appSwitcherOpen, setAppSwitcherOpen] = useState<boolean>(false);
@@ -147,6 +146,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Core Data States
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [vendors, setVendors] = useState<Vendor[]>(INITIAL_VENDORS);
   const [products, setProducts] = useState<ProductVariant[]>(INITIAL_PRODUCTS);
   const [stock, setStock] = useState<StockQuantity[]>(INITIAL_STOCK);
@@ -168,37 +168,78 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
   const [testResults, setTestResults] = useState<Record<string, { status: 'passed' | 'failed'; actual: string; timestamp: string }>>({});
 
-  // Restore state from LocalStorage on mount
+  // Load the shared ERP dataset from Supabase only after a user is authenticated.
+  // Seed data remains intact when the cloud row does not exist yet.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.customers) setCustomers(parsed.customers);
-        if (parsed.vendors) setVendors(parsed.vendors);
-        if (parsed.products) setProducts(parsed.products);
-        if (parsed.stock) setStock(parsed.stock);
-        if (parsed.stockMoves) setStockMoves(parsed.stockMoves);
-        if (parsed.leads) setLeads(parsed.leads);
-        if (parsed.salesOrders) setSalesOrders(parsed.salesOrders);
-        if (parsed.deliveryOrders) setDeliveryOrders(parsed.deliveryOrders);
-        if (parsed.purchaseOrders) setPurchaseOrders(parsed.purchaseOrders);
-        if (parsed.receipts) setReceipts(parsed.receipts);
-        if (parsed.customerInvoices) setCustomerInvoices(parsed.customerInvoices);
-        if (parsed.vendorBills) setVendorBills(parsed.vendorBills);
-        if (parsed.payments) setPayments(parsed.payments);
-        if (parsed.posTransactions) setPosTransactions(parsed.posTransactions);
-        if (parsed.returns) setReturns(parsed.returns);
-        if (parsed.creditNotes) setCreditNotes(parsed.creditNotes);
-        if (parsed.transfers) setTransfers(parsed.transfers);
-        if (parsed.journalEntries) setJournalEntries(parsed.journalEntries);
-        if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
-        if (parsed.testResults) setTestResults(parsed.testResults);
+    let cancelled = false;
+
+    const hydrateFromSupabase = async () => {
+      if (!currentUser) {
+        setIsHydrated(false);
+        return;
       }
-    } catch {
-      // ignore
-    }
-  }, []);
+
+      setIsHydrated(false);
+      try {
+        const saved = await loadERPState();
+        if (cancelled) return;
+
+        if (saved) {
+          if (saved.customers) setCustomers(saved.customers as Customer[]);
+          if (saved.vendors) setVendors(saved.vendors as Vendor[]);
+          if (saved.products) setProducts(saved.products as ProductVariant[]);
+          if (saved.stock) setStock(saved.stock as StockQuantity[]);
+          if (saved.stockMoves) setStockMoves(saved.stockMoves as StockMove[]);
+          if (saved.leads) setLeads(saved.leads as CRMLead[]);
+          if (saved.salesOrders) setSalesOrders(saved.salesOrders as SalesOrder[]);
+          if (saved.deliveryOrders) setDeliveryOrders(saved.deliveryOrders as DeliveryOrder[]);
+          if (saved.purchaseOrders) setPurchaseOrders(saved.purchaseOrders as PurchaseOrder[]);
+          if (saved.receipts) setReceipts(saved.receipts as Receipt[]);
+          if (saved.customerInvoices) setCustomerInvoices(saved.customerInvoices as CustomerInvoice[]);
+          if (saved.vendorBills) setVendorBills(saved.vendorBills as VendorBill[]);
+          if (saved.payments) setPayments(saved.payments as PaymentRecord[]);
+          if (saved.posTransactions) setPosTransactions(saved.posTransactions as POSTransaction[]);
+          if (saved.returns) setReturns(saved.returns as CustomerReturn[]);
+          if (saved.creditNotes) setCreditNotes(saved.creditNotes as CreditNote[]);
+          if (saved.transfers) setTransfers(saved.transfers as InternalTransfer[]);
+          if (saved.accounts) setAccounts(saved.accounts as Account[]);
+          if (saved.journalEntries) setJournalEntries(saved.journalEntries as JournalEntry[]);
+          if (saved.auditLogs) setAuditLogs(saved.auditLogs as AuditLog[]);
+          if (saved.testResults) setTestResults(saved.testResults as Record<string, { status: 'passed' | 'failed'; actual: string; timestamp: string }>);
+        }
+
+        // Hanya owner dan finance yang boleh membaca audit log.
+        if (currentUser.role === 'owner' || currentUser.role === 'finance') {
+          try {
+            const cloudAuditLogs = await loadERPAuditLogs();
+            if (cancelled) return;
+            const legacyLogs = (saved?.auditLogs as AuditLog[] | undefined) ?? INITIAL_AUDIT_LOGS;
+            const mergedLogs = new Map<string, AuditLog>();
+            [...legacyLogs, ...cloudAuditLogs].forEach((log) => mergedLogs.set(log.log_id, log as AuditLog));
+            setAuditLogs(Array.from(mergedLogs.values()).sort((a, b) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            ));
+          } catch (auditError) {
+            console.error('Gagal memuat audit log dari Supabase:', auditError);
+            addNotification('warning', 'Audit log cloud belum dapat dimuat. Pastikan tabel erp_audit_logs sudah dibuat.', true);
+          }
+        } else {
+          setAuditLogs([]);
+        }
+
+        // Only enable autosave after a successful cloud read (or confirmed empty row).
+        if (!cancelled) setIsHydrated(true);
+      } catch (error) {
+        console.error('Gagal memuat ERP state dari Supabase:', error);
+        if (!cancelled) {
+          addNotification('error', 'Data ERP gagal dimuat dari Supabase. Periksa koneksi dan konfigurasi database.', true);
+        }
+      }
+    };
+
+    void hydrateFromSupabase();
+    return () => { cancelled = true; };
+  }, [currentUser?.id]);
 
   // Save state to LocalStorage
   const saveStateToStorage = (overrideState?: Partial<Record<string, unknown>>) => {
@@ -221,11 +262,11 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         returns,
         creditNotes,
         transfers,
+        accounts,
         journalEntries,
         auditLogs,
-        testResults,
-        ...overrideState,
-      };
+        testResults
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
       // ignore
@@ -252,12 +293,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  const switchRole = (role: UserRole) => {
-    const found = INITIAL_USERS.find((u) => u.role === role) || INITIAL_USERS[0];
-    setCurrentUser(found);
-    addNotification('info', `Switched active user to ${found.name} (${found.roleName})`);
-    logAudit('SWITCH_USER', 'AUTH', found.id, `User switched to ${found.name} (${found.role})`, 'SUCCESS');
-  };
 
   // RBAC Permission Check
   const checkRoleAccess = (module: AppModuleId): boolean => {
@@ -318,6 +353,13 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       result,
     };
     setAuditLogs((prev) => [newLog, ...prev]);
+
+    if (currentUser?.id) {
+      void saveERPAuditLog(newLog, currentUser.id).catch((error) => {
+        console.error('Audit log gagal disimpan ke Supabase:', error);
+        addNotification('warning', 'Aktivitas tercatat di aplikasi, tetapi gagal disimpan ke audit log cloud.', true);
+      });
+    }
   };
 
   // Reset to Baseline Seed
@@ -3288,8 +3330,45 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync state changes to storage
   useEffect(() => {
-    saveStateToStorage();
+    if (!isHydrated || !currentUser) return;
+  
+    const save = async () => {
+      try {
+        await saveERPState(
+          {
+            customers,
+            vendors,
+            products,
+            stock,
+            stockMoves,
+            leads,
+            salesOrders,
+            deliveryOrders,
+            purchaseOrders,
+            receipts,
+            customerInvoices,
+            vendorBills,
+            payments,
+            posTransactions,
+            returns,
+            creditNotes,
+            transfers,
+            accounts,
+            journalEntries,
+            testResults,
+          },
+          currentUser.id,
+          currentUser.role
+        );
+      } catch (error) {
+        console.error('Supabase save failed:', error);
+      }
+    };
+  
+    save();
   }, [
+    isHydrated,
+    currentUser,
     customers,
     vendors,
     products,
@@ -3307,8 +3386,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     returns,
     creditNotes,
     transfers,
+    accounts,
     journalEntries,
-    auditLogs,
+    testResults,
   ]);
 
   return (
@@ -3316,7 +3396,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         currentUser,
         setCurrentUser,
-        switchRole,
         activeApp,
         setActiveApp,
         activeView,
