@@ -22,8 +22,8 @@
 ---
 
 ## 2. Tautan Penting
-### 2.1
-(App Maintainence)
+### 2.1 Deployment
+https://erp-p3yxl9zdr-naura9.vercel.app
 ### 2.2 Video Demo
 https://youtu.be/Y2ya9xjc-BA?si=JZ-UyldUdpYbGV76
 ### 2.3 Presentasi
