@@ -12,11 +12,7 @@ import {
   Receipt,
   Layers,
   Lock,
-  AlertTriangle,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  ExternalLink,
+  Pencil,
 } from 'lucide-react';
 
 export const SalesModule: React.FC = () => {
@@ -25,9 +21,9 @@ export const SalesModule: React.FC = () => {
     customers,
     products,
     confirmSalesOrder,
-    attemptModifyConfirmedSOPrice,
     createDeliveryOrderForSO,
     createQuotation,
+    updateSalesOrderLine,
     setActiveApp,
     setActiveView,
     currentUser,
@@ -38,10 +34,17 @@ export const SalesModule: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creditModalOpen, setCreditModalOpen] = useState(false);
 
+  // Inline line edit state
+  const [editingLineId, setEditingLineId] = useState<string | null>(null);
+  const [editLinePrice, setEditLinePrice] = useState('0');
+  const [editLineQty, setEditLineQty] = useState('1');
+  const [editLineDiscount, setEditLineDiscount] = useState('0');
+
   // New quotation states
   const [newCustomer, setNewCustomer] = useState('C03');
   const [newTerms, setNewTerms] = useState<'NET14' | 'NET30' | 'TUNAI'>('NET14');
   const [newSku, setNewSku] = useState('AP-DR-BLU-M');
+  const [newUnitPrice, setNewUnitPrice] = useState('450000');
   const [newQty, setNewQty] = useState(2);
   const [newDiscount, setNewDiscount] = useState(0);
 
@@ -51,8 +54,8 @@ export const SalesModule: React.FC = () => {
   const handleCreateNewQuotation = (e: React.FormEvent) => {
     e.preventDefault();
     const prod = products.find((p) => p.sku === newSku);
-    const unitPrice = prod?.sales_price_idr || 150000;
-    const subtotal = newQty * unitPrice * (1 - newDiscount / 100);
+    const unitPrice = Number(newUnitPrice.replace(/\D/g, '')) || prod?.sales_price_idr || 150000;
+    const subtotal = Math.round(newQty * unitPrice * (1 - newDiscount / 100));
     const tax = Math.round(subtotal * 0.11);
     const total = subtotal + tax;
 
@@ -111,18 +114,11 @@ export const SalesModule: React.FC = () => {
     confirmSalesOrder(currentOrder.order_id);
   };
 
-  const handleTestPriceModification = () => {
-    if (!currentOrder) return;
-    attemptModifyConfirmedSOPrice(currentOrder.order_id, 120000);
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-05"
-        flowHint="S-05 Buat penawaran harga / SO ➔ S-06 Delivery Order"
         title="Quotation / Sales Order Form"
-        subtitle="Pesanan Penjualan, Validasi Kredit (SR-10), Diskon & Penguncian Harga (SR-08), Reservasi Stok (SR-04)"
+        subtitle="Pesanan Penjualan, Validasi Kredit, Diskon & Penguncian Harga, serta Reservasi Stok"
         onCreateNew={() => setShowCreateModal(true)}
         createButtonLabel="Buat Penawaran / SO Baru"
         extraActions={
@@ -162,36 +158,25 @@ export const SalesModule: React.FC = () => {
                     className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
                   >
                     <Check className="w-3.5 h-3.5 text-[#54745B]" />
-                    <span>Confirm Order (SR-01, SR-10)</span>
+                    <span>Confirm Order</span>
                   </button>
                 )}
 
                 {currentOrder.status === 'confirmed' && (
-                  <>
-                    <button
-                      onClick={() => {
-                        const d = createDeliveryOrderForSO(currentOrder.order_id);
-                        if (d) {
-                          setActiveApp('inventory');
-                          setActiveView('delivery_orders');
-                          addNotification('success', `Delivery Order ${d.delivery_id} dibuat.`);
-                        }
-                      }}
-                      className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Truck className="w-3.5 h-3.5" />
-                      <span>Create Delivery Order (F-08)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestPriceModification}
-                      className="px-3 py-1.5 bg-white border border-[#B94B4B] text-[#B94B4B] hover:bg-red-50 text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Penolakan Ubah Harga Confirmed (T-11)"
-                    >
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Uji Coba Ubah Harga (T-11)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={() => {
+                      const d = createDeliveryOrderForSO(currentOrder.order_id);
+                      if (d) {
+                        setActiveApp('inventory');
+                        setActiveView('delivery_orders');
+                        addNotification('success', `Delivery Order ${d.delivery_id} dibuat.`);
+                      }
+                    }}
+                    className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>Create Delivery Order</span>
+                  </button>
                 )}
               </div>
             }
@@ -291,32 +276,118 @@ export const SalesModule: React.FC = () => {
                         <th className="py-2.5 px-3 text-right">Diskon %</th>
                         <th className="py-2.5 px-4 text-right">PPN (11%)</th>
                         <th className="py-2.5 px-4 text-right">Subtotal</th>
+                        {!currentOrder.is_locked && currentOrder.status !== 'confirmed' && currentOrder.status !== 'done' && (
+                          <th className="py-2.5 px-3 text-center">Edit Harga</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E7E3DD]">
-                      {currentOrder.lines.map((line) => (
-                        <tr key={line.id}>
-                          <td className="py-3 px-4 font-mono font-bold text-[#C18B42]">{line.sku}</td>
-                          <td className="py-3 px-4 font-medium text-[#171717]">{line.product_name}</td>
-                          <td className="py-3 px-3">{line.size}</td>
-                          <td className="py-3 px-3 text-[#8C8983]">{line.color}</td>
-                          <td className="py-3 px-3 text-right font-mono font-bold">{line.quantity}</td>
-                          <td className="py-3 px-4 text-right font-mono">Rp{line.unit_price.toLocaleString()}</td>
-                          <td className="py-3 px-3 text-right font-mono font-semibold">
-                            {line.discount_pct > 0 ? (
-                              <span className="text-[#C18B42] font-bold">{line.discount_pct}%</span>
-                            ) : (
-                              '0%'
+                      {currentOrder.lines.map((line) => {
+                        const isEditable =
+                          !currentOrder.is_locked &&
+                          currentOrder.status !== 'confirmed' &&
+                          currentOrder.status !== 'done';
+                        const isEditing = isEditable && editingLineId === line.id;
+
+                        return (
+                          <tr key={line.id}>
+                            <td className="py-3 px-4 font-mono font-bold text-[#C18B42]">{line.sku}</td>
+                            <td className="py-3 px-4 font-medium text-[#171717]">{line.product_name}</td>
+                            <td className="py-3 px-3">{line.size}</td>
+                            <td className="py-3 px-3 text-[#8C8983]">{line.color}</td>
+                            <td className="py-3 px-3 text-right font-mono font-bold">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={editLineQty}
+                                  onChange={(e) => setEditLineQty(e.target.value)}
+                                  className="w-16 px-2 py-1 text-right bg-[#F5F0E8] border border-[#171717] rounded font-mono"
+                                />
+                              ) : (
+                                line.quantity
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono">
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={editLinePrice}
+                                  onChange={(e) => setEditLinePrice(e.target.value.replace(/\D/g, ''))}
+                                  className="w-28 px-2 py-1 text-right bg-[#F5F0E8] border border-[#171717] rounded font-mono"
+                                />
+                              ) : (
+                                `Rp${line.unit_price.toLocaleString()}`
+                              )}
+                            </td>
+                            <td className="py-3 px-3 text-right font-mono font-semibold">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  value={editLineDiscount}
+                                  onChange={(e) => setEditLineDiscount(e.target.value)}
+                                  className="w-14 px-2 py-1 text-right bg-[#F5F0E8] border border-[#171717] rounded font-mono"
+                                />
+                              ) : line.discount_pct > 0 ? (
+                                <span className="text-[#C18B42] font-bold">{line.discount_pct}%</span>
+                              ) : (
+                                '0%'
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono text-[#8C8983]">
+                              Rp{line.tax_amount.toLocaleString()}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono font-bold text-[#171717]">
+                              Rp{line.total.toLocaleString()}
+                            </td>
+                            {isEditable && (
+                              <td className="py-3 px-3 text-center whitespace-nowrap">
+                                {isEditing ? (
+                                  <div className="inline-flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        updateSalesOrderLine(currentOrder.order_id, line.id, {
+                                          unit_price: Number(editLinePrice.replace(/\D/g, '')) || 0,
+                                          quantity: Math.max(1, Number(editLineQty) || 1),
+                                          discount_pct: Math.min(100, Math.max(0, Number(editLineDiscount) || 0)),
+                                        });
+                                        setEditingLineId(null);
+                                      }}
+                                      className="px-2 py-1 bg-[#171717] text-white rounded text-[11px] font-semibold"
+                                    >
+                                      Simpan
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingLineId(null)}
+                                      className="px-2 py-1 bg-[#F5F0E8] text-[#171717] border border-[#E7E3DD] rounded text-[11px]"
+                                    >
+                                      Batal
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingLineId(line.id);
+                                      setEditLinePrice(String(line.unit_price));
+                                      setEditLineQty(String(line.quantity));
+                                      setEditLineDiscount(String(line.discount_pct));
+                                    }}
+                                    className="px-2 py-1 bg-[#F5F0E8] hover:bg-[#EAE5DC] border border-[#E7E3DD] rounded text-[11px] font-semibold text-[#171717] inline-flex items-center gap-1"
+                                  >
+                                    <Pencil className="w-3 h-3 text-[#C18B42]" />
+                                    <span>Edit</span>
+                                  </button>
+                                )}
+                              </td>
                             )}
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono text-[#8C8983]">
-                            Rp{line.tax_amount.toLocaleString()}
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-[#171717]">
-                            Rp{line.total.toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -375,7 +446,7 @@ export const SalesModule: React.FC = () => {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-[#FFFEFC] rounded-2xl max-w-lg w-full border border-[#E7E3DD] shadow-2xl p-6 text-[#171717]">
-            <h3 className="font-bold text-base mb-4">Buat Quotation Baru (F-05, F-06)</h3>
+            <h3 className="font-bold text-base mb-4">Buat Quotation Baru</h3>
             <form onSubmit={handleCreateNewQuotation} className="space-y-4 text-xs">
               <div>
                 <label className="block text-[#8C8983] mb-1">Pelanggan</label>
@@ -409,7 +480,12 @@ export const SalesModule: React.FC = () => {
                 <label className="block text-[#8C8983] mb-1">SKU Produk Varian</label>
                 <select
                   value={newSku}
-                  onChange={(e) => setNewSku(e.target.value)}
+                  onChange={(e) => {
+                    const selected = e.target.value;
+                    setNewSku(selected);
+                    const p = products.find((item) => item.sku === selected);
+                    if (p) setNewUnitPrice(String(p.sales_price_idr));
+                  }}
                   className="w-full bg-[#F5F0E8] p-2.5 rounded-lg border border-[#E7E3DD] font-mono"
                 >
                   {products.map((p) => (
@@ -420,7 +496,16 @@ export const SalesModule: React.FC = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[#8C8983] mb-1">Harga Satuan (Rp)</label>
+                  <input
+                    type="text"
+                    value={newUnitPrice}
+                    onChange={(e) => setNewUnitPrice(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-[#F5F0E8] p-2.5 rounded-lg border border-[#E7E3DD] font-mono"
+                  />
+                </div>
                 <div>
                   <label className="block text-[#8C8983] mb-1">Kuantitas</label>
                   <input
@@ -432,7 +517,7 @@ export const SalesModule: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[#8C8983] mb-1">Diskon % (SR-08: &gt;10% perlu Manajer)</label>
+                  <label className="block text-[#8C8983] mb-1">Diskon %</label>
                   <input
                     type="number"
                     min="0"

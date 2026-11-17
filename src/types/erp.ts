@@ -398,17 +398,3 @@ export interface AuditLog {
   description: string;
   result: 'SUCCESS' | 'DENIED' | 'BLOCKED' | 'VALIDATION_FAILED';
 }
-
-export interface TestScenario {
-  test_id: string;
-  title: string;
-  category: string;
-  feature_id: string;
-  rule_id: string;
-  situation: string;
-  expected: string;
-  required_evidence: string;
-  status?: 'not_run' | 'passed' | 'failed';
-  actual_result?: string;
-  evidence_doc?: string;
-}

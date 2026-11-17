@@ -10,11 +10,9 @@ export const VendorBillModule: React.FC = () => {
   const {
     vendorBills,
     postVendorBill,
-    createVendorBillFromReceipt,
     registerVendorPayment,
     setActiveApp,
     setActiveView,
-    addNotification,
   } = useERP();
 
   const [selectedBillId, setSelectedBillId] = useState<string>(
@@ -29,23 +27,11 @@ export const VendorBillModule: React.FC = () => {
     postVendorBill(currentBill.bill_id);
   };
 
-  const handleTestT23OverBilling = () => {
-    // Try to bill 4 hoodies when only 3 accepted (T-23)
-    createVendorBillFromReceipt('WH/IN/00007', 4);
-  };
-
-  const handlePayBillFull = () => {
-    if (!currentBill) return;
-    registerVendorPayment(currentBill.bill_id, currentBill.residual, 'bank');
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-11"
-        flowHint="S-11 Catat tagihan vendor (Three-Way Match) ➔ S-12 Register Payment"
         title="Vendor Bill Form"
-        subtitle="Pencocokan Tiga Arah (Three-Way Matching PO - Receipt - Bill) & Pengakuan Utang Dagang (SR-06)"
+        subtitle="Pencocokan Tiga Arah (Three-Way Matching PO - Receipt - Bill) & Pengakuan Utang Dagang"
         extraActions={
           vendorBills.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs">
@@ -79,31 +65,23 @@ export const VendorBillModule: React.FC = () => {
             actionButtons={
               <div className="flex items-center gap-2">
                 {currentBill.status === 'draft' ? (
-                  <>
-                    <button
-                      onClick={handlePostBill}
-                      className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Post Vendor Bill (T-22)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestT23OverBilling}
-                      className="px-3 py-1.5 bg-white border border-[#B94B4B] text-[#B94B4B] hover:bg-red-50 text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Penolakan Tagih 4 Unit Diterima 3 (T-23)"
-                    >
-                      <AlertOctagon className="w-3.5 h-3.5" />
-                      <span>Uji Tagih 4 Unit (T-23)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={handlePostBill}
+                    className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Post Vendor Bill</span>
+                  </button>
                 ) : currentBill.status !== 'paid' ? (
                   <button
-                    onClick={handlePayBillFull}
+                    onClick={() => {
+                      if (!currentBill) return;
+                      registerVendorPayment(currentBill.bill_id, currentBill.residual, 'bank');
+                    }}
                     className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
                   >
                     <CreditCard className="w-3.5 h-3.5 text-[#C18B42]" />
-                    <span>Bayar Utang via Bank Mandiri (T-36)</span>
+                    <span>Bayar Utang via Bank Mandiri</span>
                   </button>
                 ) : (
                   <span className="text-xs font-semibold text-[#54745B] bg-[#54745B]/10 px-3 py-1 rounded-md border border-[#54745B]/20">
@@ -253,7 +231,7 @@ export const VendorBillModule: React.FC = () => {
         </>
       ) : (
         <div className="p-12 text-center text-xs text-[#8C8983]">
-          Belum ada Vendor Bill. Lakukan validasi Quality Acceptance pada Receipt terlebih dahulu (SR-06).
+          Belum ada Vendor Bill. Lakukan validasi Quality Acceptance pada Receipt terlebih dahulu.
         </div>
       )}
     </div>

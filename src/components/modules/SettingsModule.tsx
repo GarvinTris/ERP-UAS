@@ -37,7 +37,7 @@ export const SettingsModule: React.FC = () => {
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
         title="Settings & Configuration"
-        subtitle="Profil Perusahaan, Matriks Peran & Hak Akses (RBAC SR-16), dan Penomoran Dokumen Otomatis"
+        subtitle="Profil Perusahaan, Matriks Peran & Hak Akses (RBAC), dan Penomoran Dokumen Otomatis"
       />
 
       <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
@@ -60,7 +60,7 @@ export const SettingsModule: React.FC = () => {
               <div className="text-[#171717]">Toko Retail Bandung (STORE-BDG)</div>
             </div>
             <div>
-              <label className="text-[#8C8983] block mb-1">Mata Uang & Pajak Simulasi</label>
+              <label className="text-[#8C8983] block mb-1">Mata Uang & Pajak</label>
               <div className="font-mono font-bold text-[#171717]">Indonesian Rupiah (IDR/Rp)</div>
               <div className="font-mono text-[#54745B] mt-0.5">PPN Efektif 11% (12% × 11/12)</div>
             </div>
@@ -73,7 +73,7 @@ export const SettingsModule: React.FC = () => {
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-[#171717]" />
               <div>
-                <h3 className="font-bold text-base text-[#171717]">Matriks Hak Akses Peran (RBAC - SR-16)</h3>
+                <h3 className="font-bold text-base text-[#171717]">Matriks Hak Akses Peran (RBAC)</h3>
                 <p className="text-xs text-[#8C8983]">Pemberian izin minimal sesuai tanggung jawab fungsional</p>
               </div>
             </div>
@@ -113,7 +113,7 @@ export const SettingsModule: React.FC = () => {
         <div className="bg-[#FFFEFC] rounded-xl border border-[#E7E3DD] shadow-2xs p-6">
           <div className="flex items-center gap-2 mb-4 border-b border-[#E7E3DD] pb-3">
             <Hash className="w-5 h-5 text-[#C18B42]" />
-            <h3 className="font-bold text-base text-[#171717]">Penomoran Dokumen Otomatis & Unik (SR-15)</h3>
+            <h3 className="font-bold text-base text-[#171717]">Penomoran Dokumen Otomatis & Unik</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">

@@ -38,6 +38,7 @@ export const AppSwitcher: React.FC = () => {
     stock,
     salesOrders,
     leads,
+    products,
   } = useERP();
 
   const totalReserved = stock.reduce((sum, s) => sum + s.reserved, 0);
@@ -112,9 +113,9 @@ export const AppSwitcher: React.FC = () => {
     {
       id: 'products',
       name: 'Products',
-      description: '15 SKU varian fashion (ukuran & warna unik), harga & biaya',
+      description: `${products.length} SKU varian fashion (ukuran & warna unik), harga & biaya`,
       icon: Shirt,
-      badge: '15 Varian',
+      badge: `${products.length} Varian`,
       category: 'Master Data',
     },
     {
@@ -147,12 +148,12 @@ export const AppSwitcher: React.FC = () => {
         'ACCESS_APP',
         appId.toUpperCase(),
         'NAVIGATION',
-        `Akses modul ${appId} ditolak untuk role ${currentUser?.role} (SR-16).`,
+        `Akses modul ${appId} ditolak untuk role ${currentUser?.role}.`,
         'DENIED'
       );
       addNotification(
         'error',
-        `Akses Ditolak: Role "${currentUser?.roleName}" tidak memiliki izin untuk modul ${appId} (SR-16)!`
+        `Akses Ditolak: Role "${currentUser?.roleName}" tidak memiliki izin untuk modul ${appId}!`
       );
       return;
     }
@@ -167,9 +168,9 @@ export const AppSwitcher: React.FC = () => {
       <div className="flex items-center justify-between border-b border-[#2A2A2A] pb-4 mb-8">
         <div>
           <div className="text-xs uppercase tracking-widest text-[#C18B42] font-semibold mb-1">
-            PT Rona Karsa Apparel · Odoo Web 17.0 Experience
+            PT Rona Karsa Apparel · Enterprise Workspace
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Beranda App Switcher (S-01)</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Beranda App Switcher</h1>
           <p className="text-xs text-[#8C8983] mt-0.5">
             Pilih aplikasi kerja. Hak akses dibatasi menurut peran aktif: <span className="text-[#FFFEFC] font-semibold">{currentUser?.name} ({currentUser?.roleName})</span>
           </p>
@@ -235,11 +236,8 @@ export const AppSwitcher: React.FC = () => {
       {/* Role explanation footer */}
       <div className="max-w-6xl mx-auto w-full mt-10 p-4 rounded-xl bg-[#1E1E1E] border border-[#2E2E2E] text-xs text-[#8C8983] flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div>
-          <span className="text-white font-medium">SR-16 Role Access Matrix: </span>
+          <span className="text-white font-medium">Role Access Matrix: </span>
           <span>Sales (Sales, CRM, Contacts), Warehouse (Inventory, Products), Finance (Invoicing, Accounting), Cashier (POS), Procurement (Purchase), Owner (Semua).</span>
-        </div>
-        <div className="text-[11px] text-[#C18B42] font-mono">
-          Ref: Odoo 17.0 App Grid UX
         </div>
       </div>
     </div>

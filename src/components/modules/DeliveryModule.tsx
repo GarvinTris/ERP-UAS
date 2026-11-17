@@ -10,11 +10,9 @@ export const DeliveryModule: React.FC = () => {
   const {
     deliveryOrders,
     validateDeliveryOrder,
-    attemptInvalidDeliveryQty,
     createCustomerInvoiceFromDelivery,
     setActiveApp,
     setActiveView,
-    addNotification,
   } = useERP();
 
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>(
@@ -30,23 +28,11 @@ export const DeliveryModule: React.FC = () => {
     validateDeliveryOrder(currentDelivery.delivery_id, doneUnitsInput);
   };
 
-  const handleTestOverDelivery = () => {
-    if (!currentDelivery) return;
-    attemptInvalidDeliveryQty(currentDelivery.delivery_id, 4);
-  };
-
-  const handleTestIdempotentRepost = () => {
-    if (!currentDelivery) return;
-    validateDeliveryOrder(currentDelivery.delivery_id, 2);
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-06"
-        flowHint="S-06 Siapkan barang ➔ S-10 Customer Invoice Form (SR-02)"
         title="Delivery Order Form"
-        subtitle="Validasi Pengiriman Fisik, Backorder Parsial (F-08), dan Pengakuan HPP Otomatis (SR-04, SR-07)"
+        subtitle="Validasi Pengiriman Fisik, Backorder Parsial, dan Pengakuan HPP Otomatis"
         extraActions={
           deliveryOrders.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs">
@@ -79,49 +65,27 @@ export const DeliveryModule: React.FC = () => {
             actionButtons={
               <div className="flex items-center gap-2">
                 {currentDelivery.status !== 'done' ? (
-                  <>
-                    <button
-                      onClick={handleValidateDelivery}
-                      className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Validate Delivery ({doneUnitsInput} Units)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestOverDelivery}
-                      className="px-3 py-1.5 bg-white border border-[#B94B4B] text-[#B94B4B] hover:bg-red-50 text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Kirim 4 Unit pada Pesanan 3 Unit (T-13)"
-                    >
-                      <AlertOctagon className="w-3.5 h-3.5" />
-                      <span>Uji Coba Kirim 4 Unit (T-13)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={handleValidateDelivery}
+                    className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Validate Delivery ({doneUnitsInput} Units)</span>
+                  </button>
                 ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        const res = createCustomerInvoiceFromDelivery(currentDelivery.delivery_id);
-                        if (res.success) {
-                          setActiveApp('invoicing');
-                          setActiveView('invoices');
-                        }
-                      }}
-                      className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Receipt className="w-3.5 h-3.5 text-[#C18B42]" />
-                      <span>Create Customer Invoice (F-09)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestIdempotentRepost}
-                      className="px-3 py-1.5 bg-white border border-[#8C8983] text-[#171717] hover:bg-[#F5F0E8] text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Posting Ulang Ganda / Idempotensi (T-27)"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Uji Posting Ulang (T-27)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={() => {
+                      const res = createCustomerInvoiceFromDelivery(currentDelivery.delivery_id);
+                      if (res.success) {
+                        setActiveApp('invoicing');
+                        setActiveView('invoices');
+                      }
+                    }}
+                    className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Receipt className="w-3.5 h-3.5 text-[#C18B42]" />
+                    <span>Create Customer Invoice</span>
+                  </button>
                 )}
               </div>
             }
@@ -229,12 +193,12 @@ export const DeliveryModule: React.FC = () => {
 
               {/* Rules banner */}
               <div className="p-4 rounded-xl bg-[#F5F0E8] border border-[#E7E3DD] text-xs text-[#171717] space-y-1">
-                <div className="font-semibold text-[#171717]">Aturan Validasi Pengiriman (SR-04 & SR-07):</div>
+                <div className="font-semibold text-[#171717]">Aturan Validasi Pengiriman:</div>
                 <ul className="list-disc pl-4 text-[#8C8983] space-y-0.5">
                   <li>Validasi pengiriman memotong stok fisik gudang (<code>on_hand</code>) dan reservasi.</li>
                   <li>Sistem otomatis membukukan Harga Pokok Penjualan (Dr 5000 HPP / Cr 1200 Persediaan).</li>
                   <li>Pengiriman parsial memisahkan sisa unit sebagai dokumen backorder yang tetap terhubung.</li>
-                  <li>Customer Invoice hanya boleh diterbitkan atas unit yang telah tervalidasi Done (SR-02).</li>
+                  <li>Customer Invoice hanya boleh diterbitkan atas unit yang telah tervalidasi Done.</li>
                 </ul>
               </div>
 

@@ -78,7 +78,7 @@ export const DashboardModule: React.FC = () => {
       'RESTRICTED_ACCESS_ATTEMPT',
       'DASHBOARD',
       metricName,
-      `Akun Cashier berusaha melihat ${metricName} perusahaan melalui dashboard. Akses dibatasi (SR-16).`,
+      `Akun Cashier berusaha melihat ${metricName} perusahaan melalui dashboard. Akses dibatasi.`,
       'DENIED'
     );
   };
@@ -86,10 +86,8 @@ export const DashboardModule: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-03 / S-16"
-        flowHint="S-03 Ringkasan bisnis ➔ S-16 Sales & Inventory Dashboard (Drill-down SR-14)"
         title="Business Overview · Sales & Inventory Dashboard"
-        subtitle="Business Overview, Indikator Finansial, Kontrol Hak Akses (SR-16) & Penelusuran Dokumen (SR-14)"
+        subtitle="Business Overview, Indikator Finansial, Kontrol Hak Akses & Penelusuran Dokumen"
         extraActions={
           <div className="flex items-center gap-2">
             <button
@@ -100,7 +98,7 @@ export const DashboardModule: React.FC = () => {
                   : 'bg-white border border-[#E7E3DD] text-[#8C8983] hover:text-[#171717]'
               }`}
             >
-              Filter Transaksi POS Saja (Uji T-32)
+              Filter Transaksi POS Saja
             </button>
             <button
               onClick={() => setChannelFilter('all')}
@@ -117,20 +115,19 @@ export const DashboardModule: React.FC = () => {
       />
 
       <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
-        {/* Role Notice for Cashier (T-33) */}
+        {/* Role Notice for Cashier */}
         {isCashier && (
           <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-[#C18B42]" />
               <span>
-                <strong>Mode Tampilan Kasir (Role Cashier):</strong> Berdasarkan aturan <strong>SR-16</strong>, metrik buku besar jurnal dan piutang global perusahaan disembunyikan.
+                <strong>Mode Tampilan Kasir (Role Cashier):</strong> Metrik buku besar jurnal dan piutang global perusahaan disembunyikan sesuai hak akses.
               </span>
             </div>
-            <span className="font-mono text-[10px] bg-amber-200 px-2 py-0.5 rounded">T-33 FILTER AKTIF</span>
           </div>
         )}
 
-        {/* 6 Primary KPI Cards matching S-16 Wireframe */}
+        {/* 6 Primary KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {/* 1. Net Sales */}
           <div
@@ -146,7 +143,6 @@ export const DashboardModule: React.FC = () => {
             </div>
             <div className="text-[11px] text-[#8C8983] mt-2 flex items-center justify-between">
               <span>Klik untuk drill-down dokumen</span>
-              <span className="text-[#C18B42] font-semibold">T-32: Rp240.000</span>
             </div>
           </div>
 
@@ -164,7 +160,6 @@ export const DashboardModule: React.FC = () => {
             </div>
             <div className="text-[11px] text-[#8C8983] mt-2 flex items-center justify-between">
               <span>Tarif formal 12% × DPP 11/12</span>
-              <span className="text-[#C18B42] font-semibold">T-32: Rp26.400</span>
             </div>
           </div>
 
@@ -182,7 +177,6 @@ export const DashboardModule: React.FC = () => {
             </div>
             <div className="text-[11px] text-[#8C8983] mt-2 flex items-center justify-between">
               <span>Net Sales + PPN</span>
-              <span className="text-[#C18B42] font-semibold">T-32: Rp266.400</span>
             </div>
           </div>
 
@@ -226,7 +220,7 @@ export const DashboardModule: React.FC = () => {
             {isCashier ? (
               <div className="text-sm font-semibold text-[#8C8983] mt-2 flex items-center gap-1.5">
                 <ShieldAlert className="w-4 h-4 text-[#B94B4B]" />
-                <span>Dibatasi untuk Kasir (SR-16)</span>
+                <span>Dibatasi untuk Kasir</span>
               </div>
             ) : (
               <div className="text-xl font-bold font-mono text-[#171717] group-hover:text-[#C18B42]">
@@ -252,23 +246,22 @@ export const DashboardModule: React.FC = () => {
             </div>
             <div className="text-[11px] text-[#8C8983] mt-2 flex items-center justify-between">
               <span>Total kuantitas barang fisik</span>
-              <span className="text-[#C18B42] font-semibold">T-32: 2 pcs</span>
             </div>
           </div>
         </div>
 
-        {/* Charts Section matching Storyboard S-03 & S-16 */}
+        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <SalesTrendChart title="Sales Trend" subtitle="Volume & nilai penjualan harian (Oct 5..30)" />
           <SalesByProductChart title="Sales by Product (Porsi Busana)" />
         </div>
 
-        {/* Recent Transactions Table matching S-03 Storyboard Sketch */}
+        {/* Recent Transactions Table */}
         <div className="bg-[#FFFEFC] rounded-xl border border-[#E7E3DD] shadow-2xs overflow-hidden">
           <div className="p-4 border-b border-[#E7E3DD] flex items-center justify-between">
             <div>
               <h4 className="font-bold text-xs uppercase text-[#171717] tracking-wider">
-                Recent Transactions (S-03)
+                Recent Transactions
               </h4>
               <p className="text-[11px] text-[#8C8983]">
                 Daftar transaksi penjualan & faktur terintegrasi terkini
@@ -405,7 +398,7 @@ export const DashboardModule: React.FC = () => {
             <div className="flex items-center justify-between border-b border-[#E7E3DD] pb-4 mb-4">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-[#C18B42]" />
-                <h3 className="font-bold text-base">Drill-Down Penelusuran Dokumen Sumber (SR-14)</h3>
+                <h3 className="font-bold text-base">Drill-Down Penelusuran Dokumen Sumber</h3>
               </div>
               <button onClick={() => setDrillDownType(null)} className="text-[#8C8983] hover:text-[#171717]">
                 <X className="w-5 h-5" />

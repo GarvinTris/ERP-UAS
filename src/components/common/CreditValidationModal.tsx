@@ -39,7 +39,7 @@ export const CreditValidationModal: React.FC<CreditValidationModalProps> = ({
           <div className="flex items-center gap-2.5">
             {isOverLimit ? <AlertOctagon className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
             <div>
-              <div className="font-mono text-[10px] uppercase font-bold tracking-wider">Business Rule SR-10</div>
+              <div className="font-mono text-[10px] uppercase font-bold tracking-wider">Validasi Batas Kredit</div>
               <h3 className="font-bold text-base leading-tight">
                 {isOverLimit ? 'Pemeriksaan Credit Limit Gagal' : 'Validasi Credit Limit Lolos'}
               </h3>
@@ -85,11 +85,11 @@ export const CreditValidationModal: React.FC<CreditValidationModalProps> = ({
           {/* Explanation message */}
           {isCashOnly ? (
             <div className="p-3 rounded-lg bg-[#B94B4B]/10 border border-[#B94B4B]/20 text-[#B94B4B]">
-              <strong>Aturan SR-10:</strong> Pelanggan <strong>TUNAI</strong> tanpa limit kredit tidak diizinkan melakukan transaksi pemesanan secara kredit/tempo.
+              <strong>Ketentuan Kredit:</strong> Pelanggan <strong>TUNAI</strong> tanpa limit kredit tidak diizinkan melakukan transaksi pemesanan secara kredit/tempo.
             </div>
           ) : isOverLimit ? (
             <div className="p-3 rounded-lg bg-[#B94B4B]/10 border border-[#B94B4B]/20 text-[#B94B4B]">
-              <strong>Aturan SR-10:</strong> Total eksposur kredit melebihi batas limit yang ditetapkan sebesar <strong>Rp{excess.toLocaleString()}</strong>. Konfirmasi pesanan kredit ditolak untuk melindungi arus kas perusahaan.
+              <strong>Ketentuan Kredit:</strong> Total eksposur kredit melebihi batas limit yang ditetapkan sebesar <strong>Rp{excess.toLocaleString()}</strong>. Konfirmasi pesanan kredit ditolak untuk melindungi arus kas perusahaan.
             </div>
           ) : (
             <div className="p-3 rounded-lg bg-[#54745B]/10 border border-[#54745B]/20 text-[#54745B]">

@@ -14,9 +14,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
-  ChevronRight,
   ChevronDown,
-  FolderOpen,
   ArrowRightLeft,
   Truck,
   RotateCcw,
@@ -38,127 +36,111 @@ export const Sidebar: React.FC = () => {
     addNotification,
   } = useERP();
 
-  // Primary Applications list matching storyboard sketch S-02 through S-16
   const apps: {
     id: AppModuleId;
     label: string;
-    screenCode: string;
     icon: React.ComponentType<{ className?: string }>;
     defaultView?: string;
-    subViews?: { id: string; label: string; screenCode?: string; icon: React.ComponentType<{ className?: string }> }[];
+    subViews?: { id: string; label: string; icon: React.ComponentType<{ className?: string }> }[];
   }[] = [
     {
       id: 'home',
       label: 'Home',
-      screenCode: 'S-02',
       icon: Home,
       defaultView: 'overview',
     },
     {
       id: 'dashboard',
       label: 'Dashboard',
-      screenCode: 'S-03',
       icon: LayoutDashboard,
       defaultView: 'overview',
     },
     {
       id: 'crm',
       label: 'CRM',
-      screenCode: 'S-04',
       icon: Users,
       defaultView: 'kanban',
     },
     {
       id: 'sales',
       label: 'Sales',
-      screenCode: 'S-05',
       icon: BadgeDollarSign,
       defaultView: 'quotations',
     },
     {
       id: 'pos',
       label: 'Point of sale',
-      screenCode: 'S-14',
       icon: ShoppingCart,
       defaultView: 'pos_checkout',
     },
     {
       id: 'purchase',
       label: 'Purchase',
-      screenCode: 'S-08',
       icon: Package,
       defaultView: 'po_list',
     },
     {
       id: 'inventory',
       label: 'Inventory',
-      screenCode: 'S-07',
       icon: Layers,
       defaultView: 'stock_overview',
       subViews: [
-        { id: 'stock_overview', label: 'Stock Overview', screenCode: 'S-07', icon: Layers },
-        { id: 'delivery_orders', label: 'Delivery Order', screenCode: 'S-06', icon: Truck },
-        { id: 'receipts', label: 'Quality Acceptance', screenCode: 'S-09', icon: Package },
-        { id: 'returns', label: 'Customer Returns', screenCode: 'S-15', icon: RotateCcw },
+        { id: 'stock_overview', label: 'Stock Overview', icon: Layers },
+        { id: 'delivery_orders', label: 'Delivery Order', icon: Truck },
+        { id: 'receipts', label: 'Quality Acceptance', icon: Package },
+        { id: 'returns', label: 'Customer Returns', icon: RotateCcw },
         { id: 'transfers', label: 'Internal Transfers', icon: ArrowRightLeft },
       ],
     },
     {
       id: 'accounting',
       label: 'Accounting',
-      screenCode: 'S-13',
       icon: BookOpen,
       defaultView: 'journals',
       subViews: [
-        { id: 'journals', label: 'Journal Entries', screenCode: 'S-13', icon: BookOpen },
-        { id: 'vendor_bills', label: 'Vendor Bill', screenCode: 'S-11', icon: Receipt },
-        { id: 'register_payment', label: 'Register Payment', screenCode: 'S-12', icon: CreditCard },
+        { id: 'journals', label: 'Journal Entries', icon: BookOpen },
+        { id: 'vendor_bills', label: 'Vendor Bill', icon: Receipt },
+        { id: 'register_payment', label: 'Register Payment', icon: CreditCard },
         { id: 'ledger', label: 'General Ledger', icon: FileText },
       ],
     },
     {
       id: 'invoicing',
       label: 'Invoicing',
-      screenCode: 'S-10',
       icon: Receipt,
       defaultView: 'invoices',
       subViews: [
-        { id: 'invoices', label: 'Customer Invoice', screenCode: 'S-10', icon: Receipt },
-        { id: 'credit_notes', label: 'Credit Note', screenCode: 'S-15', icon: RotateCcw },
+        { id: 'invoices', label: 'Customer Invoice', icon: Receipt },
+        { id: 'credit_notes', label: 'Credit Note', icon: RotateCcw },
       ],
     },
     {
       id: 'contacts',
       label: 'Contacts',
-      screenCode: 'S-02',
       icon: Contact,
       defaultView: 'all_contacts',
     },
     {
       id: 'products',
       label: 'Products',
-      screenCode: 'S-03',
       icon: Shirt,
       defaultView: 'variants',
     },
     {
       id: 'reporting',
       label: 'Reporting',
-      screenCode: 'S-16',
       icon: BarChart3,
       defaultView: 'sales_report',
     },
     {
       id: 'settings',
       label: 'Settings',
-      screenCode: 'CFG',
       icon: Settings,
       defaultView: 'company_profile',
     },
     {
       id: 'audit',
       label: 'Audit Log',
-      screenCode: 'LOG',
       icon: ShieldCheck,
       defaultView: 'audit_logs',
     },
@@ -167,7 +149,7 @@ export const Sidebar: React.FC = () => {
   const handleSelectApp = (appId: AppModuleId, defaultView?: string) => {
     const isAllowed = checkRoleAccess(appId);
     if (!isAllowed) {
-      addNotification('error', `Akses modul "${appId}" dibatasi untuk role ${currentUser?.roleName} (SR-16).`);
+      addNotification('error', `Akses modul "${appId}" dibatasi untuk role ${currentUser?.roleName}.`);
       return;
     }
     setActiveApp(appId);
@@ -179,19 +161,14 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className="w-60 bg-[#1E1E1E] text-[#D5CEBF] flex flex-col border-r border-[#2A2A2A] shrink-0 select-none hidden md:flex">
       {/* Brand & Workspace Title Banner */}
-      <div className="px-4 py-3 border-b border-[#2A2A2A] bg-[#171717] flex items-center justify-between">
-        <div>
-          <div className="text-[10px] uppercase font-mono tracking-widest text-[#C18B42]">
-            PT Rona Karsa
-          </div>
-          <div className="text-xs font-bold text-white mt-0.5">Fashion Apparel ERP</div>
+      <div className="px-4 py-3 border-b border-[#2A2A2A] bg-[#171717]">
+        <div className="text-[10px] uppercase font-mono tracking-widest text-[#C18B42]">
+          PT Rona Karsa
         </div>
-        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#242424] text-[#A6A29A] border border-[#333333]">
-          v17.0
-        </span>
+        <div className="text-xs font-bold text-white mt-0.5">Fashion Apparel ERP</div>
       </div>
 
-      {/* Main Apps List matching Storyboard Sidebar */}
+      {/* Main Apps List */}
       <div className="p-2 space-y-0.5 flex-1 overflow-y-auto">
         {apps.map((app) => {
           const Icon = app.icon;
@@ -225,19 +202,7 @@ export const Sidebar: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  {!isAllowed ? (
-                    <Lock className="w-3 h-3 text-[#B94B4B]" />
-                  ) : (
-                    <span
-                      className={`text-[9px] font-mono px-1 py-0.2 rounded ${
-                        isSelected
-                          ? 'bg-[#C18B42] text-black font-bold'
-                          : 'bg-[#292929] text-[#8C8983] group-hover:text-[#D5CEBF]'
-                      }`}
-                    >
-                      {app.screenCode}
-                    </span>
-                  )}
+                  {!isAllowed && <Lock className="w-3 h-3 text-[#B94B4B]" />}
                   {app.subViews && isSelected && (
                     <ChevronDown className="w-3 h-3 text-[#C18B42]" />
                   )}
@@ -270,11 +235,6 @@ export const Sidebar: React.FC = () => {
                           />
                           <span className="truncate">{sub.label}</span>
                         </div>
-                        {sub.screenCode && (
-                          <span className="text-[8.5px] font-mono text-[#8C8983]">
-                            {sub.screenCode}
-                          </span>
-                        )}
                       </button>
                     );
                   })}

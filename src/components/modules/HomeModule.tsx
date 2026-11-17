@@ -14,15 +14,13 @@ import {
   Settings,
   ShieldCheck,
   Lock,
-  Sparkles,
   ArrowRight,
-  Eye,
 } from 'lucide-react';
 import { useERP } from '../../context/ERPContext';
 import { AppModuleId } from '../../types/erp';
 
-export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpenStoryboard }) => {
-  const { currentUser, setActiveApp, setActiveView, checkRoleAccess, logAudit, addNotification } = useERP();
+export const HomeModule: React.FC = () => {
+  const { currentUser, setActiveApp, checkRoleAccess, logAudit, addNotification, products } = useERP();
 
   const appCards = [
     {
@@ -30,6 +28,7 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Dashboard',
       subtitle: 'Overview & KPI',
       icon: LayoutDashboard,
+      accent: 'text-[#1D4ED8] bg-[#1D4ED8]/10',
       desc: 'Ringkasan penjualan, PPN 11%, nilai persediaan, AR/AP, dan tren performa.',
     },
     {
@@ -37,6 +36,7 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'CRM',
       subtitle: 'Leads & Opportunity',
       icon: Users,
+      accent: 'text-[#B45309] bg-[#B45309]/10',
       desc: 'Pipeline penjualan bergaya Kanban dari kontak awal hingga siap penawaran.',
     },
     {
@@ -44,13 +44,15 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Sales',
       subtitle: 'Quotation & Orders',
       icon: BadgeDollarSign,
-      desc: 'Penawaran harga, validasi kredit (SR-10), approval diskon, & konfirmasi pesanan.',
+      accent: 'text-[#15803D] bg-[#15803D]/10',
+      desc: 'Penawaran harga, validasi kredit, approval diskon, & konfirmasi pesanan.',
     },
     {
       id: 'pos' as AppModuleId,
       title: 'Point of Sale',
       subtitle: 'Retail Store',
       icon: ShoppingCart,
+      accent: 'text-[#7C3AED] bg-[#7C3AED]/10',
       desc: 'Kasir toko retail Bandung (STORE-BDG), katalog produk, & cetak struk thermal.',
     },
     {
@@ -58,13 +60,15 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Purchase',
       subtitle: 'RFQ & PO',
       icon: Package,
-      desc: 'Permintaan penawaran, Purchase Order ke vendor, & Three-Way Matching (SR-06).',
+      accent: 'text-[#0F766E] bg-[#0F766E]/10',
+      desc: 'Permintaan penawaran, Purchase Order ke vendor, & Three-Way Matching.',
     },
     {
       id: 'inventory' as AppModuleId,
       title: 'Inventory',
       subtitle: 'Stock & Logistics',
       icon: Layers,
+      accent: 'text-[#C2410C] bg-[#C2410C]/10',
       desc: 'Posisi stok fisik multi-lokasi (WH-JKT & STORE-BDG), Delivery Order, QA, & transfer.',
     },
     {
@@ -72,13 +76,15 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Invoicing',
       subtitle: 'Customer & Vendor',
       icon: Receipt,
-      desc: 'Faktur penjualan berbasis unit terkirim (SR-02) & pencatatan piutang.',
+      accent: 'text-[#0369A1] bg-[#0369A1]/10',
+      desc: 'Faktur penjualan berbasis unit terkirim & pencatatan piutang.',
     },
     {
       id: 'accounting' as AppModuleId,
       title: 'Accounting',
       subtitle: 'Journal & Ledger',
       icon: BookOpen,
+      accent: 'text-[#4338CA] bg-[#4338CA]/10',
       desc: 'Buku besar, jurnal umum berpasangan seimbang (Debit == Kredit), & pembayaran.',
     },
     {
@@ -86,6 +92,7 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Contacts',
       subtitle: 'Customer & Vendor',
       icon: Contact,
+      accent: 'text-[#B45309] bg-[#B45309]/10',
       desc: 'Master data pelanggan B2B/ritel, batas kredit, termin, & pemasok.',
     },
     {
@@ -93,13 +100,15 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Products',
       subtitle: 'Product & Variants',
       icon: Shirt,
-      desc: 'Katalog 15 SKU varian fashion dengan atribut ukuran & warna unik (SR-11).',
+      accent: 'text-[#BE185D] bg-[#BE185D]/10',
+      desc: `Katalog ${products.length} SKU varian fashion dengan atribut ukuran, warna, & harga.`,
     },
     {
       id: 'reporting' as AppModuleId,
       title: 'Reporting',
       subtitle: 'Reports & Analytics',
       icon: BarChart3,
+      accent: 'text-[#15803D] bg-[#15803D]/10',
       desc: 'Laporan keuangan, evaluasi perpajakan PPN, perputaran stok, dan penjualan.',
     },
     {
@@ -107,6 +116,7 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Settings',
       subtitle: 'Configuration',
       icon: Settings,
+      accent: 'text-[#525252] bg-[#525252]/10',
       desc: 'Konfigurasi profil perusahaan, matriks hak akses RBAC, & sequence dokumen.',
     },
     {
@@ -114,6 +124,7 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
       title: 'Audit Log',
       subtitle: 'Trail & Security',
       icon: ShieldCheck,
+      accent: 'text-[#374151] bg-[#374151]/10',
       desc: 'Perekaman seluruh aktivitas sistem, aktor, waktu, dokumen, & pencegahan posting ganda.',
     },
   ];
@@ -121,7 +132,7 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
   const handleLaunch = (appId: AppModuleId) => {
     const isAllowed = checkRoleAccess(appId);
     if (!isAllowed) {
-      logAudit('ACCESS_APP', appId.toUpperCase(), 'HOME', `Akses modul ${appId} ditolak untuk role ${currentUser?.role} (SR-16).`, 'DENIED');
+      logAudit('ACCESS_APP', appId.toUpperCase(), 'HOME', `Akses modul ${appId} ditolak untuk role ${currentUser?.role}.`, 'DENIED');
       addNotification('error', `Akses Ditolak: Role "${currentUser?.roleName}" tidak memiliki hak akses modul ${appId}!`);
       return;
     }
@@ -130,42 +141,31 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
 
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
-      {/* Top Welcome Banner matching S-02 Sketch */}
-      <div className="bg-[#FFFEFC] border-b border-[#E7E3DD] px-8 py-8 shadow-2xs">
+      {/* Top Welcome Banner */}
+      <div className="bg-[#FFFEFC] border-b border-[#E7E3DD] px-8 py-7">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-[#C18B42] mb-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>S-02. App Switcher / Home</span>
+            <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#C18B42] mb-1">
+              Workspace Home
             </div>
             <h1 className="text-3xl font-bold text-[#171717] tracking-tight">
-              Welcome back, {currentUser?.name || 'Admin'}
+              Selamat datang, {currentUser?.name || 'Admin'}
             </h1>
             <p className="text-sm text-[#8C8983] mt-1">
-              PT Rona Karsa Apparel · Enterprise Workspace ({currentUser?.roleName})
+              PT Rona Karsa Apparel · {currentUser?.roleName}
             </p>
           </div>
-
-          {onOpenStoryboard && (
-            <button
-              onClick={onOpenStoryboard}
-              className="px-4 py-2.5 bg-[#171717] hover:bg-[#282828] text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-sm"
-            >
-              <Eye className="w-4 h-4 text-[#C18B42]" />
-              <span>Lihat Sketsa Wireframe Storyboard (S-01 s/d S-16)</span>
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Main Grid matching S-02 Wireframe Sketch */}
+      {/* Main Odoo App Grid */}
       <div className="p-8 max-w-6xl mx-auto w-full">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-lg font-bold text-[#171717]">Business Applications</h2>
-            <p className="text-xs text-[#8C8983]">Pilih modul yang berwenang untuk mulai bekerja</p>
+            <h2 className="text-lg font-bold text-[#171717]">Aplikasi Bisnis</h2>
+            <p className="text-xs text-[#8C8983]">Pilih modul untuk mulai bekerja</p>
           </div>
-          <span className="text-xs font-mono text-[#8C8983] bg-white px-2.5 py-1 rounded-md border border-[#E7E3DD]">
+          <span className="text-xs font-mono text-[#8C8983]">
             13 Modul Terintegrasi
           </span>
         </div>
@@ -180,9 +180,9 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
                 key={app.id}
                 type="button"
                 onClick={() => handleLaunch(app.id)}
-                className={`p-5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between h-44 group ${
+                className={`p-5 rounded-xl border text-left transition-colors flex flex-col justify-between h-44 group ${
                   isAllowed
-                    ? 'bg-[#FFFEFC] hover:bg-white border-[#E7E3DD] hover:border-[#171717] shadow-2xs hover:shadow-md'
+                    ? 'bg-[#FFFEFC] hover:bg-white border-[#E7E3DD] hover:border-[#171717]'
                     : 'bg-[#EAE5DC]/60 border-[#D5CEBF] opacity-60 cursor-not-allowed'
                 }`}
               >
@@ -190,7 +190,7 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
                   <div
                     className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
                       isAllowed
-                        ? 'bg-[#F5F0E8] group-hover:bg-[#171717] group-hover:text-white text-[#171717]'
+                        ? `${app.accent} group-hover:bg-[#171717] group-hover:text-white`
                         : 'bg-[#D5CEBF] text-[#8C8983]'
                     }`}
                   >
@@ -198,11 +198,11 @@ export const HomeModule: React.FC<{ onOpenStoryboard?: () => void }> = ({ onOpen
                   </div>
 
                   {!isAllowed ? (
-                    <span className="flex items-center gap-1 text-[10px] text-[#B94B4B] bg-red-50 border border-red-200 px-2 py-0.5 rounded-full font-medium">
-                      <Lock className="w-2.5 h-2.5" /> Terbatas
+                    <span className="flex items-center gap-1 text-[11px] text-[#B94B4B] font-medium">
+                      <Lock className="w-3 h-3" /> Terbatas
                     </span>
                   ) : (
-                    <span className="text-[10px] font-mono font-semibold text-[#8C8983] group-hover:text-[#C18B42] flex items-center gap-0.5">
+                    <span className="text-[11px] font-medium text-[#8C8983] group-hover:text-[#C18B42] flex items-center gap-0.5">
                       Buka <ArrowRight className="w-3 h-3 inline transition-transform group-hover:translate-x-0.5" />
                     </span>
                   )}

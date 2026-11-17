@@ -55,10 +55,8 @@ export const InventoryModule: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-07"
-        flowHint="S-07 Pantau stok & transfer antarlokasi (WH-JKT ➔ STORE-BDG)"
         title="Stock Overview & Transfers"
-        subtitle="Saldo Fisik (On Hand), Reservasi, Tersedia, dan Transfer Lintas Lokasi (SR-04, SR-12)"
+        subtitle="Saldo Fisik (On Hand), Reservasi, Tersedia, dan Transfer Lintas Lokasi"
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         extraActions={
@@ -130,7 +128,7 @@ export const InventoryModule: React.FC = () => {
               </div>
               <div>
                 <div className="text-[10px] font-mono text-[#C18B42] uppercase tracking-wider font-semibold">
-                  Validasi Fixture T-14 (SR-04, SR-11)
+                  Monitor Reservasi Stok Aktif
                 </div>
                 <div className="text-sm font-bold text-white">
                   Stok AP-TS-BLK-M di WH-JKT (Gudang Jakarta)
@@ -248,7 +246,7 @@ export const InventoryModule: React.FC = () => {
             <div className="bg-[#FFFEFC] rounded-xl border border-[#E7E3DD] shadow-xs p-6 md:col-span-1">
               <div className="flex items-center gap-2 mb-4 border-b border-[#E7E3DD] pb-3">
                 <ArrowRightLeft className="w-4 h-4 text-[#C18B42]" />
-                <h3 className="font-bold text-sm text-[#171717]">Transfer Antar Lokasi (SR-12)</h3>
+                <h3 className="font-bold text-sm text-[#171717]">Transfer Antar Lokasi</h3>
               </div>
 
               <form onSubmit={handleExecuteTransfer} className="space-y-4 text-xs">
@@ -304,7 +302,7 @@ export const InventoryModule: React.FC = () => {
                 </div>
 
                 <div className="p-3 rounded-lg bg-[#F5F0E8] text-[11px] text-[#8C8983] space-y-1">
-                  <div><strong>Kaidah SR-12:</strong></div>
+                  <div><strong>Ketentuan Transfer:</strong></div>
                   <div>- Mengurangi lokasi asal, menambah tujuan dengan jumlah sama.</div>
                   <div>- Total unit dan total nilai persediaan perusahaan tetap tidak berubah.</div>
                 </div>
@@ -314,7 +312,7 @@ export const InventoryModule: React.FC = () => {
                   className="w-full py-2.5 bg-[#171717] hover:bg-[#282828] text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
-                  <span>Validasi Transfer (T-15)</span>
+                  <span>Validasi Transfer</span>
                 </button>
               </form>
             </div>

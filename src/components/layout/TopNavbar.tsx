@@ -2,27 +2,18 @@ import React, { useState } from 'react';
 import {
   Grid,
   Search,
-  Bell,
   RefreshCw,
-  UserCheck,
   ChevronDown,
   Building2,
   LogOut,
-  ShieldAlert,
-  Eye,
 } from 'lucide-react';
 import { useERP } from '../../context/ERPContext';
-import { UserRole, AppModuleId } from '../../types/erp';
+import { AppModuleId } from '../../types/erp';
 
-interface TopNavbarProps {
-  onOpenStoryboard?: () => void;
-}
-
-export const TopNavbar: React.FC<TopNavbarProps> = () => {
+export const TopNavbar: React.FC = () => {
   const {
     currentUser,
     setCurrentUser,
-    switchRole,
     activeApp,
     setActiveApp,
     appSwitcherOpen,
@@ -31,20 +22,21 @@ export const TopNavbar: React.FC<TopNavbarProps> = () => {
   } = useERP();
 
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const appNames: Record<AppModuleId, string> = {
-    home: 'Home / App Switcher (S-02)',
-    dashboard: 'Business Overview (S-03 / S-16)',
-    crm: 'CRM Pipeline (S-04)',
-    sales: 'Sales & Orders (S-05)',
-    pos: 'Point of Sale Retail (S-14)',
-    purchase: 'Purchase & RFQ (S-08)',
-    inventory: 'Inventory & Logistics (S-07)',
-    invoicing: 'Customer Invoices (S-10)',
-    accounting: 'Accounting & Ledger (S-13)',
-    contacts: 'Form Contacts (S-02)',
-    products: 'Products & Variants (S-03)',
+    home: 'Home / App Switcher',
+    dashboard: 'Business Overview',
+    crm: 'CRM Pipeline',
+    sales: 'Sales & Orders',
+    pos: 'Point of Sale Retail',
+    purchase: 'Purchase & RFQ',
+    inventory: 'Inventory & Logistics',
+    invoicing: 'Customer Invoices',
+    accounting: 'Accounting & Ledger',
+    contacts: 'Contacts',
+    products: 'Products & Variants',
     reporting: 'Analytics & Reporting',
     settings: 'Company Settings',
     audit: 'Audit Log & History',
@@ -107,17 +99,43 @@ export const TopNavbar: React.FC<TopNavbarProps> = () => {
       {/* Right zone: Baseline Reset, Company info, Role Switcher */}
       <div className="flex items-center gap-2">
         {/* Reset Baseline Seed */}
-        <button
-          onClick={() => {
-            if (confirm('Reset seluruh data ke baseline seed awal (106 unit total, Rp11.140.000 persediaan)?')) {
-              resetToBaselineSeed();
-            }
-          }}
-          className="p-1.5 text-xs rounded-md text-[#D5CEBF] hover:bg-[#242424] hover:text-white transition-colors"
-          title="Reset ke Baseline Seed 106 Unit"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setConfirmResetOpen(!confirmResetOpen)}
+            className="p-1.5 text-xs rounded-md text-[#D5CEBF] hover:bg-[#242424] hover:text-white transition-colors"
+            title="Reset Data Awal"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+
+          {confirmResetOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-[#1E1E1E] border border-[#333333] rounded-lg shadow-xl p-3 z-50 text-xs">
+              <div className="font-semibold text-white mb-1">Reset Data ke Awal?</div>
+              <p className="text-[11px] text-[#A6A29A] mb-3 leading-snug">
+                Mengembalikan seluruh data ke kondisi awal (106 unit stok &amp; Rp11.140.000 persediaan).
+              </p>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmResetOpen(false)}
+                  className="px-2.5 py-1 rounded bg-[#2A2A2A] text-[#D5CEBF] hover:text-white"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetToBaselineSeed();
+                    setConfirmResetOpen(false);
+                  }}
+                  className="px-2.5 py-1 rounded bg-[#C18B42] text-black font-semibold"
+                >
+                  Ya, Reset
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Company indicator */}
         <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-[11px] text-[#A6A29A] bg-[#1E1E1E] rounded border border-[#2E2E2E]">
@@ -148,36 +166,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = () => {
                 <div className="text-[#8C8983] text-[11px]">{currentUser?.email}</div>
                 <div className="text-[10px] text-[#C18B42] mt-0.5">{currentUser?.roleName}</div>
               </div>
-
-              <div className="px-3 py-1.5 text-[10px] uppercase font-bold text-[#6E6B65] tracking-wider">
-                Simulasi Peran / Role (RBAC)
-              </div>
-
-              {[
-                { role: 'owner' as UserRole, label: 'Owner / Administrator', desc: 'Akses penuh seluruh modul & persetujuan' },
-                { role: 'sales' as UserRole, label: 'Sales (Nadya Kinasih)', desc: 'CRM, Quotation, SO, tanpa akses jurnal' },
-                { role: 'warehouse' as UserRole, label: 'Warehouse (Bayu Firmansyah)', desc: 'Stok, Delivery, Receipt QA, Transfer' },
-                { role: 'finance' as UserRole, label: 'Finance (Fajar Pratama)', desc: 'Invoice, Vendor Bill, Jurnal, Pembayaran' },
-                { role: 'cashier' as UserRole, label: 'Cashier (Salsa Widianti)', desc: 'POS Kasir Toko Bandung, struk' },
-                { role: 'procurement' as UserRole, label: 'Procurement (Rizki Wardana)', desc: 'Vendor, RFQ, PO, monitor receipt' },
-              ].map((item) => (
-                <button
-                  key={item.role}
-                  onClick={() => {
-                    switchRole(item.role);
-                    setRoleMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-1.5 hover:bg-[#282828] transition-colors flex items-center justify-between ${
-                    currentUser?.role === item.role ? 'bg-[#2A2A2A] text-white font-medium' : 'text-[#C7C3BB]'
-                  }`}
-                >
-                  <div>
-                    <div>{item.label}</div>
-                    <div className="text-[10px] text-[#8C8983]">{item.desc}</div>
-                  </div>
-                  {currentUser?.role === item.role && <UserCheck className="w-3.5 h-3.5 text-[#54745B]" />}
-                </button>
-              ))}
 
               <div className="border-t border-[#2A2A2A] mt-1 pt-1">
                 <button

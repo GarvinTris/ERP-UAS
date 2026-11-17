@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { useERP } from '../../context/ERPContext';
 import { ControlPanel } from '../common/ControlPanel';
 import { Chatter } from '../common/Chatter';
-import { Customer, Vendor } from '../../types/erp';
-import { User, Phone, Mail, MapPin, CreditCard, Clock, Building, Plus, ArrowLeft } from 'lucide-react';
+import { AddCustomerModal } from '../common/AddCustomerModal';
+import { User, Phone, Mail, MapPin, Clock, Building, ArrowLeft } from 'lucide-react';
 
 export const ContactsModule: React.FC = () => {
-  const { customers, vendors, activeView, setActiveView } = useERP();
+  const { customers, vendors } = useERP();
 
   const [activeTab, setActiveTab] = useState<'all' | 'customers' | 'vendors'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
+  const [addCustomerOpen, setAddCustomerOpen] = useState(false);
 
   // Filter contacts
   const filteredCustomers = customers.filter(
@@ -37,7 +38,7 @@ export const ContactsModule: React.FC = () => {
       <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
         <ControlPanel
           title={`Form Contact: ${selectedCustomer.name} (${selectedCustomer.contact_id})`}
-          subtitle="Master Data Pelanggan, Batas Kredit & Termin Pembayaran (S-02)"
+          subtitle="Master Data Pelanggan, Batas Kredit & Termin Pembayaran"
           extraActions={
             <button
               onClick={() => setSelectedCustomerId(null)}
@@ -103,7 +104,7 @@ export const ContactsModule: React.FC = () => {
 
               <div className="space-y-4 bg-[#F5F0E8] p-5 rounded-xl border border-[#E7E3DD]">
                 <div className="text-xs font-bold uppercase tracking-wider text-[#171717] border-b border-[#E7E3DD] pb-2">
-                  Ketentuan Finansial (SR-10)
+                  Ketentuan Finansial
                 </div>
 
                 <div>
@@ -113,7 +114,7 @@ export const ContactsModule: React.FC = () => {
                   </div>
                   {selectedCustomer.credit_limit_idr === 0 ? (
                     <span className="text-[11px] text-[#B94B4B] font-medium">
-                      *Pelanggan TUNAI: Tidak menerima pesanan kredit (SR-10).
+                      *Pelanggan TUNAI: Tidak menerima pesanan kredit.
                     </span>
                   ) : (
                     <span className="text-[11px] text-[#54745B] font-medium">
@@ -152,7 +153,7 @@ export const ContactsModule: React.FC = () => {
       <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
         <ControlPanel
           title={`Form Pemasok: ${selectedVendor.name} (${selectedVendor.vendor_id})`}
-          subtitle="Master Data Vendor & Termin Pembelian (S-02)"
+          subtitle="Master Data Vendor & Termin Pembelian"
           extraActions={
             <button
               onClick={() => setSelectedVendorId(null)}
@@ -211,10 +212,10 @@ export const ContactsModule: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-02"
-        flowHint="S-02 Master Kontak Pelanggan B2B/Ritel & Pemasok (C01..C06, V01..V04)"
-        title="Form Contacts"
-        subtitle="Master Pelanggan & Pemasok, Batas Kredit (SR-10), dan Termin Pembayaran"
+        title="Kontak & Pelanggan"
+        subtitle="Master Pelanggan & Pemasok, Batas Kredit, dan Termin Pembayaran"
+        onCreateNew={() => setAddCustomerOpen(true)}
+        createButtonLabel="Tambah Pelanggan"
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         extraActions={
@@ -370,6 +371,11 @@ export const ContactsModule: React.FC = () => {
           </div>
         )}
       </div>
+
+      <AddCustomerModal
+        isOpen={addCustomerOpen}
+        onClose={() => setAddCustomerOpen(false)}
+      />
     </div>
   );
 };

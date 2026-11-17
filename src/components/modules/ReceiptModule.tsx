@@ -30,19 +30,11 @@ export const ReceiptModule: React.FC = () => {
     validateReceiptWithQA(currentReceipt.receipt_id, acceptedQtyInput, rejectedQtyInput);
   };
 
-  const handleTestT19RejectBlock = () => {
-    if (!currentReceipt) return;
-    // Attempt to recognize 4 accepted when 1 is rejected (3+1 = 4 total, user tries 4 accepted + 1 rejected > ordered 4)
-    validateReceiptWithQA(currentReceipt.receipt_id, 4, 1);
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-09"
-        flowHint="S-09 Terima barang & QA ➔ S-11 Vendor Bill Form (SR-06)"
         title="Receipt / Quality Acceptance Form"
-        subtitle="Penerimaan Barang Fisik, Pemeriksaan Mutu (QA), & Sisa Pesanan (SR-06)"
+        subtitle="Penerimaan Barang Fisik, Pemeriksaan Mutu (QA), & Sisa Pesanan"
         extraActions={
           receipts.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs">
@@ -75,24 +67,13 @@ export const ReceiptModule: React.FC = () => {
             actionButtons={
               <div className="flex items-center gap-2">
                 {currentReceipt.status !== 'done' ? (
-                  <>
-                    <button
-                      onClick={handleValidateQA}
-                      className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Validate QA ({acceptedQtyInput} Accepted, {rejectedQtyInput} Rejected)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestT19RejectBlock}
-                      className="px-3 py-1.5 bg-white border border-[#B94B4B] text-[#B94B4B] hover:bg-red-50 text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Blokir Unit Gagal Inspeksi (T-19)"
-                    >
-                      <ShieldAlert className="w-3.5 h-3.5" />
-                      <span>Uji Blokir Barang Rejected (T-19)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={handleValidateQA}
+                    className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Validate QA ({acceptedQtyInput} Accepted, {rejectedQtyInput} Rejected)</span>
+                  </button>
                 ) : (
                   <button
                     onClick={() => {
@@ -105,7 +86,7 @@ export const ReceiptModule: React.FC = () => {
                     className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
                   >
                     <Package className="w-3.5 h-3.5 text-[#C18B42]" />
-                    <span>Create Vendor Bill (F-13)</span>
+                    <span>Create Vendor Bill</span>
                   </button>
                 )}
               </div>
@@ -142,7 +123,7 @@ export const ReceiptModule: React.FC = () => {
                     {currentReceipt.receipt_id}
                   </span>
                   <h2 className="text-2xl font-bold text-[#171717] mt-1.5">
-                    Receipt & Quality Acceptance (S-09)
+                    Receipt & Quality Acceptance
                   </h2>
                   <div className="text-xs text-[#8C8983] mt-1">
                     Sumber PO: <span className="font-semibold text-[#171717]">{currentReceipt.source_po_id}</span> · Vendor: {currentReceipt.vendor_id} · Lokasi Masuk: {currentReceipt.destination_location}
@@ -219,7 +200,7 @@ export const ReceiptModule: React.FC = () => {
 
               {/* QA Business Rule Notice */}
               <div className="p-4 rounded-xl bg-[#F5F0E8] border border-[#E7E3DD] text-xs text-[#171717] space-y-1">
-                <div className="font-semibold">Aturan Bisnis Penerimaan & Akuntansi (SR-06):</div>
+                <div className="font-semibold">Aturan Penerimaan & Akuntansi:</div>
                 <div className="text-[#8C8983]">
                   Hanya unit yang berstatus <strong>Accepted</strong> (lolos inspeksi mutu) yang berhak menambah saldo persediaan fisik gudang (<code>on_hand</code>) dan menjadi dasar penerbitan Vendor Bill. Unit yang <strong>Rejected</strong> tidak menambah nilai persediaan perusahaan.
                 </div>

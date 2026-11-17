@@ -4,20 +4,23 @@ import { ControlPanel } from '../common/ControlPanel';
 import { StatusBar } from '../common/StatusBar';
 import { SmartButtons } from '../common/SmartButtons';
 import { Chatter } from '../common/Chatter';
-import { Package, Truck, Receipt, Lock, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Truck, Receipt, Lock, Pencil } from 'lucide-react';
 
 export const PurchaseModule: React.FC = () => {
   const {
     purchaseOrders,
     vendors,
     createReceiptFromPO,
-    attemptModifyConfirmedPOQty,
+    updatePurchaseOrderLine,
     setActiveApp,
     setActiveView,
     addNotification,
   } = useERP();
 
   const [selectedPoId, setSelectedPoId] = useState<string>('PO00007');
+  const [editingLineId, setEditingLineId] = useState<string | null>(null);
+  const [editUnitCost, setEditUnitCost] = useState('0');
+  const [editQty, setEditQty] = useState('1');
 
   const currentPo = purchaseOrders.find((p) => p.po_id === selectedPoId) || purchaseOrders[0];
   const poVendor = vendors.find((v) => v.vendor_id === currentPo?.vendor_id);
@@ -32,18 +35,11 @@ export const PurchaseModule: React.FC = () => {
     }
   };
 
-  const handleTestQtyModification = () => {
-    if (!currentPo) return;
-    attemptModifyConfirmedPOQty(currentPo.po_id, 7);
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-08"
-        flowHint="S-08 Buat permintaan pembelian ➔ S-09 Receipt / Quality Acceptance Form"
         title="RFQ / Purchase Order Form"
-        subtitle="Pemesanan Pembelian, Pajak Masukan 11%, dan Penguncian Dokumen (SR-05, SR-08)"
+        subtitle="Pemesanan Pembelian, Pajak Masukan 11%, dan Penguncian Dokumen"
         extraActions={
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-[#8C8983]">Pilih PO:</span>
@@ -75,24 +71,13 @@ export const PurchaseModule: React.FC = () => {
             actionButtons={
               <div className="flex items-center gap-2">
                 {currentPo.status === 'confirmed' && (
-                  <>
-                    <button
-                      onClick={handleCreateReceipt}
-                      className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Truck className="w-3.5 h-3.5" />
-                      <span>Receive Products / Buat Receipt (F-12)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestQtyModification}
-                      className="px-3 py-1.5 bg-white border border-[#B94B4B] text-[#B94B4B] hover:bg-red-50 text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Mengganti Qty 4 ke 7 Tanpa Revisi (T-17)"
-                    >
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Uji Ganti Qty ke 7 (T-17)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={handleCreateReceipt}
+                    className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>Receive Products / Buat Receipt</span>
+                  </button>
                 )}
               </div>
             }
@@ -163,25 +148,98 @@ export const PurchaseModule: React.FC = () => {
                         <th className="py-2.5 px-4 text-right">Harga Beli Satuan</th>
                         <th className="py-2.5 px-4 text-right">PPN Masukan (11%)</th>
                         <th className="py-2.5 px-4 text-right">Total Baris</th>
+                        {!currentPo.is_locked && currentPo.status !== 'confirmed' && currentPo.status !== 'done' && (
+                          <th className="py-2.5 px-3 text-center">Edit Harga</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E7E3DD]">
-                      {currentPo.lines.map((l) => (
-                        <tr key={l.id}>
-                          <td className="py-3 px-4 font-mono font-bold text-[#C18B42]">{l.sku}</td>
-                          <td className="py-3 px-4 font-medium text-[#171717]">{l.product_name}</td>
-                          <td className="py-3 px-3">{l.size}</td>
-                          <td className="py-3 px-3 text-[#8C8983]">{l.color}</td>
-                          <td className="py-3 px-3 text-right font-mono font-bold text-[#171717]">{l.quantity} pcs</td>
-                          <td className="py-3 px-4 text-right font-mono">Rp{l.unit_cost.toLocaleString()}</td>
-                          <td className="py-3 px-4 text-right font-mono text-[#8C8983]">
-                            Rp{l.tax_amount.toLocaleString()}
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-[#171717]">
-                            Rp{l.total.toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
+                      {currentPo.lines.map((l) => {
+                        const isEditable =
+                          !currentPo.is_locked && currentPo.status !== 'confirmed' && currentPo.status !== 'done';
+                        const isEditing = isEditable && editingLineId === l.id;
+
+                        return (
+                          <tr key={l.id}>
+                            <td className="py-3 px-4 font-mono font-bold text-[#C18B42]">{l.sku}</td>
+                            <td className="py-3 px-4 font-medium text-[#171717]">{l.product_name}</td>
+                            <td className="py-3 px-3">{l.size}</td>
+                            <td className="py-3 px-3 text-[#8C8983]">{l.color}</td>
+                            <td className="py-3 px-3 text-right font-mono font-bold text-[#171717]">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={editQty}
+                                  onChange={(e) => setEditQty(e.target.value)}
+                                  className="w-16 px-2 py-1 text-right bg-[#F5F0E8] border border-[#171717] rounded font-mono"
+                                />
+                              ) : (
+                                `${l.quantity} pcs`
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono">
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={editUnitCost}
+                                  onChange={(e) => setEditUnitCost(e.target.value.replace(/\D/g, ''))}
+                                  className="w-28 px-2 py-1 text-right bg-[#F5F0E8] border border-[#171717] rounded font-mono"
+                                />
+                              ) : (
+                                `Rp${l.unit_cost.toLocaleString()}`
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono text-[#8C8983]">
+                              Rp{l.tax_amount.toLocaleString()}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono font-bold text-[#171717]">
+                              Rp{l.total.toLocaleString()}
+                            </td>
+                            {isEditable && (
+                              <td className="py-3 px-3 text-center whitespace-nowrap">
+                                {isEditing ? (
+                                  <div className="inline-flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        updatePurchaseOrderLine(currentPo.po_id, l.id, {
+                                          unit_cost: Number(editUnitCost.replace(/\D/g, '')) || 0,
+                                          quantity: Math.max(1, Number(editQty) || 1),
+                                        });
+                                        setEditingLineId(null);
+                                      }}
+                                      className="px-2 py-1 bg-[#171717] text-white rounded text-[11px] font-semibold"
+                                    >
+                                      Simpan
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingLineId(null)}
+                                      className="px-2 py-1 bg-[#F5F0E8] text-[#171717] border border-[#E7E3DD] rounded text-[11px]"
+                                    >
+                                      Batal
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingLineId(l.id);
+                                      setEditUnitCost(String(l.unit_cost));
+                                      setEditQty(String(l.quantity));
+                                    }}
+                                    className="px-2 py-1 bg-[#F5F0E8] hover:bg-[#EAE5DC] border border-[#E7E3DD] rounded text-[11px] font-semibold text-[#171717] inline-flex items-center gap-1"
+                                  >
+                                    <Pencil className="w-3 h-3 text-[#C18B42]" />
+                                    <span>Edit</span>
+                                  </button>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

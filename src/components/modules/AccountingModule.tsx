@@ -31,7 +31,7 @@ export const AccountingModule: React.FC = () => {
       <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
         <ControlPanel
           title={`Journal Entry: ${selectedJournal.reference} (${selectedJournal.entry_id})`}
-          subtitle="Pencatatan Buku Besar, Keseimbangan Debit/Kredit & Tautan Dokumen (S-13)"
+          subtitle="Pencatatan Buku Besar, Keseimbangan Debit/Kredit & Tautan Dokumen"
           extraActions={
             <button
               onClick={() => setSelectedEntryId(null)}
@@ -133,10 +133,8 @@ export const AccountingModule: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-13"
-        flowHint="S-13 Kelola jurnal transaksi berpasangan seimbang (Debit == Credit)"
         title="Journal Entries / General Ledger"
-        subtitle="Pembukuan Berpasangan (Double-Entry), Audit Keseimbangan Debit/Kredit, & Dokumen Sumber (SR-09, SR-15)"
+        subtitle="Pembukuan Berpasangan (Double-Entry), Audit Keseimbangan Debit/Kredit, & Dokumen Sumber"
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         extraActions={
@@ -178,7 +176,7 @@ export const AccountingModule: React.FC = () => {
             </div>
             <div>
               <div className="text-[10px] font-mono text-[#54745B] uppercase tracking-wider font-semibold">
-                Validasi Akuntansi T-26 (Equality of Debits and Credits)
+                Validasi Keseimbangan Akuntansi (Equality of Debits and Credits)
               </div>
               <div className="text-sm font-bold text-white">
                 Keseimbangan Buku Besar PT Rona Karsa Apparel
@@ -332,7 +330,7 @@ export const AccountingModule: React.FC = () => {
         {activeTab === 'coa' && (
           <div className="bg-[#FFFEFC] rounded-xl border border-[#E7E3DD] shadow-xs overflow-hidden">
             <div className="px-6 py-4 border-b border-[#E7E3DD] bg-white flex items-center justify-between">
-              <h3 className="font-bold text-sm text-[#171717]">Bagan Akun Resmi PT Rona Karsa Apparel (Handout Halaman 10)</h3>
+              <h3 className="font-bold text-sm text-[#171717]">Bagan Akun Resmi PT Rona Karsa Apparel</h3>
             </div>
             <div className="overflow-x-auto text-xs">
               <table className="w-full text-left">

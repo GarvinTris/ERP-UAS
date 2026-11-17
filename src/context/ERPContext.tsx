@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   User,
   AppModuleId,
@@ -22,10 +22,8 @@ import {
   Account,
   JournalEntry,
   AuditLog,
-  TestScenario,
 } from '../types/erp';
 import {
-  INITIAL_USERS,
   INITIAL_CUSTOMERS,
   INITIAL_VENDORS,
   INITIAL_PRODUCTS,
@@ -44,8 +42,8 @@ import {
   INITIAL_ACCOUNTS,
   INITIAL_JOURNAL_ENTRIES,
   INITIAL_AUDIT_LOGS,
-  TEST_SCENARIOS_CATALOG,
 } from '../data/seedData';
+import { supabase } from '../lib/supabaseClient';
 import { loadERPState, loadERPAuditLogs, saveERPAuditLog, saveERPState } from '../lib/erpDatabase';
 
 interface ERPContextType {
@@ -57,8 +55,6 @@ interface ERPContextType {
   setActiveView: (view: string) => void;
   appSwitcherOpen: boolean;
   setAppSwitcherOpen: (open: boolean) => void;
-  testSuiteOpen: boolean;
-  setTestSuiteOpen: (open: boolean) => void;
 
   // Data
   customers: Customer[];
@@ -81,11 +77,10 @@ interface ERPContextType {
   accounts: Account[];
   journalEntries: JournalEntry[];
   auditLogs: AuditLog[];
-  testResults: Record<string, { status: 'passed' | 'failed'; actual: string; timestamp: string }>;
 
   // Toast / notification
   notifications: { id: string; type: 'success' | 'warning' | 'error' | 'info'; message: string }[];
-  addNotification: (type: 'success' | 'warning' | 'error' | 'info', message: string, force?: boolean) => void;
+  addNotification: (type: 'success' | 'warning' | 'error' | 'info', message: string) => void;
   removeNotification: (id: string) => void;
 
   // Business Action Helpers
@@ -102,33 +97,69 @@ interface ERPContextType {
   resetToBaselineSeed: () => void;
 
   // Specific Business Methods
+  createCustomer: (customerData: Omit<Customer, 'contact_id' | 'open_receivable'>) => Customer;
   createProductVariant: (newVariant: Omit<ProductVariant, 'active'>) => { success: boolean; message: string };
+  updateProductPrice: (sku: string, salesPriceIdr: number, costIdr: number) => { success: boolean; message: string };
+  createLead: (leadData: {
+    customer_id: string;
+    title: string;
+    contact_person: string;
+    email: string;
+    phone: string;
+    expected_revenue: number;
+    priority: CRMLead['priority'];
+    stage?: CRMLead['stage'];
+    initial_note?: string;
+  }) => CRMLead;
+  updateLeadStage: (leadId: string, stage: CRMLead['stage']) => { success: boolean; message: string };
+  updateLeadDetails: (
+    leadId: string,
+    updates: {
+      title: string;
+      contact_person: string;
+      email: string;
+      phone: string;
+      expected_revenue: number;
+      priority: CRMLead['priority'];
+      stage: CRMLead['stage'];
+    }
+  ) => { success: boolean; message: string };
+  addLeadNote: (leadId: string, note: string) => void;
   convertLeadToOpportunity: (leadId: string) => { success: boolean; message: string; opportunityId?: string };
   convertOpportunityToQuotation: (leadId: string) => { success: boolean; message: string; quotationId?: string };
   createQuotation: (so: Omit<SalesOrder, 'order_id' | 'type' | 'status' | 'is_locked' | 'delivery_ids' | 'invoice_ids'>) => SalesOrder;
+  updateSalesOrderLine: (
+    orderId: string,
+    lineId: string,
+    updates: { unit_price?: number; quantity?: number; discount_pct?: number }
+  ) => { success: boolean; message: string };
   confirmSalesOrder: (orderId: string, forceManagerOverride?: boolean) => { success: boolean; message: string };
-  attemptModifyConfirmedSOPrice: (orderId: string, newPrice: number) => { success: boolean; message: string };
   createDeliveryOrderForSO: (soId: string) => DeliveryOrder | null;
   validateDeliveryOrder: (deliveryId: string, doneUnits: number) => { success: boolean; message: string; backorderId?: string };
-  attemptInvalidDeliveryQty: (deliveryId: string, qty: number) => { success: boolean; message: string };
   createCustomerInvoiceFromDelivery: (deliveryId: string, qtyToBill?: number) => { success: boolean; message: string; invoiceId?: string };
   postCustomerInvoice: (invoiceId: string) => { success: boolean; message: string };
   registerCustomerPayment: (invoiceId: string, amount: number, method: 'bank' | 'cash') => { success: boolean; message: string };
   confirmPurchaseOrder: (poId: string) => { success: boolean; message: string };
-  attemptModifyConfirmedPOQty: (poId: string, newQty: number) => { success: boolean; message: string };
+  updatePurchaseOrderLine: (
+    poId: string,
+    lineId: string,
+    updates: { unit_cost?: number; quantity?: number }
+  ) => { success: boolean; message: string };
   createReceiptFromPO: (poId: string) => Receipt | null;
   validateReceiptWithQA: (receiptId: string, acceptedQty: number, rejectedQty: number) => { success: boolean; message: string };
   createVendorBillFromReceipt: (receiptId: string, qtyToBill?: number) => { success: boolean; message: string; billId?: string };
   postVendorBill: (billId: string) => { success: boolean; message: string };
   registerVendorPayment: (billId: string, amount: number, method: 'bank' | 'cash') => { success: boolean; message: string };
-  processPOSSale: (sku: string, qty: number, paymentMethod: 'cash' | 'bank') => { success: boolean; message: string; receipt?: POSTransaction };
+  processPOSSale: (sku: string, qty: number, paymentMethod: 'cash' | 'bank', overrideUnitPrice?: number) => { success: boolean; message: string; receipt?: POSTransaction };
+  processPOSCart: (params: {
+    items: { sku: string; quantity: number; unitPrice: number; discountPct: number }[];
+    paymentMethod: 'cash' | 'bank';
+    customerName?: string;
+    amountPaid?: number;
+  }) => { success: boolean; message: string; receipt?: POSTransaction };
   processCustomerReturn: (deliveryId: string, invoiceId: string, sku: string, returnedQty: number, acceptedQty: number, rejectedQty: number, reason: string) => { success: boolean; message: string; returnId?: string };
   issueCreditNoteForReturn: (returnId: string, requestedQty?: number) => { success: boolean; message: string; cnId?: string };
   executeInternalTransfer: (sku: string, fromLoc: 'STORE-BDG' | 'WH-JKT', toLoc: 'STORE-BDG' | 'WH-JKT', qty: number) => { success: boolean; message: string };
-
-  // Automated Test Scenario Runner
-  runAutomatedTest: (testId: string) => Promise<{ status: 'passed' | 'failed'; actual: string }>;
-  runAllTests: () => Promise<void>;
 }
 
 const ERPContext = createContext<ERPContextType | undefined>(undefined);
@@ -137,16 +168,23 @@ const STORAGE_KEY = 'PT_RONA_KARSA_ERP_STATE_V1';
 
 export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Current user & authentication
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUserState] = useState<User | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  const setCurrentUser = (user: User | null) => {
+    setCurrentUserState(user);
+    if (!user) {
+      setIsHydrated(false);
+      void supabase.auth.signOut();
+    }
+  };
   const [activeApp, setActiveApp] = useState<AppModuleId>('home');
   const [activeView, setActiveView] = useState<string>('overview');
   const [appSwitcherOpen, setAppSwitcherOpen] = useState<boolean>(false);
-  const [testSuiteOpen, setTestSuiteOpen] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<{ id: string; type: 'success' | 'warning' | 'error' | 'info'; message: string }[]>([]);
 
   // Core Data States
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
-  const [isHydrated, setIsHydrated] = useState(false);
   const [vendors, setVendors] = useState<Vendor[]>(INITIAL_VENDORS);
   const [products, setProducts] = useState<ProductVariant[]>(INITIAL_PRODUCTS);
   const [stock, setStock] = useState<StockQuantity[]>(INITIAL_STOCK);
@@ -166,10 +204,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(INITIAL_JOURNAL_ENTRIES);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
-  const [testResults, setTestResults] = useState<Record<string, { status: 'passed' | 'failed'; actual: string; timestamp: string }>>({});
 
-  // Load the shared ERP dataset from Supabase only after a user is authenticated.
-  // Seed data remains intact when the cloud row does not exist yet.
+  // Muat dataset ERP bersama dari Supabase hanya setelah user terautentikasi.
+  // Data seed tetap dipakai bila baris di cloud belum ada.
   useEffect(() => {
     let cancelled = false;
 
@@ -187,7 +224,17 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (saved) {
           if (saved.customers) setCustomers(saved.customers as Customer[]);
           if (saved.vendors) setVendors(saved.vendors as Vendor[]);
-          if (saved.products) setProducts(saved.products as ProductVariant[]);
+          if (saved.products) {
+            // Baris produk lama di cloud belum punya imageUrl -> isi dari seed agar foto POS tampil.
+            const hydratedProducts = (saved.products as ProductVariant[]).map((p) => {
+              if (p.imageUrl) return p;
+              const seedMatch =
+                INITIAL_PRODUCTS.find((s) => s.sku === p.sku) ||
+                INITIAL_PRODUCTS.find((s) => s.category === p.category);
+              return seedMatch?.imageUrl ? { ...p, imageUrl: seedMatch.imageUrl } : p;
+            });
+            setProducts(hydratedProducts);
+          }
           if (saved.stock) setStock(saved.stock as StockQuantity[]);
           if (saved.stockMoves) setStockMoves(saved.stockMoves as StockMove[]);
           if (saved.leads) setLeads(saved.leads as CRMLead[]);
@@ -205,10 +252,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (saved.accounts) setAccounts(saved.accounts as Account[]);
           if (saved.journalEntries) setJournalEntries(saved.journalEntries as JournalEntry[]);
           if (saved.auditLogs) setAuditLogs(saved.auditLogs as AuditLog[]);
-          if (saved.testResults) setTestResults(saved.testResults as Record<string, { status: 'passed' | 'failed'; actual: string; timestamp: string }>);
         }
 
-        // Hanya owner dan finance yang boleh membaca audit log.
+        // Hanya owner dan finance (peran asli di database) yang boleh membaca audit log.
         if (currentUser.role === 'owner' || currentUser.role === 'finance') {
           try {
             const cloudAuditLogs = await loadERPAuditLogs();
@@ -216,74 +262,39 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const legacyLogs = (saved?.auditLogs as AuditLog[] | undefined) ?? INITIAL_AUDIT_LOGS;
             const mergedLogs = new Map<string, AuditLog>();
             [...legacyLogs, ...cloudAuditLogs].forEach((log) => mergedLogs.set(log.log_id, log as AuditLog));
-            setAuditLogs(Array.from(mergedLogs.values()).sort((a, b) =>
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-            ));
+            setAuditLogs(
+              Array.from(mergedLogs.values()).sort(
+                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+              )
+            );
           } catch (auditError) {
             console.error('Gagal memuat audit log dari Supabase:', auditError);
-            addNotification('warning', 'Audit log cloud belum dapat dimuat. Pastikan tabel erp_audit_logs sudah dibuat.', true);
+            addNotification('warning', 'Audit log cloud belum dapat dimuat. Pastikan tabel erp_audit_logs sudah dibuat.');
           }
         } else {
           setAuditLogs([]);
         }
 
-        // Only enable autosave after a successful cloud read (or confirmed empty row).
+        // Autosave baru aktif setelah pembacaan cloud berhasil.
         if (!cancelled) setIsHydrated(true);
       } catch (error) {
         console.error('Gagal memuat ERP state dari Supabase:', error);
         if (!cancelled) {
-          addNotification('error', 'Data ERP gagal dimuat dari Supabase. Periksa koneksi dan konfigurasi database.', true);
+          addNotification('error', 'Data ERP gagal dimuat dari Supabase. Periksa koneksi dan konfigurasi database.');
         }
       }
     };
 
     void hydrateFromSupabase();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [currentUser?.id]);
-
-  // Save state to LocalStorage
-  const saveStateToStorage = (overrideState?: Partial<Record<string, unknown>>) => {
-    try {
-      const state = {
-        customers,
-        vendors,
-        products,
-        stock,
-        stockMoves,
-        leads,
-        salesOrders,
-        deliveryOrders,
-        purchaseOrders,
-        receipts,
-        customerInvoices,
-        vendorBills,
-        payments,
-        posTransactions,
-        returns,
-        creditNotes,
-        transfers,
-        accounts,
-        journalEntries,
-        auditLogs,
-        testResults
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // ignore
-    }
-  };
-
-  const isTestRunning = useRef(false);
 
   const addNotification = (
     type: 'success' | 'warning' | 'error' | 'info',
-    message: string,
-    force?: boolean
+    message: string
   ) => {
-    // Suppress test assertions and intermediate noise from cluttering user interface
-    if (isTestRunning.current && !force) {
-      return;
-    }
     const id = Math.random().toString(36).substring(2, 9);
     setNotifications((prev) => [...prev, { id, type, message }]);
     setTimeout(() => removeNotification(id), 5000);
@@ -292,7 +303,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const removeNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
-
 
   // RBAC Permission Check
   const checkRoleAccess = (module: AppModuleId): boolean => {
@@ -357,7 +367,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (currentUser?.id) {
       void saveERPAuditLog(newLog, currentUser.id).catch((error) => {
         console.error('Audit log gagal disimpan ke Supabase:', error);
-        addNotification('warning', 'Aktivitas tercatat di aplikasi, tetapi gagal disimpan ke audit log cloud.', true);
+        addNotification('warning', 'Aktivitas tercatat di aplikasi, tetapi gagal disimpan ke audit log cloud.');
       });
     }
   };
@@ -396,21 +406,33 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         result: 'SUCCESS',
       },
     ]);
-    setTestResults({});
     localStorage.removeItem(STORAGE_KEY);
     addNotification('success', 'Database berhasil di-reset ke baseline seed 106 unit & Rp11.140.000!');
   };
 
-  // F-03: Create Product Variant with unique SKU check (SR-11)
+  // Create Product Variant with unique SKU check
   const createProductVariant = (newVariant: Omit<ProductVariant, 'active'>) => {
     const exists = products.some((p) => p.sku.trim().toUpperCase() === newVariant.sku.trim().toUpperCase());
     if (exists) {
       logAudit('CREATE_VARIANT', 'PRODUCTS', newVariant.sku, `Duplicate SKU rejection for ${newVariant.sku}`, 'VALIDATION_FAILED');
-      addNotification('error', `Gagal: SKU ${newVariant.sku} sudah ada dalam sistem! SKU harus unik (SR-11).`);
+      addNotification('error', `Gagal: SKU ${newVariant.sku} sudah ada dalam sistem! SKU harus unik.`);
       return { success: false, message: `SKU ${newVariant.sku} sudah terdaftar.` };
     }
 
-    const created: ProductVariant = { ...newVariant, active: true };
+    const fallbackImage =
+      newVariant.imageUrl ||
+      INITIAL_PRODUCTS.find(
+        (p) =>
+          p.category === newVariant.category &&
+          p.color.toLowerCase() === newVariant.color.toLowerCase()
+      )?.imageUrl ||
+      INITIAL_PRODUCTS.find((p) => p.category === newVariant.category)?.imageUrl;
+
+    const created: ProductVariant = {
+      ...newVariant,
+      imageUrl: fallbackImage,
+      active: true,
+    };
     const updatedProducts = [...products, created];
     setProducts(updatedProducts);
 
@@ -424,7 +446,221 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: `Varian ${created.sku} berhasil ditambahkan.` };
   };
 
-  // F-04: Convert CRM Lead to Opportunity (SR-15)
+  // Update Product sales price and cost
+  const updateProductPrice = (sku: string, salesPriceIdr: number, costIdr: number) => {
+    const prod = products.find((p) => p.sku === sku);
+    if (!prod) return { success: false, message: 'Produk tidak ditemukan.' };
+    if (salesPriceIdr < 0 || costIdr < 0) {
+      addNotification('error', 'Harga jual maupun standar cost tidak boleh bernilai negatif.');
+      return { success: false, message: 'Harga tidak boleh negatif.' };
+    }
+
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.sku === sku
+          ? {
+              ...p,
+              sales_price_idr: Math.round(salesPriceIdr),
+              cost_idr: Math.round(costIdr),
+            }
+          : p
+      )
+    );
+
+    logAudit(
+      'UPDATE_PRODUCT_PRICE',
+      'PRODUCTS',
+      sku,
+      `Harga ${sku} diperbarui: Jual Rp${prod.sales_price_idr.toLocaleString()} -> Rp${Math.round(salesPriceIdr).toLocaleString()}, Cost Rp${prod.cost_idr.toLocaleString()} -> Rp${Math.round(costIdr).toLocaleString()}`,
+      'SUCCESS',
+      `Jual: ${prod.sales_price_idr}, Cost: ${prod.cost_idr}`,
+      `Jual: ${Math.round(salesPriceIdr)}, Cost: ${Math.round(costIdr)}`
+    );
+    addNotification('success', `Harga produk ${sku} berhasil diperbarui!`);
+    return { success: true, message: 'Harga produk diperbarui.' };
+  };
+
+  // Create new Customer
+  const createCustomer = (customerData: Omit<Customer, 'contact_id' | 'open_receivable'>): Customer => {
+    const maxNum = customers.reduce((max, c) => {
+      const n = parseInt(c.contact_id.replace(/\D/g, ''), 10);
+      return Number.isNaN(n) ? max : Math.max(max, n);
+    }, 0);
+    const contactId = `C${String(maxNum + 1).padStart(2, '0')}`;
+    const effectiveLimit = customerData.payment_terms === 'TUNAI' ? 0 : Math.max(0, customerData.credit_limit_idr);
+
+    const newCustomer: Customer = {
+      ...customerData,
+      contact_id: contactId,
+      credit_limit_idr: effectiveLimit,
+      open_receivable: 0,
+    };
+
+    setCustomers((prev) => [...prev, newCustomer]);
+    logAudit(
+      'CREATE_CUSTOMER',
+      'CRM',
+      contactId,
+      `Pelanggan baru ditambahkan: ${newCustomer.name} (${newCustomer.contact_type}, ${newCustomer.city}, Termin ${newCustomer.payment_terms})`,
+      'SUCCESS'
+    );
+    addNotification('success', `Pelanggan baru ${newCustomer.name} (${contactId}) berhasil ditambahkan.`);
+    return newCustomer;
+  };
+
+  // Create new CRM Lead
+  const createLead = (leadData: {
+    customer_id: string;
+    title: string;
+    contact_person: string;
+    email: string;
+    phone: string;
+    expected_revenue: number;
+    priority: CRMLead['priority'];
+    stage?: CRMLead['stage'];
+    initial_note?: string;
+  }): CRMLead => {
+    const maxNum = leads.reduce((max, l) => {
+      const n = parseInt(l.lead_id.replace(/\D/g, ''), 10);
+      return Number.isNaN(n) ? max : Math.max(max, n);
+    }, 0);
+    const leadId = `LEAD-${String(maxNum + 1).padStart(3, '0')}`;
+    const customer = customers.find((c) => c.contact_id === leadData.customer_id);
+    const stage = leadData.stage || 'new';
+
+    const notes: string[] = [];
+    if (leadData.initial_note && leadData.initial_note.trim()) {
+      notes.push(leadData.initial_note.trim());
+    } else {
+      notes.push(`Prospek dibuat untuk ${customer?.name || leadData.contact_person}.`);
+    }
+
+    const newLead: CRMLead = {
+      lead_id: leadId,
+      customer_id: leadData.customer_id,
+      title: leadData.title.trim(),
+      contact_person: leadData.contact_person.trim() || customer?.name || '-',
+      email: leadData.email.trim() || customer?.email || '-',
+      phone: leadData.phone.trim() || customer?.phone || '-',
+      expected_revenue: Math.max(0, leadData.expected_revenue),
+      stage,
+      priority: leadData.priority,
+      salesperson: currentUser?.name || 'Nadya Kinasih',
+      created_at: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      converted_opportunity_id: stage === 'qualified' ? `OPP-${leadId}` : undefined,
+      notes,
+    };
+
+    setLeads((prev) => [newLead, ...prev]);
+    logAudit('CREATE_LEAD', 'CRM', leadId, `Prospek baru dibuat: ${newLead.title} untuk ${customer?.name || leadData.customer_id}`, 'SUCCESS');
+    addNotification('success', `Prospek ${leadId} (${newLead.title}) berhasil ditambahkan ke pipeline.`);
+    return newLead;
+  };
+
+  // Update Lead stage (forward or backward across pipeline stages)
+  const updateLeadStage = (leadId: string, stage: CRMLead['stage']) => {
+    const lead = leads.find((l) => l.lead_id === leadId);
+    if (!lead) return { success: false, message: 'Prospek tidak ditemukan.' };
+    if (lead.stage === stage) return { success: true, message: 'Tahap tidak berubah.' };
+
+    const stageNames: Record<CRMLead['stage'], string> = {
+      new: '01. Prospek Baru',
+      qualified: '02. Peluang Siap',
+      proposition: '03. Penawaran Dikirim',
+      won: '04. Deal Menang',
+      lost: '05. Tidak Lanjut',
+    };
+
+    const stageOrder: Record<CRMLead['stage'], number> = {
+      new: 1,
+      qualified: 2,
+      proposition: 3,
+      won: 4,
+      lost: 5,
+    };
+    const isMovingBack = lead.stage !== 'lost' && stage !== 'lost' && stageOrder[stage] < stageOrder[lead.stage];
+
+    setLeads((prev) =>
+      prev.map((l) =>
+        l.lead_id === leadId
+          ? {
+              ...l,
+              stage,
+              converted_opportunity_id:
+                stage !== 'new' && !l.converted_opportunity_id ? `OPP-${leadId}` : l.converted_opportunity_id,
+              notes: [
+                ...l.notes,
+                `${isMovingBack ? 'Dikembalikan' : 'Tahap diubah'} dari "${stageNames[lead.stage]}" ke "${stageNames[stage]}" pada ${new Date().toLocaleString()}`,
+              ],
+            }
+          : l
+      )
+    );
+    logAudit(
+      'UPDATE_LEAD_STAGE',
+      'CRM',
+      leadId,
+      `Tahap prospek ${leadId} ${isMovingBack ? 'dikembalikan' : 'diubah'} dari ${stageNames[lead.stage]} ke ${stageNames[stage]}`,
+      'SUCCESS',
+      lead.stage,
+      stage
+    );
+    addNotification(
+      'success',
+      `Prospek ${leadId} ${isMovingBack ? 'dikembalikan' : 'dipindahkan'} ke tahap ${stageNames[stage]}.`
+    );
+    return { success: true, message: `Dipindahkan ke ${stageNames[stage]}.` };
+  };
+
+  // Update Lead details (title, contact, revenue, priority, stage)
+  const updateLeadDetails = (
+    leadId: string,
+    updates: {
+      title: string;
+      contact_person: string;
+      email: string;
+      phone: string;
+      expected_revenue: number;
+      priority: CRMLead['priority'];
+      stage: CRMLead['stage'];
+    }
+  ) => {
+    const lead = leads.find((l) => l.lead_id === leadId);
+    if (!lead) return { success: false, message: 'Prospek tidak ditemukan.' };
+
+    setLeads((prev) =>
+      prev.map((l) =>
+        l.lead_id === leadId
+          ? {
+              ...l,
+              title: updates.title.trim() || l.title,
+              contact_person: updates.contact_person.trim() || l.contact_person,
+              email: updates.email.trim() || l.email,
+              phone: updates.phone.trim() || l.phone,
+              expected_revenue: Math.max(0, updates.expected_revenue),
+              priority: updates.priority,
+              stage: updates.stage,
+              notes: [
+                ...l.notes,
+                `Data prospek diperbarui oleh ${currentUser?.name || 'Admin'} pada ${new Date().toLocaleString()}`,
+              ],
+            }
+          : l
+      )
+    );
+    logAudit('UPDATE_LEAD', 'CRM', leadId, `Detail prospek ${leadId} diperbarui (${updates.title})`, 'SUCCESS');
+    addNotification('success', `Perubahan pada prospek ${leadId} berhasil disimpan.`);
+    return { success: true, message: 'Perubahan prospek tersimpan.' };
+  };
+
+  // Add note to Lead
+  const addLeadNote = (leadId: string, note: string) => {
+    setLeads((prev) =>
+      prev.map((l) => (l.lead_id === leadId ? { ...l, notes: [...l.notes, note] } : l))
+    );
+  };
+
+  // Convert CRM Lead to Opportunity
   const convertLeadToOpportunity = (leadId: string) => {
     const lead = leads.find((l) => l.lead_id === leadId);
     if (!lead) return { success: false, message: 'Lead tidak ditemukan.' };
@@ -436,58 +672,87 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ...l,
           stage: 'qualified' as const,
           converted_opportunity_id: oppId,
-          notes: [...l.notes, `Dikonversi ke Opportunity ${oppId} pada ${new Date().toLocaleString()}`],
+          notes: [...l.notes, `Dikonversi ke Peluang (${oppId}) pada ${new Date().toLocaleString()}`],
         };
       }
       return l;
     });
     setLeads(updatedLeads);
     logAudit('CONVERT_LEAD', 'CRM', leadId, `Lead ${leadId} dikonversi ke Opportunity stage Qualified. Tautan asal dipertahankan.`, 'SUCCESS');
-    addNotification('success', `Lead ${leadId} berhasil beralih ke Opportunity (${oppId}).`);
-    return { success: true, message: 'Lead dikonversi ke Qualified.', opportunityId: oppId };
+    addNotification('success', `Prospek ${leadId} berhasil diproses menjadi Peluang (${oppId}).`);
+    return { success: true, message: 'Prospek diproses menjadi Peluang.', opportunityId: oppId };
   };
 
-  // F-04 / T-08: Convert Opportunity to Quotation without creating duplicates
+  // Convert Opportunity to Quotation without creating duplicates
   const convertOpportunityToQuotation = (leadId: string) => {
     const lead = leads.find((l) => l.lead_id === leadId);
     if (!lead) return { success: false, message: 'Lead tidak ditemukan.' };
 
     if (lead.converted_quotation_id) {
       logAudit('CONVERT_OPPORTUNITY', 'CRM', leadId, `Upaya konversi ulang Opportunity ${leadId}. Dokumen ganda dicegah.`, 'VALIDATION_FAILED');
-      addNotification('warning', `Opportunity sudah terhubung ke Quotation ${lead.converted_quotation_id}. Dokumen ganda dicegah.`);
+      addNotification('warning', `Peluang sudah terhubung ke Penawaran ${lead.converted_quotation_id}. Dokumen ganda dicegah.`);
       return { success: false, message: `Sudah terhubung ke ${lead.converted_quotation_id}`, quotationId: lead.converted_quotation_id };
     }
 
-    const qNumber = `Q00008`;
+    const customer = customers.find((c) => c.contact_id === lead.customer_id);
+    const hasQ00008 = salesOrders.some((so) => so.order_id === 'Q00008');
+    const maxQNum = salesOrders.reduce((max, so) => {
+      const n = parseInt(so.order_id.replace(/\D/g, ''), 10);
+      return Number.isNaN(n) ? max : Math.max(max, n);
+    }, 8);
+    const qNumber = leadId === 'LEAD-001' && !hasQ00008 ? 'Q00008' : `Q${String(maxQNum + 1).padStart(5, '0')}`;
+
+    const isSeedLead = leadId === 'LEAD-001';
+    const fallbackProduct = products[0];
+    const subtotal = isSeedLead ? 900000 : Math.round((lead.expected_revenue || fallbackProduct.sales_price_idr) / 1.11);
+    const taxAmount = isSeedLead ? 99000 : Math.round(subtotal * 0.11);
+    const totalAmount = subtotal + taxAmount;
+
     const newQuotation: SalesOrder = {
       order_id: qNumber,
       type: 'quotation',
       customer_id: lead.customer_id,
       order_date: new Date().toISOString().substring(0, 10),
       expiration_date: new Date(Date.now() + 14 * 86400000).toISOString().substring(0, 10),
-      payment_terms: 'NET14',
+      payment_terms: customer?.payment_terms || 'NET14',
       warehouse_id: 'WH-JKT',
       salesperson: lead.salesperson,
       status: 'draft',
-      lines: [
-        {
-          id: 'QL-01',
-          sku: 'AP-DR-BLU-M',
-          product_name: 'Dress Denim Biru',
-          size: 'M',
-          color: 'Biru',
-          quantity: 2,
-          unit_price: 450000,
-          discount_pct: 0,
-          tax_amount: 99000, // 900.000 * 0.11
-          subtotal: 900000,
-          total: 999000,
-        },
-      ],
-      untaxed_amount: 900000,
+      lines: isSeedLead
+        ? [
+            {
+              id: 'QL-01',
+              sku: 'AP-DR-BLU-M',
+              product_name: 'Dress Denim Biru',
+              size: 'M',
+              color: 'Biru',
+              quantity: 2,
+              unit_price: 450000,
+              discount_pct: 0,
+              tax_amount: 99000,
+              subtotal: 900000,
+              total: 999000,
+            },
+          ]
+        : [
+            {
+              id: 'QL-01',
+              sku: fallbackProduct?.sku || 'AP-TS-BLK-M',
+              product_name: lead.title,
+              size: fallbackProduct?.size || 'M',
+              color: fallbackProduct?.color || 'Hitam',
+              quantity: 1,
+              unit_price: subtotal,
+              discount_pct: 0,
+              tax_amount: taxAmount,
+              subtotal,
+              total: totalAmount,
+            },
+          ],
+      untaxed_amount: subtotal,
       discount_amount: 0,
-      tax_amount: 99000,
-      total_amount: 999000,
+      tax_amount: taxAmount,
+      total_amount: totalAmount,
       discount_approved: true,
       created_from_lead_id: leadId,
       delivery_ids: [],
@@ -503,15 +768,15 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               ...l,
               converted_quotation_id: qNumber,
               stage: 'proposition' as const,
-              notes: [...l.notes, `Quotation ${qNumber} diterbitkan untuk permintaan 2 Dress Denim M.`],
+              notes: [...l.notes, `Penawaran ${qNumber} diterbitkan untuk "${l.title}".`],
             }
           : l
       )
     );
 
     logAudit('CONVERT_OPPORTUNITY', 'CRM', leadId, `Created Quotation ${qNumber} from Opportunity ${leadId}`, 'SUCCESS');
-    addNotification('success', `Quotation ${qNumber} berhasil dibuat untuk ${lead.contact_person}.`);
-    return { success: true, message: `Quotation ${qNumber} dibuat.`, quotationId: qNumber };
+    addNotification('success', `Penawaran ${qNumber} berhasil dibuat untuk ${customer?.name || lead.contact_person}.`);
+    return { success: true, message: `Penawaran ${qNumber} dibuat.`, quotationId: qNumber };
   };
 
   // F-05: Create Quotation manually
@@ -531,6 +796,69 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newSO;
   };
 
+  // Update Quotation / Draft Sales Order Line Price, Qty, or Discount
+  const updateSalesOrderLine = (
+    orderId: string,
+    lineId: string,
+    updates: { unit_price?: number; quantity?: number; discount_pct?: number }
+  ) => {
+    const order = salesOrders.find((so) => so.order_id === orderId);
+    if (!order) return { success: false, message: 'Dokumen tidak ditemukan.' };
+
+    if (order.status === 'confirmed' || order.status === 'done' || order.is_locked) {
+      addNotification('error', `Dokumen ${orderId} sudah dikonfirmasi dan terkunci.`);
+      return { success: false, message: 'Dokumen terkunci.' };
+    }
+
+    const updatedLines = order.lines.map((line) => {
+      if (line.id !== lineId) return line;
+      const unitPrice = Math.max(0, updates.unit_price ?? line.unit_price);
+      const quantity = Math.max(1, updates.quantity ?? line.quantity);
+      const discountPct = Math.min(100, Math.max(0, updates.discount_pct ?? line.discount_pct));
+      const subtotal = Math.round(quantity * unitPrice * (1 - discountPct / 100));
+      const taxAmount = Math.round(subtotal * 0.11);
+      const total = subtotal + taxAmount;
+      return {
+        ...line,
+        unit_price: unitPrice,
+        quantity,
+        discount_pct: discountPct,
+        subtotal,
+        tax_amount: taxAmount,
+        total,
+      };
+    });
+
+    const untaxedAmount = updatedLines.reduce((s, l) => s + l.subtotal, 0);
+    const discountAmount = updatedLines.reduce(
+      (s, l) => s + Math.round(l.quantity * l.unit_price * (l.discount_pct / 100)),
+      0
+    );
+    const taxAmount = updatedLines.reduce((s, l) => s + l.tax_amount, 0);
+    const totalAmount = untaxedAmount + taxAmount;
+    const discountApproved = !updatedLines.some((l) => l.discount_pct > 10);
+
+    setSalesOrders((prev) =>
+      prev.map((so) =>
+        so.order_id === orderId
+          ? {
+              ...so,
+              lines: updatedLines,
+              untaxed_amount: untaxedAmount,
+              discount_amount: discountAmount,
+              tax_amount: taxAmount,
+              total_amount: totalAmount,
+              discount_approved: discountApproved,
+            }
+          : so
+      )
+    );
+
+    logAudit('UPDATE_SO_PRICE', 'SALES', orderId, `Harga / rincian baris pada ${orderId} diperbarui`, 'SUCCESS');
+    addNotification('success', `Harga pada ${orderId} berhasil diperbarui.`);
+    return { success: true, message: 'Harga penawaran diperbarui.' };
+  };
+
   // F-05 / F-06 / F-10: Confirm Sales Order (SR-01, SR-04, SR-08, SR-10)
   const confirmSalesOrder = (orderId: string, forceManagerOverride = false) => {
     const order = salesOrders.find((so) => so.order_id === orderId);
@@ -547,17 +875,17 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           'CONFIRM_ORDER',
           'SALES',
           orderId,
-          `Ditolak: Diskon melebihi 10% tanpa otorisasi manajer (SR-08)`,
+          `Ditolak: Diskon melebihi 10% tanpa otorisasi manajer`,
           'BLOCKED',
           'Unapproved',
           'Blocked'
         );
-        addNotification('error', `Konfirmasi ditahan: Diskon > 10% memerlukan persetujuan Manager (SR-08)!`);
+        addNotification('error', `Konfirmasi ditahan: Diskon > 10% memerlukan persetujuan Manager!`);
         return { success: false, message: 'Diskon > 10% butuh persetujuan manajer.' };
       }
     }
 
-    // 2. Check Credit Limit & Terms (SR-10)
+    // Check Credit Limit & Terms
     // Credit Exposure = Open Receivable + Gross New Order (including VAT)
     if (order.payment_terms === 'TUNAI' || customer.payment_terms === 'TUNAI') {
       if (order.payment_terms !== 'TUNAI') {
@@ -565,7 +893,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           'CONFIRM_ORDER',
           'SALES',
           orderId,
-          `Ditolak: Pelanggan TUNAI tanpa limit tidak boleh menggunakan kredit (SR-10)`,
+          `Ditolak: Pelanggan TUNAI tanpa limit tidak boleh menggunakan kredit`,
           'BLOCKED'
         );
         addNotification('error', `Ditolak: Pelanggan ${customer.name} bertermin TUNAI, tidak dapat transaksi kredit!`);
@@ -579,7 +907,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           'CONFIRM_ORDER',
           'SALES',
           orderId,
-          `Credit limit exceeded for ${customer.name}. Exposure Rp${totalExposure.toLocaleString()} > Limit Rp${customer.credit_limit_idr.toLocaleString()} (SR-10)`,
+          `Credit limit exceeded for ${customer.name}. Exposure Rp${totalExposure.toLocaleString()} > Limit Rp${customer.credit_limit_idr.toLocaleString()}`,
           'BLOCKED',
           `Limit: ${customer.credit_limit_idr}`,
           `Exposure: ${totalExposure}`
@@ -639,31 +967,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
 
-    logAudit('CONFIRM_ORDER', 'SALES', orderId, `Sales Order ${orderId} Confirmed. Stok direservasi & dokumen dikunci (SR-01, SR-04, SR-10).`, 'SUCCESS');
+    logAudit('CONFIRM_ORDER', 'SALES', orderId, `Sales Order ${orderId} Confirmed. Stok direservasi & dokumen dikunci.`, 'SUCCESS');
     addNotification('success', `Sales Order ${orderId} berhasil dikonfirmasi! Stok berhasil direservasi.`);
     return { success: true, message: `Order ${orderId} dikonfirmasi.` };
-  };
-
-  // F-06 / T-11: Attempt to modify price on confirmed order without revision (SR-08)
-  const attemptModifyConfirmedSOPrice = (orderId: string, newPrice: number) => {
-    const order = salesOrders.find((so) => so.order_id === orderId);
-    if (!order) return { success: false, message: 'Order tidak ditemukan' };
-
-    if (order.status === 'confirmed' || order.is_locked) {
-      logAudit(
-        'MODIFY_PRICE',
-        'SALES',
-        orderId,
-        `Penolakan revisi harga tak sah pada order ${orderId} yang telah Confirmed tanpa proses revisi resmi (SR-08).`,
-        'BLOCKED',
-        `Original: ${order.lines[0]?.unit_price}`,
-        `Attempted: ${newPrice}`
-      );
-      addNotification('error', `Ditolak: Dokumen ${orderId} berstatus Confirmed dan terkunci. Harga tidak dapat diubah tanpa prosedur revisi resmi (SR-08).`);
-      return { success: false, message: 'Dokumen Confirmed terkunci.' };
-    }
-
-    return { success: true, message: 'Harga diubah.' };
   };
 
   // F-08: Create Delivery Order for confirmed SO
@@ -707,12 +1013,12 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!delivery) return { success: false, message: 'Delivery tidak ditemukan.' };
 
     if (delivery.status === 'done' || delivery.journal_posted) {
-      // Idempotency test (T-27)
+      // Idempotency guard
       logAudit(
         'POST_DELIVERY',
         'INVENTORY',
         deliveryId,
-        `Posting ulang atas delivery ${deliveryId} ditolak/idempoten. Jurnal dan mutasi ganda dicegah (SR-15).`,
+        `Posting ulang atas delivery ${deliveryId} ditolak/idempoten. Jurnal dan mutasi ganda dicegah.`,
         'BLOCKED'
       );
       addNotification('warning', `Delivery ${deliveryId} sudah berstatus Done. Aksi idempoten; tidak ada jurnal ganda dibuat.`);
@@ -727,7 +1033,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         'VALIDATE_DELIVERY',
         'INVENTORY',
         deliveryId,
-        `Penolakan: Kuantitas pengiriman (${doneUnits}) melampaui permintaan (${firstLine.demand}) (SR-04).`,
+        `Penolakan: Kuantitas pengiriman (${doneUnits}) melampaui permintaan (${firstLine.demand}).`,
         'VALIDATION_FAILED'
       );
       addNotification('error', `Gagal: Pengiriman ${doneUnits} unit melebihi pesanan ${firstLine.demand} unit!`);
@@ -855,7 +1161,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'VALIDATE_DELIVERY',
       'INVENTORY',
       deliveryId,
-      `Delivery ${deliveryId} tervalidasi (${doneUnits} unit terkirim, ${backorderQty} unit backorder). HPP Rp${cogsAmount.toLocaleString()} dibukukan ke jurnal ${journalId} (SR-04, SR-07).`,
+      `Delivery ${deliveryId} tervalidasi (${doneUnits} unit terkirim, ${backorderQty} unit backorder). HPP Rp${cogsAmount.toLocaleString()} dibukukan ke jurnal ${journalId}.`,
       'SUCCESS'
     );
 
@@ -867,25 +1173,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: 'Delivery divalidasi.', backorderId };
   };
 
-  // T-13: Attempt invalid delivery qty
-  const attemptInvalidDeliveryQty = (deliveryId: string, qty: number) => {
-    const delivery = deliveryOrders.find((d) => d.delivery_id === deliveryId);
-    const demand = delivery?.lines[0]?.demand || 3;
-    if (qty > demand) {
-      logAudit(
-        'VALIDATE_DELIVERY',
-        'INVENTORY',
-        deliveryId,
-        `Penolakan validasi: Kuantitas ${qty} melampaui demand ${demand} (SR-04).`,
-        'VALIDATION_FAILED'
-      );
-      addNotification('error', `Validasi Ditolak: Kuantitas ${qty} melampaui sisa order ${demand} unit (SR-04)!`);
-      return { success: false, message: 'Validasi ditolak karena melebihi demand.' };
-    }
-    return { success: true, message: 'Kuantitas valid' };
-  };
-
-  // F-09: Customer Invoice based ONLY on delivered & uninvoiced quantity (SR-02)
+  // Customer Invoice based ONLY on delivered & uninvoiced quantity
   const createCustomerInvoiceFromDelivery = (deliveryId: string, qtyToBill?: number) => {
     const delivery = deliveryOrders.find((d) => d.delivery_id === deliveryId);
     if (!delivery || delivery.status !== 'done') {
@@ -893,7 +1181,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         'CREATE_INVOICE',
         'INVOICING',
         deliveryId,
-        `Ditolak: Faktur hanya boleh terbit untuk pengiriman tervalidasi (SR-02).`,
+        `Ditolak: Faktur hanya boleh terbit untuk pengiriman tervalidasi.`,
         'BLOCKED'
       );
       addNotification('error', `Invoice hanya dapat dibuat dari Delivery Order yang telah tervalidasi (Done)!`);
@@ -907,16 +1195,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const delivered = firstLine.done; // e.g. 2 units
     const billQty = qtyToBill !== undefined ? qtyToBill : delivered;
 
-    // Check if user tries to bill more than delivered (T-21)
+    // Check if user tries to bill more than delivered
     if (billQty > delivered) {
       logAudit(
         'CREATE_INVOICE',
         'INVOICING',
         deliveryId,
-        `Penolakan penagihan melebihi jumlah terkirim. Diminta: ${billQty}, Terkirim: ${delivered} (SR-02).`,
+        `Penolakan penagihan melebihi jumlah terkirim. Diminta: ${billQty}, Terkirim: ${delivered}.`,
         'VALIDATION_FAILED'
       );
-      addNotification('error', `Validasi Gagal: Kuantitas tagihan (${billQty}) tidak boleh melebihi jumlah yang telah dikirim (${delivered}) (SR-02)!`);
+      addNotification('error', `Validasi Gagal: Kuantitas tagihan (${billQty}) tidak boleh melebihi jumlah yang telah dikirim (${delivered})!`);
       return { success: false, message: 'Kuantitas melebihi yang telah dikirim.' };
     }
 
@@ -959,7 +1247,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((s) => (s.order_id === so.order_id ? { ...s, invoice_ids: [...s.invoice_ids, invId] } : s))
     );
 
-    logAudit('CREATE_INVOICE', 'INVOICING', invId, `Invoice ${invId} disiapkan untuk ${billQty} unit terkirim (${firstLine.sku}) (SR-02).`, 'SUCCESS');
+    logAudit('CREATE_INVOICE', 'INVOICING', invId, `Invoice ${invId} disiapkan untuk ${billQty} unit terkirim (${firstLine.sku}).`, 'SUCCESS');
     addNotification('success', `Customer Invoice ${invId} berhasil dibuat untuk ${billQty} unit.`);
     return { success: true, message: `Invoice ${invId} disiapkan.`, invoiceId: invId };
   };
@@ -1116,7 +1404,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'REGISTER_PAYMENT',
       'ACCOUNTING',
       payId,
-      `Pembayaran Rp${amount.toLocaleString()} diterima untuk ${invoiceId}. Sisa residual: Rp${newResidual.toLocaleString()} (Status: ${newStatus}) (SR-13).`,
+      `Pembayaran Rp${amount.toLocaleString()} diterima untuk ${invoiceId}. Sisa residual: Rp${newResidual.toLocaleString()} (Status: ${newStatus}).`,
       'SUCCESS'
     );
 
@@ -1128,7 +1416,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: `Pembayaran ${payId} dicatat.` };
   };
 
-  // F-11: Confirm Purchase Order
+  // Confirm Purchase Order
   const confirmPurchaseOrder = (poId: string) => {
     const po = purchaseOrders.find((p) => p.po_id === poId);
     if (!po) return { success: false, message: 'PO tidak ditemukan.' };
@@ -1137,30 +1425,61 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((p) => (p.po_id === poId ? { ...p, status: 'confirmed', is_locked: true } : p))
     );
 
-    logAudit('CONFIRM_PO', 'PURCHASE', poId, `PO ${poId} confirmed and locked (SR-05).`, 'SUCCESS');
+    logAudit('CONFIRM_PO', 'PURCHASE', poId, `PO ${poId} confirmed and locked.`, 'SUCCESS');
     addNotification('success', `Purchase Order ${poId} dikonfirmasi!`);
     return { success: true, message: 'PO confirmed.' };
   };
 
-  // T-17: Attempt to modify PO quantity after Confirmed without revision (SR-08)
-  const attemptModifyConfirmedPOQty = (poId: string, newQty: number) => {
+  // Update Draft Purchase Order / RFQ Line Cost or Quantity
+  const updatePurchaseOrderLine = (
+    poId: string,
+    lineId: string,
+    updates: { unit_cost?: number; quantity?: number }
+  ) => {
     const po = purchaseOrders.find((p) => p.po_id === poId);
-    if (!po) return { success: false, message: 'PO tidak ditemukan' };
-
-    if (po.status === 'confirmed' || po.is_locked) {
-      logAudit(
-        'MODIFY_PO_QTY',
-        'PURCHASE',
-        poId,
-        `Penolakan perubahan kuantitas PO ${poId} dari ${po.lines[0]?.quantity} ke ${newQty} tanpa prosedur revisi resmi (SR-08).`,
-        'BLOCKED',
-        String(po.lines[0]?.quantity),
-        String(newQty)
-      );
-      addNotification('error', `Ditolak: Dokumen ${poId} berstatus Confirmed dan terkunci. Kuantitas tidak dapat diubah tanpa revisi resmi (SR-08).`);
-      return { success: false, message: 'PO Confirmed terkunci.' };
+    if (!po) return { success: false, message: 'PO tidak ditemukan.' };
+    if (po.status === 'confirmed' || po.status === 'done' || po.is_locked) {
+      addNotification('error', `PO ${poId} sudah dikonfirmasi dan terkunci.`);
+      return { success: false, message: 'PO terkunci.' };
     }
-    return { success: true, message: 'Qty diubah.' };
+
+    const updatedLines = po.lines.map((line) => {
+      if (line.id !== lineId) return line;
+      const unitCost = Math.max(0, updates.unit_cost ?? line.unit_cost);
+      const quantity = Math.max(1, updates.quantity ?? line.quantity);
+      const subtotal = Math.round(quantity * unitCost);
+      const taxAmount = Math.round(subtotal * 0.11);
+      const total = subtotal + taxAmount;
+      return {
+        ...line,
+        unit_cost: unitCost,
+        quantity,
+        tax_amount: taxAmount,
+        total,
+      };
+    });
+
+    const untaxedAmount = updatedLines.reduce((s, l) => s + l.quantity * l.unit_cost, 0);
+    const taxAmount = updatedLines.reduce((s, l) => s + l.tax_amount, 0);
+    const totalAmount = untaxedAmount + taxAmount;
+
+    setPurchaseOrders((prev) =>
+      prev.map((p) =>
+        p.po_id === poId
+          ? {
+              ...p,
+              lines: updatedLines,
+              untaxed_amount: untaxedAmount,
+              tax_amount: taxAmount,
+              total_amount: totalAmount,
+            }
+          : p
+      )
+    );
+
+    logAudit('UPDATE_PO_PRICE', 'PURCHASE', poId, `Harga beli satuan pada ${poId} diperbarui`, 'SUCCESS');
+    addNotification('success', `Harga beli pada ${poId} berhasil diperbarui.`);
+    return { success: true, message: 'Harga PO diperbarui.' };
   };
 
   // F-12: Create Receipt from PO
@@ -1208,13 +1527,12 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const ordered = firstLine.ordered;
     const totalArrived = acceptedQty + rejectedQty;
 
-    // T-19 check: if inspection says rejected > 0, system MUST NOT accept rejected units into stock
     if (rejectedQty > 0 && acceptedQty + rejectedQty > ordered) {
       logAudit(
         'QA_INSPECTION',
         'INVENTORY',
         receiptId,
-        `Upaya mengakui unit gagal inspeksi ditolak (SR-06).`,
+        `Upaya mengakui unit gagal inspeksi ditolak.`,
         'VALIDATION_FAILED'
       );
       addNotification('error', `Gagal: Barang rejected (${rejectedQty}) tidak boleh diakui sebagai stok accepted!`);
@@ -1314,7 +1632,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'VALIDATE_RECEIPT',
       'INVENTORY',
       receiptId,
-      `Penerimaan ${receiptId} lolos inspeksi: ${acceptedQty} accepted, ${rejectedQty} rejected. Nilai persediaan +Rp${acceptedValuation.toLocaleString()} (SR-06).`,
+      `Penerimaan ${receiptId} lolos inspeksi: ${acceptedQty} accepted, ${rejectedQty} rejected. Nilai persediaan +Rp${acceptedValuation.toLocaleString()}.`,
       'SUCCESS'
     );
 
@@ -1326,7 +1644,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: 'Receipt QA divalidasi.' };
   };
 
-  // F-13: Vendor Bill with Three-Way Matching (SR-06: Billable <= Accepted Qty)
+  // Vendor Bill with Three-Way Matching
   const createVendorBillFromReceipt = (receiptId: string, qtyToBill?: number) => {
     const receipt = receipts.find((r) => r.receipt_id === receiptId);
     if (!receipt || receipt.status !== 'done') {
@@ -1338,16 +1656,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const accepted = firstLine.accepted;
     const billQty = qtyToBill !== undefined ? qtyToBill : accepted;
 
-    // Three-way match check: PO vs Receipt vs Bill (T-23)
+    // Three-way match check: PO vs Receipt vs Bill
     if (billQty > accepted) {
       logAudit(
         'CREATE_VENDOR_BILL',
         'ACCOUNTING',
         receiptId,
-        `Three-way matching failure: Upaya menagih ${billQty} unit melebihi kuantitas accepted (${accepted}) (SR-06).`,
+        `Three-way matching failure: Upaya menagih ${billQty} unit melebihi kuantitas accepted (${accepted}).`,
         'VALIDATION_FAILED'
       );
-      addNotification('error', `Three-Way Matching Gagal: Kuantitas tagihan (${billQty}) melebihi barang yang diterima baik (${accepted}) (SR-06)!`);
+      addNotification('error', `Three-Way Matching Gagal: Kuantitas tagihan (${billQty}) melebihi barang yang diterima baik (${accepted})!`);
       return { success: false, message: 'Tagihan melebihi penerimaan yang diterima baik.' };
     }
 
@@ -1389,7 +1707,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((p) => (p.po_id === receipt.source_po_id ? { ...p, bill_ids: [...p.bill_ids, billId] } : p))
     );
 
-    logAudit('CREATE_VENDOR_BILL', 'ACCOUNTING', billId, `Vendor Bill ${billId} dibuat untuk ${billQty} unit (Three-Way Match OK) (SR-06).`, 'SUCCESS');
+    logAudit('CREATE_VENDOR_BILL', 'ACCOUNTING', billId, `Vendor Bill ${billId} dibuat untuk ${billQty} unit (Three-Way Match OK).`, 'SUCCESS');
     addNotification('success', `Vendor Bill ${billId} disiapkan untuk ${billQty} unit.`);
     return { success: true, message: `Vendor Bill ${billId} disiapkan.`, billId };
   };
@@ -1521,75 +1839,123 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
 
-    logAudit('PAY_VENDOR_BILL', 'ACCOUNTING', payId, `Pembayaran utang ${billId} sebesar Rp${amount.toLocaleString()} melalui ${accountCreditName}. Sisa utang: Rp${newResidual.toLocaleString()} (SR-13).`, 'SUCCESS');
+    logAudit('PAY_VENDOR_BILL', 'ACCOUNTING', payId, `Pembayaran utang ${billId} sebesar Rp${amount.toLocaleString()} melalui ${accountCreditName}. Sisa utang: Rp${newResidual.toLocaleString()}.`, 'SUCCESS');
     addNotification('success', `Pembayaran ${billId} berhasil! Utang berkurang Rp${amount.toLocaleString()}.`);
     return { success: true, message: 'Pembayaran vendor berhasil.' };
   };
 
-  // F-16: Point of Sale Transaction (SR-03, SR-04, SR-09: single atomic execution, balanced journal)
-  const processPOSSale = (sku: string, qty: number, paymentMethod: 'cash' | 'bank') => {
-    const storeStock = stock.find((s) => s.sku === sku && s.location_id === 'STORE-BDG');
-    const availableInStore = storeStock ? storeStock.available : 0;
-
-    // Check stock in STORE-BDG (T-29)
-    if (!storeStock || availableInStore < qty) {
-      logAudit(
-        'POS_CHECKOUT',
-        'POS',
-        'POS-ATTEMPT',
-        `Insufficient Stock in STORE-BDG for ${sku}. Diminta: ${qty}, Tersedia: ${availableInStore} (SR-03, SR-04).`,
-        'VALIDATION_FAILED'
-      );
-      addNotification('error', `Transaksi Kasir Ditolak: Stok toko tidak mencukupi untuk ${sku} (Tersedia: ${availableInStore}, Diminta: ${qty})!`);
-      return { success: false, message: 'Insufficient Stock' };
+  // Multi-item Point of Sale Transaction (Odoo POS Register)
+  const processPOSCart = ({
+    items,
+    paymentMethod,
+    customerName = 'Pelanggan Walk-In Toko Bandung',
+    amountPaid,
+  }: {
+    items: { sku: string; quantity: number; unitPrice: number; discountPct: number }[];
+    paymentMethod: 'cash' | 'bank';
+    customerName?: string;
+    amountPaid?: number;
+  }) => {
+    if (!items || items.length === 0) {
+      addNotification('warning', 'Keranjang kasir masih kosong.');
+      return { success: false, message: 'Keranjang kosong.' };
     }
 
-    const product = products.find((p) => p.sku === sku);
-    if (!product) return { success: false, message: 'Produk tidak ditemukan.' };
+    // Validate stock in STORE-BDG for every item
+    for (const item of items) {
+      const storeStock = stock.find((s) => s.sku === item.sku && s.location_id === 'STORE-BDG');
+      const availableInStore = storeStock ? storeStock.available : 0;
+      if (!storeStock || availableInStore < item.quantity) {
+        logAudit(
+          'POS_CHECKOUT',
+          'POS',
+          'POS-ATTEMPT',
+          `Insufficient Stock in STORE-BDG for ${item.sku}. Diminta: ${item.quantity}, Tersedia: ${availableInStore}.`,
+          'VALIDATION_FAILED'
+        );
+        addNotification(
+          'error',
+          `Transaksi Kasir Ditolak: Stok toko tidak mencukupi untuk ${item.sku} (Tersedia: ${availableInStore}, Diminta: ${item.quantity})!`
+        );
+        return { success: false, message: 'Insufficient Stock' };
+      }
+    }
 
-    const unitPrice = product.sales_price_idr;
-    const unitCost = product.cost_idr;
-    const untaxedAmount = qty * unitPrice;
-    const taxAmount = Math.round(untaxedAmount * 0.11);
-    const totalAmount = untaxedAmount + taxAmount;
-    const totalCogs = qty * unitCost;
-
+    let untaxedAmount = 0;
+    let totalTax = 0;
+    let totalCogs = 0;
+    const posLines: POSTransaction['lines'] = [];
+    const newMoves: StockMove[] = [];
     const posId = `POS/2026/${String(posTransactions.length + 1).padStart(4, '0')}`;
 
-    // 1. Deduct STORE-BDG physical stock
+    for (const item of items) {
+      const product = products.find((p) => p.sku === item.sku);
+      if (!product) return { success: false, message: `Produk ${item.sku} tidak ditemukan.` };
+
+      const unitPrice = Math.max(0, item.unitPrice);
+      const discountPct = Math.min(100, Math.max(0, item.discountPct));
+      const lineSubtotal = Math.round(item.quantity * unitPrice * (1 - discountPct / 100));
+      const lineTax = Math.round(lineSubtotal * 0.11);
+      const lineTotal = lineSubtotal + lineTax;
+      const lineCogs = item.quantity * product.cost_idr;
+
+      untaxedAmount += lineSubtotal;
+      totalTax += lineTax;
+      totalCogs += lineCogs;
+
+      posLines.push({
+        sku: item.sku,
+        product_name: product.product_name,
+        quantity: item.quantity,
+        unit_price: unitPrice,
+        discount_pct: discountPct,
+        subtotal: lineSubtotal,
+        tax_amount: lineTax,
+        line_total: lineTotal,
+      });
+
+      newMoves.push({
+        move_id: `MOVE-${Date.now().toString().slice(-6)}-${item.sku.slice(-2)}`,
+        date: new Date().toISOString().substring(0, 10),
+        sku: item.sku,
+        from_location: 'STORE-BDG',
+        to_location: customerName,
+        quantity: item.quantity,
+        unit_cost: product.cost_idr,
+        total_value: lineCogs,
+        reference_doc: posId,
+        created_by: currentUser?.name || 'Cashier',
+      });
+    }
+
+    const totalAmount = untaxedAmount + totalTax;
+    const effectivePaid = amountPaid !== undefined ? Math.max(totalAmount, amountPaid) : totalAmount;
+    const change = Math.max(0, effectivePaid - totalAmount);
+
+    // 1. Deduct STORE-BDG physical stock for all purchased SKUs
     setStock((prev) =>
       prev.map((s) => {
-        if (s.sku === sku && s.location_id === 'STORE-BDG') {
-          return {
-            ...s,
-            on_hand: s.on_hand - qty,
-            available: s.available - qty,
-          };
-        }
-        return s;
+        if (s.location_id !== 'STORE-BDG') return s;
+        const qtySold = items
+          .filter((i) => i.sku === s.sku)
+          .reduce((sum, i) => sum + i.quantity, 0);
+        if (qtySold === 0) return s;
+        return {
+          ...s,
+          on_hand: s.on_hand - qtySold,
+          available: s.available - qtySold,
+        };
       })
     );
 
-    // 2. Stock Move
-    const moveId = `MOVE-${Date.now().toString().slice(-6)}`;
-    const newMove: StockMove = {
-      move_id: moveId,
-      date: new Date().toISOString().substring(0, 10),
-      sku,
-      from_location: 'STORE-BDG',
-      to_location: 'Customer POS',
-      quantity: qty,
-      unit_cost: unitCost,
-      total_value: totalCogs,
-      reference_doc: posId,
-      created_by: currentUser?.name || 'Cashier',
-    };
-    setStockMoves((prev) => [newMove, ...prev]);
+    // 2. Stock Moves
+    setStockMoves((prev) => [...newMoves, ...prev]);
 
-    // 3. Balanced Journal (Dr Cash/Bank, Dr HPP / Cr Sales, Cr PPN Keluaran, Cr Persediaan) (SR-09)
+    // 3. Balanced Journal (Dr Cash/Bank, Dr HPP / Cr Sales, Cr PPN Keluaran, Cr Persediaan)
     const journalId = `JRN/${new Date().getFullYear()}/${String(journalEntries.length + 1).padStart(4, '0')}`;
     const accountPaymentCode = paymentMethod === 'bank' ? '1010' : '1000';
     const accountPaymentName = paymentMethod === 'bank' ? 'Bank' : 'Kas';
+    const totalUnits = items.reduce((s, i) => s + i.quantity, 0);
 
     const journal: JournalEntry = {
       entry_id: journalId,
@@ -1612,7 +1978,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         {
           account_code: '5000',
           account_name: 'Harga Pokok Penjualan',
-          label: `HPP Penjualan POS ${qty} unit ${sku}`,
+          label: `HPP Penjualan POS ${totalUnits} unit`,
           debit: totalCogs,
           credit: 0,
         },
@@ -1628,12 +1994,12 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           account_name: 'PPN Keluaran',
           label: `PPN Keluaran POS 11%`,
           debit: 0,
-          credit: taxAmount,
+          credit: totalTax,
         },
         {
           account_code: '1200',
           account_name: 'Persediaan Barang Dagang',
-          label: `Pengurangan Stok Toko ${qty} unit ${sku}`,
+          label: `Pengurangan Stok Toko ${totalUnits} unit`,
           debit: 0,
           credit: totalCogs,
         },
@@ -1646,26 +2012,15 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       pos_id: posId,
       date: new Date().toISOString().substring(0, 19).replace('T', ' '),
       cashier_name: currentUser?.name || 'Salsa Widianti',
-      customer_name: 'Pelanggan Walk-In Toko Bandung',
+      customer_name: customerName,
       location_id: 'STORE-BDG',
-      lines: [
-        {
-          sku,
-          product_name: product.product_name,
-          quantity: qty,
-          unit_price: unitPrice,
-          discount_pct: 0,
-          subtotal: untaxedAmount,
-          tax_amount: taxAmount,
-          line_total: totalAmount,
-        },
-      ],
+      lines: posLines,
       untaxed_amount: untaxedAmount,
-      tax_amount: taxAmount,
+      tax_amount: totalTax,
       total_amount: totalAmount,
       payment_method: paymentMethod,
-      amount_paid: totalAmount,
-      change: 0,
+      amount_paid: effectivePaid,
+      change,
       journal_id: journalId,
       status: 'completed',
     };
@@ -1675,16 +2030,32 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'POS_CHECKOUT',
       'POS',
       posId,
-      `Penjualan POS tunai ${posId} berhasil: ${qty} unit ${sku}. Net Rp${untaxedAmount.toLocaleString()}, PPN Rp${taxAmount.toLocaleString()}, Total Rp${totalAmount.toLocaleString()}. Jurnal & stok disinkronkan (SR-09).`,
+      `Penjualan POS ${posId} berhasil (${totalUnits} unit, ${items.length} item). Net Rp${untaxedAmount.toLocaleString()}, PPN Rp${totalTax.toLocaleString()}, Total Rp${totalAmount.toLocaleString()}.`,
       'SUCCESS'
     );
 
     addNotification(
       'success',
-      `Penjualan POS ${posId} Sukses! Struk Rp${totalAmount.toLocaleString()} diterbitkan.`
+      `Penjualan POS ${posId} berhasil! Struk Rp${totalAmount.toLocaleString()} diterbitkan.`
     );
 
     return { success: true, message: 'POS Sale Completed', receipt: posRecord };
+  };
+
+  // Single-item Point of Sale helper
+  const processPOSSale = (sku: string, qty: number, paymentMethod: 'cash' | 'bank', overrideUnitPrice?: number) => {
+    const product = products.find((p) => p.sku === sku);
+    return processPOSCart({
+      items: [
+        {
+          sku,
+          quantity: qty,
+          unitPrice: overrideUnitPrice !== undefined ? overrideUnitPrice : product?.sales_price_idr || 0,
+          discountPct: 0,
+        },
+      ],
+      paymentMethod,
+    });
   };
 
   // F-17: Customer Return & Quality Inspection (SR-07: stock only restored after physical check, COGS reversed)
@@ -1794,7 +2165,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'INSPECT_RETURN',
       'RETURNS',
       retId,
-      `Retur ${retId} diperiksa: ${acceptedQty} unit diterima layak stok, ${rejectedQty} unit rejected. Stok WH bertambah & HPP Rp${cogsReversal.toLocaleString()} dibalik (SR-07).`,
+      `Retur ${retId} diperiksa: ${acceptedQty} unit diterima layak stok, ${rejectedQty} unit rejected. Stok WH bertambah & HPP Rp${cogsReversal.toLocaleString()} dibalik.`,
       'SUCCESS'
     );
 
@@ -1802,7 +2173,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: 'Retur diinspeksi.', returnId: retId };
   };
 
-  // F-17: Issue Credit Note for Validated Return (SR-07: Credit Note <= Accepted return)
+  // Issue Credit Note for Validated Return
   const issueCreditNoteForReturn = (returnId: string, requestedQty?: number) => {
     const retDoc = returns.find((r) => r.return_id === returnId);
     if (!retDoc) return { success: false, message: 'Dokumen retur tidak ditemukan.' };
@@ -1810,16 +2181,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const maxCreditable = retDoc.accepted_qty; // only physically accepted units can be credited!
     const qty = requestedQty !== undefined ? requestedQty : maxCreditable;
 
-    // T-31 check: Cannot issue credit note for more than validated physical accepted units
+    // Cannot issue credit note for more than validated physical accepted units
     if (qty > maxCreditable) {
       logAudit(
         'ISSUE_CREDIT_NOTE',
         'ACCOUNTING',
         returnId,
-        `Penolakan Credit Note: Kuantitas ${qty} melebihi barang retur fisik tervalidasi (${maxCreditable}) (SR-07).`,
+        `Penolakan Credit Note: Kuantitas ${qty} melebihi barang retur fisik tervalidasi (${maxCreditable}).`,
         'VALIDATION_FAILED'
       );
-      addNotification('error', `Validasi Gagal: Credit Note (${qty} unit) melebihi kuantitas retur yang diterima baik (${maxCreditable} unit) (SR-07)!`);
+      addNotification('error', `Validasi Gagal: Credit Note (${qty} unit) melebihi kuantitas retur yang diterima baik (${maxCreditable} unit)!`);
       return { success: false, message: 'Credit Note melebihi barang retur valid.' };
     }
 
@@ -1912,7 +2283,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'ISSUE_CREDIT_NOTE',
       'ACCOUNTING',
       cnId,
-      `Credit Note ${cnId} sebesar Rp${totalCredit.toLocaleString()} diterbitkan untuk ${qty} unit ${retDoc.sku}. Piutang disesuaikan (SR-07).`,
+      `Credit Note ${cnId} sebesar Rp${totalCredit.toLocaleString()} diterbitkan untuk ${qty} unit ${retDoc.sku}. Piutang disesuaikan.`,
       'SUCCESS'
     );
 
@@ -1924,7 +2295,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: `Credit Note ${cnId} diterbitkan.`, cnId };
   };
 
-  // F-18: Internal Location Transfer (SR-12: Total company stock and valuation remain invariant)
+  // Internal Location Transfer
   const executeInternalTransfer = (
     sku: string,
     fromLoc: 'STORE-BDG' | 'WH-JKT',
@@ -1942,7 +2313,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         'INTERNAL_TRANSFER',
         'INVENTORY',
         'TRANSFER-ATTEMPT',
-        `Transfer ditolak: Kuantitas ${qty} melebihi stok tersedia (${sourceStock?.available || 0}) di ${fromLoc} (SR-12).`,
+        `Transfer ditolak: Kuantitas ${qty} melebihi stok tersedia (${sourceStock?.available || 0}) di ${fromLoc}.`,
         'VALIDATION_FAILED'
       );
       addNotification('error', `Transfer Gagal: Stok di lokasi asal ${fromLoc} tidak mencukupi!`);
@@ -2006,7 +2377,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'INTERNAL_TRANSFER',
       'INVENTORY',
       transferId,
-      `Transfer ${qty} unit ${sku} dari ${fromLoc} ke ${toLoc}. Total stok dan nilai persediaan perusahaan konstan (SR-12).`,
+      `Transfer ${qty} unit ${sku} dari ${fromLoc} ke ${toLoc}. Total stok dan nilai persediaan perusahaan konstan.`,
       'SUCCESS'
     );
 
@@ -2018,1320 +2389,10 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: 'Transfer selesai.' };
   };
 
-  // Automated Test Runner Engine for T-01 to T-36
-  const runAutomatedTest = async (testId: string): Promise<{ status: 'passed' | 'failed'; actual: string }> => {
-    const wasRunning = isTestRunning.current;
-    isTestRunning.current = true;
-    let resultStatus: 'passed' | 'failed' = 'passed';
-    let actualMsg = '';
-
-    try {
-      switch (testId) {
-      case 'T-01': {
-        // Login as Sales, verify allowed apps
-        const salesUser = INITIAL_USERS.find((u) => u.role === 'sales')!;
-        setCurrentUser(salesUser);
-        const canAccessSales = true;
-        const canAccessAccounting = false;
-        actualMsg = `Pengguna aktif: ${salesUser.name} (${salesUser.roleName}). Modul tampil: Sales, CRM, Contacts, Products. Modul Accounting/Journal tidak dapat diakses langsung.`;
-        resultStatus = canAccessSales && !canAccessAccounting ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-02': {
-        // Sales tries to access Journal Entries -> Denied and logged
-        const salesUser = INITIAL_USERS.find((u) => u.role === 'sales')!;
-        setCurrentUser(salesUser);
-        logAudit(
-          'ACCESS_JOURNAL',
-          'ACCOUNTING',
-          'JOURNAL-INDEX',
-          `Akses ditolak: Pengguna ${salesUser.name} (${salesUser.role}) tidak memiliki hak akses modul Akuntansi (SR-16).`,
-          'DENIED'
-        );
-        actualMsg = `Access Denied! Upaya akses jurnal oleh akun Sales ditolak dan dicatat di Audit Log dengan status DENIED.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-03': {
-        // Open C02 in customer list
-        const c02 = customers.find((c) => c.contact_id === 'C02') || INITIAL_CUSTOMERS.find((c) => c.contact_id === 'C02');
-        if (c02 && c02.credit_limit_idr === 400000 && c02.payment_terms === 'NET14') {
-          actualMsg = `Pelanggan C02 (${c02.name}) ditemukan. Credit limit: Rp${c02.credit_limit_idr.toLocaleString()}, Payment terms: ${c02.payment_terms}.`;
-          resultStatus = 'passed';
-        } else {
-          actualMsg = 'Data C02 tidak cocok dengan seed.';
-          resultStatus = 'failed';
-        }
-        break;
-      }
-      case 'T-04': {
-        // C04 TUNAI tries credit transaction -> blocked
-        const c04 = customers.find((c) => c.contact_id === 'C04') || INITIAL_CUSTOMERS.find((c) => c.contact_id === 'C04');
-        logAudit(
-          'CONFIRM_ORDER',
-          'SALES',
-          'TEST-C04',
-          `Penolakan transaksi kredit untuk pelanggan TUNAI (C04) dengan credit limit Rp0 (SR-10).`,
-          'BLOCKED'
-        );
-        actualMsg = `Sistem memvalidasi termin C04 (${c04?.name || 'CV Berkah Modest'}): Pelanggan bertanda TUNAI dengan credit limit Rp0 dilarang membuat transaksi kredit (SR-10).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-05': {
-        // Check variants AP-TS-BLK-M and AP-TS-BLK-L
-        const pM = products.find((p) => p.sku === 'AP-TS-BLK-M') || INITIAL_PRODUCTS.find((p) => p.sku === 'AP-TS-BLK-M');
-        const pL = products.find((p) => p.sku === 'AP-TS-BLK-L') || INITIAL_PRODUCTS.find((p) => p.sku === 'AP-TS-BLK-L');
-        const sM = stock.find((s) => s.sku === 'AP-TS-BLK-M' && s.location_id === 'WH-JKT');
-        const sL = stock.find((s) => s.sku === 'AP-TS-BLK-L' && s.location_id === 'WH-JKT');
-        if (pM && pL) {
-          const qtyM = sM ? sM.on_hand : 4;
-          const qtyL = sL ? sL.on_hand : 0;
-          actualMsg = `SKU AP-TS-BLK-M (Ukuran M, stok WH-JKT: ${qtyM}) dan AP-TS-BLK-L (Ukuran L, stok WH-JKT: ${qtyL}) terpisah secara independen (SR-11).`;
-          resultStatus = 'passed';
-        } else {
-          actualMsg = 'Produk tidak ditemukan.';
-          resultStatus = 'failed';
-        }
-        break;
-      }
-      case 'T-06': {
-        // Duplicate SKU attempt (SR-11)
-        const exists = products.some((p) => p.sku === 'AP-TS-BLK-M') || INITIAL_PRODUCTS.some((p) => p.sku === 'AP-TS-BLK-M');
-        logAudit(
-          'CREATE_VARIANT',
-          'PRODUCTS',
-          'AP-TS-BLK-M',
-          'Penyimpanan varian dengan SKU AP-TS-BLK-M ditolak oleh validasi keunikan SKU (SR-11).',
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Penyimpanan varian dengan SKU AP-TS-BLK-M ditolak oleh validasi keunikan SKU (SR-11). Data lama tidak tersentuh.`;
-        resultStatus = exists ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-07': {
-        // Convert LEAD-001 to Opportunity
-        const res = convertLeadToOpportunity('LEAD-001');
-        actualMsg = `LEAD-001 berhasil beralih ke stage Qualified. Opportunity ID: OPP-LEAD-001. Riwayat asal dan catatan lead dipertahankan (SR-15).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-08': {
-        // Prevent duplicate conversion of Opportunity
-        setLeads((prev) =>
-          prev.map((l) =>
-            l.lead_id === 'LEAD-001'
-              ? { ...l, converted_quotation_id: 'Q00008', stage: 'proposition' as const }
-              : l
-          )
-        );
-        logAudit(
-          'CONVERT_OPPORTUNITY',
-          'CRM',
-          'LEAD-001',
-          'Upaya konversi ulang Opportunity LEAD-001. Dokumen ganda dicegah (SR-15).',
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Konversi ulang dicegah. Dokumen ganda tidak diciptakan, sistem mengembalikan quotation yang sudah ada (Q00008) dan mencatat log audit (SR-15).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-09': {
-        // C03 orders 2 AP-DR-BLU-M, normal price, credit -> subtotal 900k, PPN 99k, total 999k, reserve 2
-        const qDoc: SalesOrder = {
-          order_id: 'Q00008',
-          type: 'sales_order',
-          customer_id: 'C03',
-          order_date: '2026-10-27',
-          expiration_date: '2026-11-10',
-          payment_terms: 'NET14',
-          warehouse_id: 'WH-JKT',
-          salesperson: 'Nadya Kinasih',
-          status: 'confirmed',
-          lines: [
-            {
-              id: 'QL-01',
-              sku: 'AP-DR-BLU-M',
-              product_name: 'Dress Denim Biru',
-              size: 'M',
-              color: 'Biru',
-              quantity: 2,
-              unit_price: 450000,
-              discount_pct: 0,
-              subtotal: 900000,
-              tax_amount: 99000,
-              total: 999000,
-            },
-          ],
-          untaxed_amount: 900000,
-          discount_amount: 0,
-          tax_amount: 99000,
-          total_amount: 999000,
-          discount_approved: true,
-          delivery_ids: [],
-          invoice_ids: [],
-          is_locked: true,
-        };
-        setSalesOrders((prev) => [qDoc, ...prev.filter((o) => o.order_id !== 'Q00008')]);
-        setStock((prev) =>
-          prev.map((s) =>
-            s.sku === 'AP-DR-BLU-M' && s.location_id === 'WH-JKT'
-              ? { ...s, reserved: 2, available: Math.max(0, s.on_hand - 2) }
-              : s
-          )
-        );
-        logAudit('CONFIRM_ORDER', 'SALES', 'Q00008', `Sales Order Q00008 Confirmed. Reservasi 2 unit AP-DR-BLU-M di WH-JKT. Total Rp999.000 (SR-01, SR-10).`, 'SUCCESS');
-        actualMsg = `Quotation Q00008 dikonfirmasi menjadi SO. Subtotal: Rp900.000, PPN: Rp99.000, Total: Rp999.000. Limit C03 (Rp1.500.000) cukup. Stok tereservasi: 2 unit.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-10': {
-        // C02 credit attempt 3 AP-TS-BLK-S (499.500 > 400.000) -> blocked
-        const c02 = customers.find((c) => c.contact_id === 'C02') || INITIAL_CUSTOMERS.find((c) => c.contact_id === 'C02');
-        const grossNewOrder = 499500;
-        const limit = c02?.credit_limit_idr || 400000;
-        const totalExposure = (c02?.open_receivable || 0) + grossNewOrder;
-        logAudit(
-          'CONFIRM_ORDER',
-          'SALES',
-          'Q-OVERLIMIT',
-          `Credit limit exceeded for ${c02?.name || 'Rani Putri'}. Exposure Rp${totalExposure.toLocaleString()} > Limit Rp${limit.toLocaleString()} (SR-10)`,
-          'BLOCKED',
-          `Limit: ${limit}`,
-          `Exposure: ${totalExposure}`
-        );
-        actualMsg = `Konfirmasi order kredit C02 sebesar Rp499.500 ditolak karena melebihi credit limit Rp400.000 (SR-10). Tidak ada SO baru yang terkonfirmasi.`;
-        resultStatus = totalExposure > limit ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-11': {
-        // Attempt to modify price on confirmed order S00007 without revision (SR-08)
-        const order = salesOrders.find((so) => so.order_id === 'S00007') || INITIAL_SALES_ORDERS.find((so) => so.order_id === 'S00007');
-        const isLocked = order?.status === 'confirmed' || order?.is_locked;
-        logAudit(
-          'MODIFY_PRICE',
-          'SALES',
-          'S00007',
-          `Penolakan revisi harga tak sah pada order S00007 yang telah Confirmed tanpa proses revisi resmi (SR-08).`,
-          'BLOCKED',
-          '150000',
-          '120000'
-        );
-        actualMsg = `Perubahan harga pada S00007 ditolak: Dokumen status Confirmed terkunci dan harga asli Rp150.000 dipertahankan. Dicatat di audit log (SR-08).`;
-        resultStatus = isLocked ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-12': {
-        // Deliver 2 AP-TS-BLK-M from S00007 -> WH 4->2, backorder 1, HPP 160.000
-        const doId = 'WH/OUT/00007';
-        const deliveryDoc: DeliveryOrder = {
-          delivery_id: doId,
-          source_so_id: 'S00007',
-          customer_id: 'C01',
-          source_location: 'WH-JKT',
-          scheduled_date: '2026-10-28',
-          status: 'done',
-          journal_posted: true,
-          cogs_posted: 160000,
-          lines: [
-            {
-              sku: 'AP-TS-BLK-M',
-              demand: 3,
-              reserved: 1,
-              done: 2,
-              backorder: 1,
-            },
-          ],
-          created_at: new Date().toISOString(),
-        };
-
-        const boDoc: DeliveryOrder = {
-          delivery_id: 'WH/OUT/00007-BACKORDER',
-          source_so_id: 'S00007',
-          customer_id: 'C01',
-          source_location: 'WH-JKT',
-          scheduled_date: '2026-10-31',
-          status: 'confirmed',
-          is_backorder: true,
-          parent_delivery_id: doId,
-          lines: [
-            {
-              sku: 'AP-TS-BLK-M',
-              demand: 1,
-              reserved: 1,
-              done: 0,
-              backorder: 0,
-            },
-          ],
-          journal_posted: false,
-          cogs_posted: 0,
-          created_at: new Date().toISOString(),
-        };
-
-        setDeliveryOrders((prev) => [deliveryDoc, boDoc, ...prev.filter((d) => d.delivery_id !== doId && d.delivery_id !== boDoc.delivery_id)]);
-
-        // Deduct 2 units of AP-TS-BLK-M from WH-JKT (4 -> 2)
-        setStock((prev) =>
-          prev.map((s) =>
-            s.sku === 'AP-TS-BLK-M' && s.location_id === 'WH-JKT'
-              ? { ...s, on_hand: 2, reserved: 1, available: 1 }
-              : s
-          )
-        );
-
-        // Record stock move
-        const moveId = `MOVE-${Date.now().toString().slice(-6)}`;
-        setStockMoves((prev) => [
-          {
-            move_id: moveId,
-            date: new Date().toISOString().substring(0, 10),
-            sku: 'AP-TS-BLK-M',
-            from_location: 'WH-JKT',
-            to_location: 'Customer Location (C01)',
-            quantity: 2,
-            unit_cost: 80000,
-            total_value: 160000,
-            reference_doc: doId,
-            created_by: 'Bayu Wicaksono',
-          },
-          ...prev,
-        ]);
-
-        // Record journal entry: Dr 5000 HPP Rp160.000 / Cr 1200 Persediaan Rp160.000
-        const journalId = `JRN/${new Date().getFullYear()}/0001`;
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: new Date().toISOString().substring(0, 10),
-          reference: doId,
-          journal_type: 'inventory',
-          source_doc: `Delivery Order ${doId}`,
-          posted: true,
-          total_debit: 160000,
-          total_credit: 160000,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '5000',
-              account_name: 'Harga Pokok Penjualan',
-              label: 'HPP Pengiriman 2 unit AP-TS-BLK-M',
-              debit: 160000,
-              credit: 0,
-            },
-            {
-              account_code: '1200',
-              account_name: 'Persediaan Barang Dagang',
-              label: 'Pengurangan Persediaan 2 unit AP-TS-BLK-M',
-              debit: 0,
-              credit: 160000,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== doId)]);
-
-        logAudit(
-          'VALIDATE_DELIVERY',
-          'INVENTORY',
-          doId,
-          `Delivery ${doId} divalidasi 2 unit terkirim, 1 unit backorder. HPP Rp160.000 dibukukan (SR-04, SR-07).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Delivery WH/OUT/00007 divalidasi 2 unit. Stok WH-JKT: 2 (dari 4), backorder: 1 unit. HPP Rp160.000 dan pengurangan persediaan Rp160.000 terposting ke jurnal.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-13': {
-        // Validate delivery 4 units when demand is 3
-        logAudit(
-          'VALIDATE_DELIVERY',
-          'INVENTORY',
-          'WH/OUT/00007',
-          `Penolakan validasi: Kuantitas 4 melampaui sisa permintaan 3 (SR-04).`,
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Validasi pengiriman 4 unit pada pesanan 3 unit ditolak oleh sistem (SR-04). Jumlah mutasi tetap aman.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-14': {
-        // Open stock for AP-TS-BLK-M at seed: On Hand 4, Reserved 3, Available 1
-        const sWh = INITIAL_STOCK.find((s) => s.sku === 'AP-TS-BLK-M' && s.location_id === 'WH-JKT');
-        actualMsg = `Stok AP-TS-BLK-M di WH-JKT pada baseline seed: On Hand = ${sWh?.on_hand}, Reserved = ${sWh?.reserved} (oleh S00007), Available = ${sWh?.available}.`;
-        resultStatus = sWh?.on_hand === 4 && sWh?.reserved === 3 && sWh?.available === 1 ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-15': {
-        // Transfer 1 AP-TS-BLK-L from STORE-BDG to WH-JKT (SR-12)
-        setStock((prev) =>
-          prev.map((s) => {
-            if (s.sku === 'AP-TS-BLK-L' && s.location_id === 'STORE-BDG') {
-              return { ...s, on_hand: 1, available: 1 };
-            }
-            if (s.sku === 'AP-TS-BLK-L' && s.location_id === 'WH-JKT') {
-              return { ...s, on_hand: 1, available: 1 };
-            }
-            return s;
-          })
-        );
-        const transId = 'TRANS/2026/0001';
-        setTransfers((prev) => [
-          {
-            transfer_id: transId,
-            source_location: 'STORE-BDG',
-            dest_location: 'WH-JKT',
-            sku: 'AP-TS-BLK-L',
-            quantity: 1,
-            date: new Date().toISOString().substring(0, 10),
-            requested_by: 'Warehouse Staff',
-            status: 'done',
-          },
-          ...prev.filter((t) => t.transfer_id !== transId),
-        ]);
-        const moveId = `MOVE-${Date.now().toString().slice(-6)}`;
-        setStockMoves((prev) => [
-          {
-            move_id: moveId,
-            date: new Date().toISOString().substring(0, 10),
-            sku: 'AP-TS-BLK-L',
-            from_location: 'STORE-BDG',
-            to_location: 'WH-JKT',
-            quantity: 1,
-            unit_cost: 80000,
-            total_value: 80000,
-            reference_doc: transId,
-            created_by: 'Warehouse Staff',
-          },
-          ...prev,
-        ]);
-        logAudit(
-          'INTERNAL_TRANSFER',
-          'INVENTORY',
-          transId,
-          'Transfer 1 unit AP-TS-BLK-L dari STORE-BDG ke WH-JKT selesai (SR-12).',
-          'SUCCESS'
-        );
-        actualMsg = `Transfer 1 unit berhasil: STORE-BDG berkurang 1 (2->1), WH-JKT bertambah 1 (0->1). Total perusahaan tetap 2 unit dan nilai persediaan tetap Rp160.000 (SR-12).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-16': {
-        // Open PO00007
-        const po = purchaseOrders.find((p) => p.po_id === 'PO00007') || INITIAL_PURCHASE_ORDERS.find((p) => p.po_id === 'PO00007');
-        actualMsg = `PO00007 dibuka: 4 AP-HD-GRY-M @Rp190.000. Subtotal: Rp${po?.untaxed_amount.toLocaleString()}, PPN: Rp${po?.tax_amount.toLocaleString()}, Total: Rp${po?.total_amount.toLocaleString()}, Status: ${po?.status}.`;
-        resultStatus = po?.total_amount === 843600 ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-17': {
-        // Attempt to modify PO00007 qty after Confirmed (SR-08)
-        const po = purchaseOrders.find((p) => p.po_id === 'PO00007') || INITIAL_PURCHASE_ORDERS.find((p) => p.po_id === 'PO00007');
-        const isLocked = po?.status === 'confirmed' || po?.is_locked;
-        logAudit(
-          'MODIFY_PO_QTY',
-          'PURCHASE',
-          'PO00007',
-          'Penolakan perubahan kuantitas PO PO00007 dari 4 ke 7 tanpa prosedur revisi resmi (SR-08).',
-          'BLOCKED',
-          '4',
-          '7'
-        );
-        actualMsg = `Upaya mengganti kuantitas PO00007 dari 4 ke 7 ditolak. Dokumen berstatus Confirmed dan order asli terlindungi (SR-08). Jejak audit dicatat.`;
-        resultStatus = isLocked ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-18': {
-        // Receive 3 AP-HD-GRY-M from PO00007, 3 accepted -> WH 2->5, value +570.000, remaining 1
-        const receiptId = 'WH/IN/00007';
-        const receiptDoc: Receipt = {
-          receipt_id: receiptId,
-          source_po_id: 'PO00007',
-          vendor_id: 'V01',
-          destination_location: 'WH-JKT',
-          receipt_date: '2026-10-29',
-          status: 'done',
-          journal_posted: true,
-          inspection_completed: true,
-          lines: [
-            {
-              sku: 'AP-HD-GRY-M',
-              ordered: 4,
-              received: 3,
-              accepted: 3,
-              rejected: 0,
-              remaining: 1,
-            },
-          ],
-        };
-
-        setReceipts((prev) => [receiptDoc, ...prev.filter((r) => r.receipt_id !== receiptId)]);
-
-        // WH-JKT stock for AP-HD-GRY-M becomes 5 (from 2)
-        setStock((prev) =>
-          prev.map((s) =>
-            s.sku === 'AP-HD-GRY-M' && s.location_id === 'WH-JKT'
-              ? { ...s, on_hand: 5, available: 5 }
-              : s
-          )
-        );
-
-        // Record stock move
-        const moveId = `MOVE-${Date.now().toString().slice(-6)}`;
-        setStockMoves((prev) => [
-          {
-            move_id: moveId,
-            date: new Date().toISOString().substring(0, 10),
-            sku: 'AP-HD-GRY-M',
-            from_location: 'Vendor Location (V01)',
-            to_location: 'WH-JKT',
-            quantity: 3,
-            unit_cost: 190000,
-            total_value: 570000,
-            reference_doc: receiptId,
-            created_by: 'Bayu Wicaksono',
-          },
-          ...prev,
-        ]);
-
-        // Journal GRNI
-        const journalId = `JRN/${new Date().getFullYear()}/0002`;
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: new Date().toISOString().substring(0, 10),
-          reference: receiptId,
-          journal_type: 'inventory',
-          source_doc: `Receipt QA ${receiptId}`,
-          posted: true,
-          total_debit: 570000,
-          total_credit: 570000,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '1200',
-              account_name: 'Persediaan Barang Dagang',
-              label: 'Penerimaan 3 unit AP-HD-GRY-M',
-              debit: 570000,
-              credit: 0,
-            },
-            {
-              account_code: '1210',
-              account_name: 'Persediaan Dalam Penerimaan / GRNI',
-              label: 'Akrual Penerimaan Barang (GRNI)',
-              debit: 0,
-              credit: 570000,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== receiptId)]);
-
-        logAudit(
-          'VALIDATE_RECEIPT',
-          'INVENTORY',
-          receiptId,
-          `Receipt ${receiptId} divalidasi: 3 unit lolos inspeksi kualitas (Accepted). Nilai persediaan +Rp570.000 (SR-06).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Receipt WH/IN/00007 divalidasi: 3 unit diterima baik. Stok WH-JKT bertambah menjadi 5 (dari 2). Nilai persediaan +Rp570.000. Sisa PO: 1 unit. Jurnal GRNI dibukukan.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-19': {
-        // Mark 3 accepted, 1 rejected, try acknowledge 4 accepted -> blocked
-        logAudit(
-          'VALIDATE_RECEIPT',
-          'INVENTORY',
-          'WH/IN/00007-TEST',
-          'Penolakan penerimaan: 1 unit gagal inspeksi (QA Rejected) dilarang masuk stok atau ditagihkan (SR-06).',
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Sistem memblokir pengakuan barang gagal inspeksi: 1 unit rusak tidak boleh dimasukkan ke stok atau ditagihkan (SR-06).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-20': {
-        // Customer Invoice for 2 AP-TS-BLK-M after delivery -> Subtotal 300k, PPN 33k, AR 333k, remaining 1 unbilled
-        const invId = 'INV/2026/0007';
-        const invDoc: CustomerInvoice = {
-          invoice_id: invId,
-          customer_id: 'C01',
-          source_so_id: 'S00007',
-          delivery_id: 'WH/OUT/00007',
-          invoice_date: '2026-10-28',
-          due_date: '2026-11-11',
-          payment_terms: 'NET14',
-          lines: [
-            {
-              sku: 'AP-TS-BLK-M',
-              product_name: 'Kaos Essential Hitam',
-              quantity: 2,
-              unit_price: 150000,
-              tax_amount: 33000,
-              line_total: 333000,
-            },
-          ],
-          untaxed_amount: 300000,
-          tax_amount: 33000,
-          total_amount: 333000,
-          amount_paid: 0,
-          residual: 333000,
-          status: 'posted',
-          payment_ids: [],
-        };
-
-        setCustomerInvoices((prev) => [invDoc, ...prev.filter((i) => i.invoice_id !== invId)]);
-
-        // Customer AR
-        setCustomers((prev) =>
-          prev.map((c) =>
-            c.contact_id === 'C01'
-              ? { ...c, open_receivable: 333000 }
-              : c
-          )
-        );
-
-        // Journal Sales & PPN
-        const journalId = `JRN/${new Date().getFullYear()}/0003`;
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: new Date().toISOString().substring(0, 10),
-          reference: invId,
-          journal_type: 'sales',
-          source_doc: `Customer Invoice ${invId}`,
-          posted: true,
-          total_debit: 333000,
-          total_credit: 333000,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '1100',
-              account_name: 'Piutang Usaha',
-              label: 'Piutang C01 (INV/2026/0007)',
-              debit: 333000,
-              credit: 0,
-            },
-            {
-              account_code: '4000',
-              account_name: 'Pendapatan Penjualan',
-              label: 'Penjualan 2 unit Kaos Essential Hitam',
-              debit: 0,
-              credit: 300000,
-            },
-            {
-              account_code: '2100',
-              account_name: 'PPN Keluaran',
-              label: 'PPN Keluaran 11%',
-              debit: 0,
-              credit: 33000,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== invId)]);
-
-        logAudit(
-          'CREATE_INVOICE',
-          'INVOICING',
-          invId,
-          `Customer Invoice ${invId} diterbitkan untuk 2 unit: Subtotal Rp300.000, PPN Rp33.000, Total Rp333.000 (SR-02).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Customer Invoice ${invId} diterbitkan untuk 2 unit: Subtotal Rp300.000, PPN Rp33.000, Piutang Rp333.000. Sisa 1 unit belum dikirim dan belum dapat ditagih (SR-02).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-21': {
-        // Try to bill 3 units when only 2 delivered -> blocked
-        logAudit(
-          'CREATE_INVOICE',
-          'INVOICING',
-          'WH/OUT/00007',
-          'Penolakan penagihan: Kuantitas tagihan (3) melebihi kuantitas terkirim (2) (SR-02).',
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Validasi penagihan aktif: Upaya menagih 3 unit pada pengiriman yang baru terkirim 2 unit berhasil ditolak oleh sistem (SR-02). Kuantitas tagihan terkontrol ketat sesuai pengiriman fisik.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-22': {
-        // Post bill 3 hoodie M after T-18 -> Subtotal 570k, PPN 62.700, AP 632.700
-        const billId = 'BILL/2026/0007';
-        const billDoc: VendorBill = {
-          bill_id: billId,
-          vendor_id: 'V01',
-          source_po_id: 'PO00007',
-          receipt_id: 'WH/IN/00007',
-          bill_date: '2026-10-29',
-          due_date: '2026-11-28',
-          lines: [
-            {
-              sku: 'AP-HD-GRY-M',
-              product_name: 'Hoodie Fleece Abu',
-              qty_billable: 3,
-              unit_cost: 190000,
-              tax_amount: 62700,
-              line_total: 632700,
-            },
-          ],
-          untaxed_amount: 570000,
-          tax_amount: 62700,
-          total_amount: 632700,
-          amount_paid: 0,
-          residual: 632700,
-          status: 'posted',
-          payment_ids: [],
-          journal_id: 'JRN/2026/0004',
-        };
-
-        setVendorBills((prev) => [billDoc, ...prev.filter((b) => b.bill_id !== billId)]);
-
-        // Journal Three-Way Match: Dr 1210 GRNI 570k, Dr 1300 PPN Masukan 62.7k, Cr 2000 Utang 632.7k
-        const journalId = 'JRN/2026/0004';
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: '2026-10-29',
-          reference: billId,
-          journal_type: 'purchase',
-          source_doc: `Vendor Bill ${billId}`,
-          posted: true,
-          total_debit: 632700,
-          total_credit: 632700,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '1210',
-              account_name: 'Persediaan Dalam Penerimaan / GRNI',
-              label: 'Penyelesaian Akrual GRNI 3 unit Hoodie',
-              debit: 570000,
-              credit: 0,
-            },
-            {
-              account_code: '1300',
-              account_name: 'PPN Masukan',
-              label: 'PPN Masukan 11% (BILL/2026/0007)',
-              debit: 62700,
-              credit: 0,
-            },
-            {
-              account_code: '2000',
-              account_name: 'Utang Usaha',
-              label: 'Utang Dagang ke PT Mitra Karya (V01)',
-              debit: 0,
-              credit: 632700,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== billId)]);
-
-        logAudit(
-          'CREATE_BILL',
-          'PURCHASE',
-          billId,
-          `Vendor Bill ${billId} berhasil dibukukan: Subtotal Rp570.000, PPN Masukan Rp62.700, Utang AP Rp632.700 (SR-06).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Vendor Bill ${billId} berhasil dibukukan dengan Three-Way Matching: Subtotal Rp570.000, PPN Masukan Rp62.700, Utang AP Rp632.700. Sisa 1 unit belum dapat ditagih.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-23': {
-        // Three-way match: try to bill 4 hoodies when only 3 accepted -> rejected
-        logAudit(
-          'CREATE_BILL',
-          'PURCHASE',
-          'WH/IN/00007',
-          'Penolakan Vendor Bill: Kuantitas tagihan (4) melebihi kuantitas lolos QA (3) (SR-06).',
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Three-Way Match aktif: Upaya posting Vendor Bill untuk 4 unit ditolak karena penerimaan lolos inspeksi hanya 3 unit (SR-06). Kuantitas tagihan terkontrol ketat.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-24': {
-        // Register partial payment 200.000 for invoice 333.000 -> residual 133.000, Partially Paid
-        const invId = 'INV/2026/0007';
-        setCustomerInvoices((prev) =>
-          prev.map((i) =>
-            i.invoice_id === invId
-              ? {
-                  ...i,
-                  amount_paid: 200000,
-                  residual: 133000,
-                  status: 'partially_paid',
-                  payment_ids: ['PAY-CUST-001'],
-                }
-              : i
-          )
-        );
-
-        const payRec: PaymentRecord = {
-          payment_id: 'PAY-CUST-001',
-          doc_type: 'customer_invoice',
-          doc_id: invId,
-          party_name: 'PT Sinar Kampus (C01)',
-          date: new Date().toISOString().substring(0, 10),
-          payment_method: 'bank',
-          amount: 200000,
-          residual_after: 133000,
-          created_by: 'Fajar Pratama',
-        };
-        setPayments((prev) => [payRec, ...prev.filter((p) => p.payment_id !== 'PAY-CUST-001')]);
-
-        // Journal: Dr 1010 Bank / Cr 1100 Piutang
-        const journalId = 'JRN/2026/0005';
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: new Date().toISOString().substring(0, 10),
-          reference: 'PAY-CUST-001',
-          journal_type: 'bank',
-          source_doc: `Payment ${invId}`,
-          posted: true,
-          total_debit: 200000,
-          total_credit: 200000,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '1010',
-              account_name: 'Bank',
-              label: 'Penerimaan Bank Pembayaran Parsial INV/2026/0007',
-              debit: 200000,
-              credit: 0,
-            },
-            {
-              account_code: '1100',
-              account_name: 'Piutang Usaha',
-              label: 'Pelunasan Sebagian Piutang C01',
-              debit: 0,
-              credit: 200000,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== 'PAY-CUST-001')]);
-
-        setCustomers((prev) =>
-          prev.map((c) =>
-            c.contact_id === 'C01' ? { ...c, open_receivable: 133000 } : c
-          )
-        );
-
-        logAudit(
-          'REGISTER_PAYMENT',
-          'ACCOUNTING',
-          invId,
-          `Pembayaran bank Rp200.000 tercatat untuk ${invId}. Sisa piutang Rp133.000 (SR-13).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Pembayaran bank Rp200.000 tercatat untuk ${invId}. Piutang tersisa: Rp133.000, status: Partially Paid, saldo Bank bertambah Rp200.000 (SR-13).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-25': {
-        // Pay residual 133.000 -> residual 0, status Paid, second journal recorded
-        const invId = 'INV/2026/0007';
-        setCustomerInvoices((prev) =>
-          prev.map((i) =>
-            i.invoice_id === invId
-              ? {
-                  ...i,
-                  amount_paid: 333000,
-                  residual: 0,
-                  status: 'paid',
-                  payment_ids: ['PAY-CUST-001', 'PAY-CUST-002'],
-                }
-              : i
-          )
-        );
-
-        const payRec: PaymentRecord = {
-          payment_id: 'PAY-CUST-002',
-          doc_type: 'customer_invoice',
-          doc_id: invId,
-          party_name: 'PT Sinar Kampus (C01)',
-          date: new Date().toISOString().substring(0, 10),
-          payment_method: 'bank',
-          amount: 133000,
-          residual_after: 0,
-          created_by: 'Fajar Pratama',
-        };
-        setPayments((prev) => [payRec, ...prev.filter((p) => p.payment_id !== 'PAY-CUST-002')]);
-
-        const journalId = 'JRN/2026/0006';
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: new Date().toISOString().substring(0, 10),
-          reference: 'PAY-CUST-002',
-          journal_type: 'bank',
-          source_doc: `Payment Pelunasan ${invId}`,
-          posted: true,
-          total_debit: 133000,
-          total_credit: 133000,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '1010',
-              account_name: 'Bank',
-              label: 'Penerimaan Bank Pelunasan INV/2026/0007',
-              debit: 133000,
-              credit: 0,
-            },
-            {
-              account_code: '1100',
-              account_name: 'Piutang Usaha',
-              label: 'Pelunasan Akhir Piutang C01',
-              debit: 0,
-              credit: 133000,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== 'PAY-CUST-002')]);
-
-        setCustomers((prev) =>
-          prev.map((c) =>
-            c.contact_id === 'C01' ? { ...c, open_receivable: 0 } : c
-          )
-        );
-
-        logAudit(
-          'REGISTER_PAYMENT',
-          'ACCOUNTING',
-          invId,
-          `Pelunasan Rp133.000 tercatat untuk ${invId}. Saldo sisa tepat Rp0, status Paid (SR-13).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Pelunasan Rp133.000 tercatat. Saldo akhir tepat Rp0, status beralih menjadi Paid, jurnal kedua tercatat dan seimbang (SR-13).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-26': {
-        // Journal entries audit and debit/credit equality check
-        const totalDebit = journalEntries.reduce((sum, j) => sum + j.total_debit, 0);
-        const totalCredit = journalEntries.reduce((sum, j) => sum + j.total_credit, 0);
-        const balanced = totalDebit === totalCredit;
-        actualMsg = `Buku besar ditinjau: Jurnal Delivery WH/OUT/00007 (Dr HPP / Cr Persediaan Rp160.000) dan Invoice INV/2026/0007 (Dr Piutang Rp333.000, Cr Penjualan Rp300.000, Cr PPN Rp33.000) seimbang. Total Debit = Rp${totalDebit.toLocaleString()}, Total Kredit = Rp${totalCredit.toLocaleString()} (Debit == Kredit seimbang sempurna) (SR-09, SR-15).`;
-        resultStatus = balanced ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-27': {
-        // Re-post WH/OUT/00007 -> idempotent, no duplicate journal
-        const initialJournalCount = journalEntries.length;
-        logAudit(
-          'POST_DELIVERY',
-          'INVENTORY',
-          'WH/OUT/00007',
-          `Posting ulang atas delivery WH/OUT/00007 ditolak/idempoten. Jurnal dan mutasi ganda dicegah (SR-15).`,
-          'BLOCKED'
-        );
-        actualMsg = `Posting ulang dokumen yang telah Done ditolak secara idempoten. Jumlah jurnal awal: ${initialJournalCount}, jumlah jurnal akhir: ${initialJournalCount}. Tidak ada mutasi atau jurnal ganda (SR-15).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-28': {
-        // POS Sale: 2 AP-SC-BLK-F cash @120.000 in STORE-BDG
-        const posId = 'POS-BDG-001';
-        const posRecord: POSTransaction = {
-          pos_id: posId,
-          date: new Date().toISOString().substring(0, 19).replace('T', ' '),
-          cashier_name: 'Salsa Widianti',
-          customer_name: 'Pelanggan Walk-In Toko Bandung',
-          location_id: 'STORE-BDG',
-          lines: [
-            {
-              sku: 'AP-SC-BLK-F',
-              product_name: 'Scarf Katun Hitam',
-              quantity: 2,
-              unit_price: 120000,
-              discount_pct: 0,
-              subtotal: 240000,
-              tax_amount: 26400,
-              line_total: 266400,
-            },
-          ],
-          untaxed_amount: 240000,
-          tax_amount: 26400,
-          total_amount: 266400,
-          payment_method: 'cash',
-          amount_paid: 266400,
-          change: 0,
-          journal_id: 'JRN/2026/0008',
-          status: 'completed',
-        };
-
-        // Deduct 2 Scarf from STORE-BDG (6 -> 4)
-        setStock((prev) =>
-          prev.map((s) =>
-            s.sku === 'AP-SC-BLK-F' && s.location_id === 'STORE-BDG'
-              ? { ...s, on_hand: 4, available: 4 }
-              : s
-          )
-        );
-
-        setPosTransactions((prev) => [posRecord, ...prev.filter((p) => p.pos_id !== posId)]);
-
-        const posJournal: JournalEntry = {
-          entry_id: 'JRN/2026/0008',
-          date: new Date().toISOString().substring(0, 10),
-          reference: posId,
-          journal_type: 'cash',
-          source_doc: `POS Receipt ${posId}`,
-          posted: true,
-          total_debit: 386400,
-          total_credit: 386400,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '1000',
-              account_name: 'Kas',
-              label: 'Penerimaan Kasir POS Tunai 2 Scarf',
-              debit: 266400,
-              credit: 0,
-            },
-            {
-              account_code: '5000',
-              account_name: 'Harga Pokok Penjualan',
-              label: 'HPP Penjualan POS 2 unit Scarf',
-              debit: 120000,
-              credit: 0,
-            },
-            {
-              account_code: '4000',
-              account_name: 'Pendapatan Penjualan',
-              label: 'Penjualan Retail Toko Bandung',
-              debit: 0,
-              credit: 240000,
-            },
-            {
-              account_code: '2100',
-              account_name: 'PPN Keluaran',
-              label: 'PPN Keluaran POS 11%',
-              debit: 0,
-              credit: 26400,
-            },
-            {
-              account_code: '1200',
-              account_name: 'Persediaan Barang Dagang',
-              label: 'Pengurangan Stok Toko 2 unit Scarf',
-              debit: 0,
-              credit: 120000,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [posJournal, ...prev.filter((j) => j.reference !== posId)]);
-
-        logAudit(
-          'POS_CHECKOUT',
-          'POS',
-          posId,
-          'Penjualan POS tunai 2 Scarf selesai: Net Rp240.000, PPN Rp26.400, Total Rp266.400, HPP Rp120.000 (SR-09).',
-          'SUCCESS'
-        );
-
-        actualMsg = `Penjualan POS tunai 2 Scarf selesai: Net sales Rp240.000, PPN Rp26.400, Struk Rp266.400. Stok STORE-BDG berkurang 2 unit (6->4). HPP Rp120.000 dibukukan dalam 1 transaksi atomik (SR-03, SR-04, SR-09).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-29': {
-        // POS try to sell excess quantity when store stock is insufficient (3 when available is 2)
-        const storeStockL = stock.find((s) => s.sku === 'AP-TS-BLK-L' && s.location_id === 'STORE-BDG')?.available ?? 2;
-        logAudit(
-          'POS_CHECKOUT',
-          'POS',
-          'POS-ATTEMPT-T29',
-          `Insufficient Stock in STORE-BDG for AP-TS-BLK-L. Diminta: 3, Tersedia: ${storeStockL} (SR-03, SR-04).`,
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Penjualan kasir kuantitas berlebih ditolak dengan peringatan 'Insufficient Stock' (diminta 3, stok toko ${storeStockL}). Stok toko tidak menjadi negatif (tetap ${storeStockL} unit), tidak ada struk atau jurnal penjualan salah (SR-03, SR-04).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-30': {
-        // Customer Return 1 AP-TS-BLK-M and Credit Note -> WH 2->3, COGS reversed 80.000, CN 166.500
-        const retId = 'RET/2026/0001';
-        const cnId = 'CN/2026/0007';
-
-        const retDoc: CustomerReturn = {
-          return_id: retId,
-          source_so_id: 'S00007',
-          delivery_id: 'WH/OUT/00007',
-          invoice_id: 'INV/2026/0007',
-          customer_id: 'C01',
-          date: new Date().toISOString().substring(0, 10),
-          sku: 'AP-TS-BLK-M',
-          delivered_qty: 2,
-          returned_qty: 1,
-          inspected_qty: 1,
-          accepted_qty: 1,
-          rejected_qty: 0,
-          reason: 'Ukuran agak longgar, retur fisik diterima baik di gudang',
-          inspection_notes: 'Lolos QC gudang, kondisi prima layak restock',
-          status: 'done',
-          credit_note_id: cnId,
-          stock_restored: true,
-          cogs_reversed: true,
-        };
-        setReturns((prev) => [retDoc, ...prev.filter((r) => r.return_id !== retId)]);
-
-        const cnDoc: CreditNote = {
-          cn_id: cnId,
-          source_return_id: retId,
-          customer_id: 'C01',
-          invoice_id: 'INV/2026/0007',
-          date: new Date().toISOString().substring(0, 10),
-          sku: 'AP-TS-BLK-M',
-          quantity: 1,
-          unit_price: 150000,
-          tax_amount: 16500,
-          total_amount: 166500,
-          status: 'posted',
-          journal_id: 'JRN/2026/0007',
-        };
-        setCreditNotes((prev) => [cnDoc, ...prev.filter((c) => c.cn_id !== cnId)]);
-
-        // Restore 1 unit to WH-JKT stock (from 2 to 3)
-        setStock((prev) =>
-          prev.map((s) =>
-            s.sku === 'AP-TS-BLK-M' && s.location_id === 'WH-JKT'
-              ? { ...s, on_hand: 3, available: 2 }
-              : s
-          )
-        );
-
-        // Journal: Reversal HPP & Credit Note
-        const journalId = 'JRN/2026/0007';
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: new Date().toISOString().substring(0, 10),
-          reference: cnId,
-          journal_type: 'sales',
-          source_doc: `Credit Note ${cnId} for ${retId}`,
-          posted: true,
-          total_debit: 246500,
-          total_credit: 246500,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '4010',
-              account_name: 'Retur dan Potongan Penjualan',
-              label: 'Pembalikan Penjualan 1 unit Kaos M',
-              debit: 150000,
-              credit: 0,
-            },
-            {
-              account_code: '2100',
-              account_name: 'PPN Keluaran',
-              label: 'Pembalikan PPN Keluaran Retur 11%',
-              debit: 16500,
-              credit: 0,
-            },
-            {
-              account_code: '1100',
-              account_name: 'Piutang Usaha',
-              label: 'Kredit Penyesuaian Piutang C01',
-              debit: 0,
-              credit: 166500,
-            },
-            {
-              account_code: '1200',
-              account_name: 'Persediaan Barang Dagang',
-              label: 'Pemulihan Fisik Persediaan 1 unit',
-              debit: 80000,
-              credit: 0,
-            },
-            {
-              account_code: '5000',
-              account_name: 'Harga Pokok Penjualan',
-              label: 'Pembalikan Beban HPP Retur 1 unit',
-              debit: 0,
-              credit: 80000,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== cnId)]);
-
-        logAudit(
-          'PROCESS_RETURN',
-          'RETURNS',
-          retId,
-          `Retur 1 Kaos M diterima layak. HPP dibalik Rp80.000, Credit Note ${cnId} diterbitkan Rp166.500 (SR-07).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Retur 1 Kaos M diterima layak: Stok WH kembali bertambah 1 unit (2->3). HPP dibalik Rp80.000. Credit Note CN/2026/0007 diterbitkan Rp166.500 (150k + 16.5k PPN). Piutang disesuaikan (SR-07).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-31': {
-        // Try Credit Note for 2 units when only 1 return accepted
-        logAudit(
-          'ISSUE_CREDIT_NOTE',
-          'RETURNS',
-          'CN-TEST',
-          `Penolakan penerbitan Credit Note: Kuantitas 2 melebihi unit fisik retur yang lolos QC (1 unit) (SR-07).`,
-          'VALIDATION_FAILED'
-        );
-        actualMsg = `Penerbitan Credit Note untuk 2 unit ditolak karena barang retur fisik tervalidasi hanya 1 unit (SR-07). Kuantitas creditable dibatasi ketat.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-32': {
-        // Dashboard filter for POS T-28 transaction
-        const posDoc = posTransactions.find((p) => p.pos_id === 'POS-BDG-001') || INITIAL_POS_TRANSACTIONS[0];
-        actualMsg = `Dashboard memfilter transaksi POS ${posDoc.pos_id}: Net Sales: Rp${posDoc.untaxed_amount.toLocaleString()}, PPN: Rp${posDoc.tax_amount.toLocaleString()}, Gross: Rp${posDoc.total_amount.toLocaleString()}, Units Sold: 2. Angka dapat di-drill down langsung ke dokumen sumber POS (SR-14).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-33': {
-        // Cashier tries to view all journals and AR via dashboard -> restricted
-        const cashier = INITIAL_USERS.find((u) => u.role === 'cashier')!;
-        setCurrentUser(cashier);
-        logAudit(
-          'ACCESS_FINANCIAL_DASHBOARD',
-          'DASHBOARD',
-          'FINANCIAL-KPIS',
-          `Akses metrik global AR dan Jurnal dibatasi untuk role Cashier sesuai prinsip hak akses minimal (SR-16).`,
-          'DENIED'
-        );
-        actualMsg = `Filtering hak akses minimal aktif: Tampilan dashboard akun kasir (${cashier.name}) menyembunyikan AR/AP global dan jurnal perusahaan. Upaya audit dicatat (SR-16).`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-34': {
-        // Quotation C03 for 2 AP-DR-BLU-M with 10% discount -> Subtotal 810k, PPN 89.100, Total 899.100
-        const subtotal = 2 * 450000 * 0.9; // 810.000
-        const tax = Math.round(subtotal * 0.11); // 89.100
-        const total = subtotal + tax; // 899.100
-        actualMsg = `Quotation diskon 10% dihitung: Subtotal setelah diskon: Rp${subtotal.toLocaleString()}, PPN: Rp${tax.toLocaleString()}, Total: Rp${total.toLocaleString()}. Diskon <= 10% tidak memerlukan otorisasi manajer tambahan (SR-08).`;
-        resultStatus = total === 899100 ? 'passed' : 'failed';
-        break;
-      }
-      case 'T-35': {
-        // 15% discount without manager approval -> blocked
-        const salesUser = INITIAL_USERS.find((u) => u.role === 'sales')!;
-        setCurrentUser(salesUser);
-        logAudit(
-          'CONFIRM_ORDER',
-          'SALES',
-          'Q-DISC-15',
-          'Penolakan konfirmasi: Diskon 15% memerlukan persetujuan Manager Penjualan (SR-08)',
-          'BLOCKED'
-        );
-        actualMsg = `Konfirmasi Quotation dengan diskon 15% ditahan: Sistem menolak konfirmasi tanpa persetujuan Manajer Penjualan (SR-08). Log status dicatat.`;
-        resultStatus = 'passed';
-        break;
-      }
-      case 'T-36': {
-        // Pay Vendor Bill BILL/2026/0007 Rp632.700 via Bank
-        const billId = 'BILL/2026/0007';
-        setVendorBills((prev) =>
-          prev.map((b) =>
-            b.bill_id === billId
-              ? {
-                  ...b,
-                  amount_paid: 632700,
-                  residual: 0,
-                  status: 'paid',
-                  payment_ids: [...b.payment_ids, 'PAY-VEND-001'],
-                }
-              : b
-          )
-        );
-
-        const payRec: PaymentRecord = {
-          payment_id: 'PAY-VEND-001',
-          doc_type: 'vendor_bill',
-          doc_id: billId,
-          party_name: 'PT Mitra Karya (V01)',
-          date: new Date().toISOString().substring(0, 10),
-          payment_method: 'bank',
-          amount: 632700,
-          residual_after: 0,
-          created_by: 'Fajar Nugraha',
-        };
-        setPayments((prev) => [payRec, ...prev.filter((p) => p.payment_id !== 'PAY-VEND-001')]);
-
-        const journalId = `JRN/${new Date().getFullYear()}/0008`;
-        const newJournal: JournalEntry = {
-          entry_id: journalId,
-          date: new Date().toISOString().substring(0, 10),
-          reference: 'PAY-VEND-001',
-          journal_type: 'bank',
-          source_doc: `Payment Vendor Bill ${billId}`,
-          posted: true,
-          total_debit: 632700,
-          total_credit: 632700,
-          created_at: new Date().toISOString(),
-          lines: [
-            {
-              account_code: '2000',
-              account_name: 'Utang Usaha',
-              label: 'Pelunasan Utang Dagang PT Mitra Karya (V01)',
-              debit: 632700,
-              credit: 0,
-            },
-            {
-              account_code: '1010',
-              account_name: 'Bank',
-              label: 'Pengeluaran Bank Pembayaran BILL/2026/0007',
-              debit: 0,
-              credit: 632700,
-            },
-          ],
-        };
-        setJournalEntries((prev) => [newJournal, ...prev.filter((j) => j.reference !== 'PAY-VEND-001')]);
-
-        logAudit(
-          'REGISTER_PAYMENT',
-          'ACCOUNTING',
-          billId,
-          `Pembayaran utang ${billId} sebesar Rp632.700 melalui Bank berhasil. Utang AP menjadi Rp0, status: Paid (SR-13).`,
-          'SUCCESS'
-        );
-
-        actualMsg = `Pembayaran utang ${billId} sebesar Rp632.700 melalui Bank berhasil. Utang AP menjadi Rp0, status: Paid, jurnal pelunasan seimbang (SR-13).`;
-        resultStatus = 'passed';
-        break;
-      }
-      default:
-        actualMsg = 'Skenario tidak dikenal.';
-        resultStatus = 'failed';
-    }
-    } finally {
-      if (!wasRunning) {
-        isTestRunning.current = false;
-      }
-    }
-
-    const newResult = {
-      status: resultStatus,
-      actual: actualMsg,
-      timestamp: new Date().toLocaleTimeString(),
-    };
-
-    setTestResults((prev) => {
-      const updated = { ...prev, [testId]: newResult };
-      saveStateToStorage({ testResults: updated });
-      return updated;
-    });
-
-    return { status: resultStatus, actual: actualMsg };
-  };
-
-  const runAllTests = async () => {
-    isTestRunning.current = true;
-    setNotifications([]);
-    for (const test of TEST_SCENARIOS_CATALOG) {
-      await runAutomatedTest(test.test_id);
-      await new Promise((r) => setTimeout(r, 10));
-    }
-    isTestRunning.current = false;
-    setNotifications([]);
-    addNotification('success', 'Semua 36 pengujian selesai dieksekusi dengan status PASSED (36/36 Lulus)!', true);
-  };
-
-  // Sync state changes to storage
+  // Simpan perubahan state ke Supabase (hanya modul yang berubah).
   useEffect(() => {
     if (!isHydrated || !currentUser) return;
-  
+
     const save = async () => {
       try {
         await saveERPState(
@@ -3355,7 +2416,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             transfers,
             accounts,
             journalEntries,
-            testResults,
           },
           currentUser.id,
           currentUser.role
@@ -3364,8 +2424,8 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Supabase save failed:', error);
       }
     };
-  
-    save();
+
+    void save();
   }, [
     isHydrated,
     currentUser,
@@ -3388,7 +2448,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     transfers,
     accounts,
     journalEntries,
-    testResults,
   ]);
 
   return (
@@ -3402,8 +2461,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveView,
         appSwitcherOpen,
         setAppSwitcherOpen,
-        testSuiteOpen,
-        setTestSuiteOpen,
         customers,
         vendors,
         products,
@@ -3424,38 +2481,41 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         accounts,
         journalEntries,
         auditLogs,
-        testResults,
         notifications,
         addNotification,
         removeNotification,
         checkRoleAccess,
         logAudit,
         resetToBaselineSeed,
+        createCustomer,
         createProductVariant,
+        updateProductPrice,
+        createLead,
+        updateLeadStage,
+        updateLeadDetails,
+        addLeadNote,
         convertLeadToOpportunity,
         convertOpportunityToQuotation,
         createQuotation,
+        updateSalesOrderLine,
         confirmSalesOrder,
-        attemptModifyConfirmedSOPrice,
         createDeliveryOrderForSO,
         validateDeliveryOrder,
-        attemptInvalidDeliveryQty,
         createCustomerInvoiceFromDelivery,
         postCustomerInvoice,
         registerCustomerPayment,
         confirmPurchaseOrder,
-        attemptModifyConfirmedPOQty,
+        updatePurchaseOrderLine,
         createReceiptFromPO,
         validateReceiptWithQA,
         createVendorBillFromReceipt,
         postVendorBill,
         registerVendorPayment,
         processPOSSale,
+        processPOSCart,
         processCustomerReturn,
         issueCreditNoteForReturn,
         executeInternalTransfer,
-        runAutomatedTest,
-        runAllTests,
       }}
     >
       {children}

@@ -23,8 +23,8 @@ export const AuditLogModule: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        title="Audit Log & Activity Trail (F-20)"
-        subtitle="Perekaman Waktu, Aktor, Aksi, dan Jejak Keamanan Sistem ERP (SR-15, SR-16)"
+        title="Audit Log & Activity Trail"
+        subtitle="Perekaman Waktu, Aktor, Aksi, dan Jejak Keamanan Sistem ERP"
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         extraActions={
@@ -50,7 +50,7 @@ export const AuditLogModule: React.FC = () => {
           <div className="px-6 py-4 border-b border-[#E7E3DD] bg-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#54745B]" />
-              <h3 className="font-bold text-sm text-[#171717]">Daftar Aktivitas Sistem & Pengujian Keamanan</h3>
+              <h3 className="font-bold text-sm text-[#171717]">Daftar Aktivitas & Keamanan Sistem</h3>
             </div>
             <span className="text-xs text-[#8C8983] font-mono">{filteredLogs.length} Catatan Log</span>
           </div>

@@ -52,10 +52,8 @@ export const RegisterPaymentDialog: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-12"
-        flowHint="S-12 Bayar vendor / terima piutang ➔ S-13 Journal Entries (SR-13)"
         title="Register Payment Dialog"
-        subtitle="Pencatatan Pembayaran Parsial dan Pelunasan Piutang / Utang (SR-13, F-15)"
+        subtitle="Pencatatan Pembayaran Parsial dan Pelunasan Piutang / Utang"
       />
 
       <div className="p-6 max-w-5xl mx-auto w-full space-y-6">
@@ -63,7 +61,7 @@ export const RegisterPaymentDialog: React.FC = () => {
         <div className="bg-[#FFFEFC] rounded-xl border border-[#E7E3DD] shadow-xs p-8">
           <div className="flex items-center gap-2 mb-6 border-b border-[#E7E3DD] pb-4">
             <CreditCard className="w-5 h-5 text-[#C18B42]" />
-            <h2 className="text-xl font-bold text-[#171717]">Form Registrasi Pembayaran (S-12)</h2>
+            <h2 className="text-xl font-bold text-[#171717]">Form Registrasi Pembayaran</h2>
           </div>
 
           <form onSubmit={handleProcessPayment} className="space-y-6 text-xs">
@@ -183,20 +181,6 @@ export const RegisterPaymentDialog: React.FC = () => {
               <div className="flex gap-2 mt-2">
                 <button
                   type="button"
-                  onClick={() => setPaymentAmount(200000)}
-                  className="px-2.5 py-1 rounded bg-[#EAE5DC] text-[#171717] text-[11px] font-mono"
-                >
-                  Set Rp200.000 (Uji T-24 Parsial)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentAmount(133000)}
-                  className="px-2.5 py-1 rounded bg-[#EAE5DC] text-[#171717] text-[11px] font-mono"
-                >
-                  Set Rp133.000 (Uji T-25 Sisa)
-                </button>
-                <button
-                  type="button"
                   onClick={() => setPaymentAmount(residualAmount)}
                   className="px-2.5 py-1 rounded bg-[#EAE5DC] text-[#171717] text-[11px] font-mono"
                 >
@@ -207,7 +191,7 @@ export const RegisterPaymentDialog: React.FC = () => {
 
             {/* Rule Notice */}
             <div className="p-3 rounded-lg bg-[#54745B]/10 border border-[#54745B]/20 text-[11px] text-[#54745B]">
-              <strong>Kaidah SR-13:</strong> Pembayaran parsial mengurangi saldo sebesar uang masuk/keluar; status <strong>Paid</strong> hanya diberikan jika saldo sisa tepat nol.
+              <strong>Ketentuan Pembayaran:</strong> Pembayaran parsial mengurangi saldo sebesar uang masuk/keluar; status <strong>Paid</strong> hanya diberikan jika saldo sisa tepat nol.
             </div>
 
             <button

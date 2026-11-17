@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ERPProvider, useERP } from './context/ERPContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { TopNavbar } from './components/layout/TopNavbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { AppSwitcher } from './components/layout/AppSwitcher';
-import { TestSuiteModal } from './components/testing/TestSuiteModal';
-import { StoryboardModal } from './components/common/StoryboardModal';
 
 // Modules
 import { HomeModule } from './components/modules/HomeModule';
@@ -39,8 +37,6 @@ const ERPAppContent: React.FC = () => {
     removeNotification,
   } = useERP();
 
-  const [storyboardModalOpen, setStoryboardModalOpen] = useState(false);
-
   // If not logged in, show luxury fashion editorial login page
   if (!currentUser) {
     return <LoginPage />;
@@ -50,7 +46,7 @@ const ERPAppContent: React.FC = () => {
   const renderCurrentModule = () => {
     switch (activeApp) {
       case 'home':
-        return <HomeModule onOpenStoryboard={() => setStoryboardModalOpen(true)} />;
+        return <HomeModule />;
       case 'dashboard':
         return <DashboardModule />;
       case 'crm':
@@ -91,7 +87,7 @@ const ERPAppContent: React.FC = () => {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#F5F0E8] text-[#171717]">
       {/* Odoo Top Navigation Bar */}
-      <TopNavbar onOpenStoryboard={() => setStoryboardModalOpen(true)} />
+      <TopNavbar />
 
       {/* Main Workspace: Left Sidebar + Active View */}
       <div className="flex flex-1 overflow-hidden relative">
@@ -101,17 +97,8 @@ const ERPAppContent: React.FC = () => {
         </main>
       </div>
 
-      {/* Storyboard Wireframes (S-01 s/d S-16) Viewer */}
-      <StoryboardModal
-        isOpen={storyboardModalOpen}
-        onClose={() => setStoryboardModalOpen(false)}
-      />
-
-      {/* Odoo App Switcher Overlay (S-01) */}
+      {/* App Switcher Overlay */}
       {appSwitcherOpen && <AppSwitcher />}
-
-      {/* Interactive Test Runner Suite & Decision Defense (T-01..T-36) */}
-      <TestSuiteModal />
 
       {/* Toast Notifications */}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">

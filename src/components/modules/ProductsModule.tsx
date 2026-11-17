@@ -3,14 +3,19 @@ import { useERP } from '../../context/ERPContext';
 import { ControlPanel } from '../common/ControlPanel';
 import { Chatter } from '../common/Chatter';
 import { ProductVariant } from '../../types/erp';
-import { Shirt, Plus, ArrowLeft, Tag, Layers, Building2, Check, AlertCircle } from 'lucide-react';
+import { Shirt, Plus, ArrowLeft, Check, Pencil, X } from 'lucide-react';
 
 export const ProductsModule: React.FC = () => {
-  const { products, stock, createProductVariant } = useERP();
+  const { products, stock, createProductVariant, updateProductPrice } = useERP();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSku, setSelectedSku] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Price edit modal state
+  const [editingPriceSku, setEditingPriceSku] = useState<string | null>(null);
+  const [editSalesPrice, setEditSalesPrice] = useState('0');
+  const [editCostPrice, setEditCostPrice] = useState('0');
 
   // New variant form states
   const [newSku, setNewSku] = useState('');
@@ -19,8 +24,27 @@ export const ProductsModule: React.FC = () => {
   const [newColor, setNewColor] = useState('Hitam');
   const [newSalesPrice, setNewSalesPrice] = useState('150000');
   const [newCost, setNewCost] = useState('80000');
-  const [newVendor, setNewVendor] = useState('V01');
-  const [newCategory, setNewCategory] = useState('T-Shirt');
+  const [newVendor] = useState('V01');
+  const [newCategory] = useState('T-Shirt');
+
+  const openEditPriceModal = (product: ProductVariant) => {
+    setEditingPriceSku(product.sku);
+    setEditSalesPrice(String(product.sales_price_idr));
+    setEditCostPrice(String(product.cost_idr));
+  };
+
+  const handleSavePrice = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPriceSku) return;
+    const res = updateProductPrice(
+      editingPriceSku,
+      Number(editSalesPrice.replace(/\D/g, '')) || 0,
+      Number(editCostPrice.replace(/\D/g, '')) || 0
+    );
+    if (res.success) {
+      setEditingPriceSku(null);
+    }
+  };
 
   const filteredProducts = products.filter(
     (p) =>
@@ -82,7 +106,7 @@ export const ProductsModule: React.FC = () => {
       <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
         <ControlPanel
           title={`Form Product: ${selectedProduct.product_name} (${selectedProduct.sku})`}
-          subtitle="Detail Varian Produk, Atribut Ukuran & Warna, Harga dan Biaya Standar (S-03)"
+          subtitle="Detail Varian Produk, Atribut Ukuran & Warna, Harga dan Biaya Standar"
           extraActions={
             <button
               onClick={() => setSelectedSku(null)}
@@ -96,23 +120,47 @@ export const ProductsModule: React.FC = () => {
 
         <div className="p-6 max-w-5xl mx-auto w-full">
           <div className="bg-[#FFFEFC] rounded-xl border border-[#E7E3DD] shadow-xs p-8">
-            <div className="flex items-start justify-between border-b border-[#E7E3DD] pb-6 mb-6">
-              <div>
-                <span className="font-mono text-xs font-bold text-[#C18B42] bg-[#C18B42]/10 px-2.5 py-1 rounded">
-                  {selectedProduct.sku}
-                </span>
-                <h2 className="text-2xl font-bold text-[#171717] mt-2">{selectedProduct.product_name}</h2>
-                <div className="text-xs text-[#8C8983] mt-0.5">
-                  Ukuran: <span className="font-semibold text-[#171717]">{selectedProduct.size}</span> · Warna: <span className="font-semibold text-[#171717]">{selectedProduct.color}</span> · Kategori: {selectedProduct.category}
+            <div className="flex items-start justify-between border-b border-[#E7E3DD] pb-6 mb-6 gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-20 h-20 rounded-xl bg-[#F5F0E8] border border-[#E7E3DD] overflow-hidden shrink-0 flex items-center justify-center">
+                  {selectedProduct.imageUrl ? (
+                    <img
+                      src={selectedProduct.imageUrl}
+                      alt={selectedProduct.product_name}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Shirt className="w-7 h-7 text-[#C18B42]" />
+                  )}
+                </div>
+                <div>
+                  <span className="font-mono text-xs font-bold text-[#C18B42] bg-[#C18B42]/10 px-2.5 py-1 rounded">
+                    {selectedProduct.sku}
+                  </span>
+                  <h2 className="text-2xl font-bold text-[#171717] mt-2">{selectedProduct.product_name}</h2>
+                  <div className="text-xs text-[#8C8983] mt-0.5">
+                    Ukuran: <span className="font-semibold text-[#171717]">{selectedProduct.size}</span> · Warna: <span className="font-semibold text-[#171717]">{selectedProduct.color}</span> · Kategori: {selectedProduct.category}
+                  </div>
                 </div>
               </div>
 
               <div className="text-right">
                 <div className="text-xs text-[#8C8983]">Harga Jual Satuan (Belum PPN)</div>
-                <div className="text-2xl font-bold font-mono text-[#171717]">
-                  Rp{selectedProduct.sales_price_idr.toLocaleString()}
+                <div className="flex items-center justify-end gap-2 mt-0.5">
+                  <div className="text-2xl font-bold font-mono text-[#171717]">
+                    Rp{selectedProduct.sales_price_idr.toLocaleString()}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openEditPriceModal(selectedProduct)}
+                    className="px-2.5 py-1 bg-[#F5F0E8] hover:bg-[#EAE5DC] border border-[#E7E3DD] rounded-lg text-xs font-semibold text-[#171717] flex items-center gap-1 transition-colors"
+                  >
+                    <Pencil className="w-3 h-3 text-[#C18B42]" />
+                    <span>Edit Harga</span>
+                  </button>
                 </div>
-                <div className="text-[11px] text-[#8C8983] font-mono mt-0.5">
+                <div className="text-[11px] text-[#8C8983] font-mono mt-1">
                   Standar Cost: Rp{selectedProduct.cost_idr.toLocaleString()}
                 </div>
               </div>
@@ -121,7 +169,7 @@ export const ProductsModule: React.FC = () => {
             {/* Inventory by location table */}
             <div className="mb-8">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#171717] mb-3">
-                Posisi Stok Persediaan Lintas Lokasi (SR-04, SR-11)
+                Posisi Stok Persediaan Lintas Lokasi
               </h3>
               <div className="border border-[#E7E3DD] rounded-lg overflow-hidden text-xs">
                 <table className="w-full text-left">
@@ -163,18 +211,75 @@ export const ProductsModule: React.FC = () => {
             <Chatter documentId={selectedProduct.sku} module="PRODUCTS" />
           </div>
         </div>
+
+        {/* Edit Price Modal (in Detail View) */}
+        {editingPriceSku && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div className="bg-[#FFFEFC] rounded-xl max-w-md w-full border border-[#E7E3DD] shadow-xl overflow-hidden text-[#171717]">
+              <div className="px-6 py-4 border-b border-[#E7E3DD] flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-base text-[#171717]">Edit Harga Produk</h3>
+                  <p className="text-xs text-[#8C8983] font-mono">{editingPriceSku}</p>
+                </div>
+                <button onClick={() => setEditingPriceSku(null)} className="text-[#8C8983] hover:text-[#171717]">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <form onSubmit={handleSavePrice} className="p-6 space-y-4 text-xs">
+                <div>
+                  <label className="block font-semibold text-[#171717] mb-1">Harga Jual Satuan (IDR)</label>
+                  <input
+                    type="text"
+                    value={editSalesPrice}
+                    onChange={(e) => setEditSalesPrice(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-[#F5F0E8] p-2.5 rounded-lg border border-[#E7E3DD] font-mono focus:outline-none focus:border-[#171717]"
+                  />
+                  <p className="text-[11px] text-[#8C8983] mt-1 font-mono">
+                    Rp{(Number(editSalesPrice) || 0).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#171717] mb-1">Standar Cost / HPP (IDR)</label>
+                  <input
+                    type="text"
+                    value={editCostPrice}
+                    onChange={(e) => setEditCostPrice(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-[#F5F0E8] p-2.5 rounded-lg border border-[#E7E3DD] font-mono focus:outline-none focus:border-[#171717]"
+                  />
+                  <p className="text-[11px] text-[#8C8983] mt-1 font-mono">
+                    Rp{(Number(editCostPrice) || 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-[#E7E3DD] flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingPriceSku(null)}
+                    className="px-4 py-2 bg-white border border-[#E7E3DD] rounded-lg hover:bg-[#F5F0E8]"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#171717] text-white rounded-lg hover:bg-[#282828] font-semibold flex items-center gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Simpan Harga</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  // List View with side-by-side comparison of AP-TS-BLK-M and AP-TS-BLK-L (T-05)
+  // List View
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-03"
-        flowHint="S-03 Master Produk & Varian Ukuran/Warna (15 SKU Unik SR-11)"
-        title="Form Products / Variants"
-        subtitle="Master 15 SKU Fashion Varian, Atribut Ukuran & Warna, dan Saldo Stok per Lokasi"
+        title="Produk & Varian"
+        subtitle={`Master ${products.length} SKU Fashion Varian, Atribut Ukuran & Warna, dan Saldo Stok per Lokasi`}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onCreateNew={() => setShowCreateModal(true)}
@@ -182,77 +287,14 @@ export const ProductsModule: React.FC = () => {
       />
 
       <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
-        {/* T-05 Side-by-side spotlight banner: AP-TS-BLK-M vs AP-TS-BLK-L */}
-        <div className="p-5 rounded-xl bg-[#171717] text-white border border-[#2E2E2E] shadow-sm">
-          <div className="flex items-center justify-between border-b border-[#2A2A2A] pb-3 mb-4">
-            <div className="flex items-center gap-2">
-              <Shirt className="w-4 h-4 text-[#C18B42]" />
-              <span className="font-bold text-sm">Pembuktian Pengujian T-05: Dua Varian Terpisah (SR-11)</span>
-            </div>
-            <span className="text-[11px] font-mono text-[#C18B42] bg-[#C18B42]/10 px-2 py-0.5 rounded border border-[#C18B42]/20">
-              Setiap kombinasi ukuran-warna mempunyai SKU unik
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* AP-TS-BLK-M Card */}
-            <div className="p-4 rounded-lg bg-[#222222] border border-[#333333]">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs font-bold text-[#C18B42]">AP-TS-BLK-M</span>
-                <span className="text-[10px] text-[#A6A29A]">Kaos Essential Hitam</span>
-              </div>
-              <div className="text-sm font-semibold text-white">Ukuran: M · Warna: Hitam</div>
-              <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
-                <div className="p-2 bg-[#171717] rounded">
-                  <div className="text-[#8C8983] text-[10px]">WH-JKT</div>
-                  <div className="font-mono font-bold text-white mt-0.5">{getProductStock('AP-TS-BLK-M', 'WH-JKT')} pcs</div>
-                </div>
-                <div className="p-2 bg-[#171717] rounded">
-                  <div className="text-[#8C8983] text-[10px]">Reserved</div>
-                  <div className="font-mono font-bold text-[#C18B42] mt-0.5">{getProductReserved('AP-TS-BLK-M', 'WH-JKT')} pcs</div>
-                </div>
-                <div className="p-2 bg-[#171717] rounded">
-                  <div className="text-[#8C8983] text-[10px]">Available</div>
-                  <div className="font-mono font-bold text-[#54745B] mt-0.5">{getProductAvailable('AP-TS-BLK-M', 'WH-JKT')} pcs</div>
-                </div>
-              </div>
-            </div>
-
-            {/* AP-TS-BLK-L Card */}
-            <div className="p-4 rounded-lg bg-[#222222] border border-[#333333]">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs font-bold text-[#C18B42]">AP-TS-BLK-L</span>
-                <span className="text-[10px] text-[#A6A29A]">Kaos Essential Hitam</span>
-              </div>
-              <div className="text-sm font-semibold text-white">Ukuran: L · Warna: Hitam</div>
-              <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
-                <div className="p-2 bg-[#171717] rounded">
-                  <div className="text-[#8C8983] text-[10px]">WH-JKT</div>
-                  <div className="font-mono font-bold text-white mt-0.5">{getProductStock('AP-TS-BLK-L', 'WH-JKT')} pcs</div>
-                </div>
-                <div className="p-2 bg-[#171717] rounded">
-                  <div className="text-[#8C8983] text-[10px]">STORE-BDG</div>
-                  <div className="font-mono font-bold text-white mt-0.5">{getProductStock('AP-TS-BLK-L', 'STORE-BDG')} pcs</div>
-                </div>
-                <div className="p-2 bg-[#171717] rounded">
-                  <div className="text-[#8C8983] text-[10px]">Total Stok</div>
-                  <div className="font-mono font-bold text-[#54745B] mt-0.5">
-                    {getProductStock('AP-TS-BLK-L', 'WH-JKT') + getProductStock('AP-TS-BLK-L', 'STORE-BDG')} pcs
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Master Products Table */}
         <div className="bg-[#FFFEFC] rounded-xl border border-[#E7E3DD] shadow-xs overflow-hidden">
           <div className="px-6 py-4 border-b border-[#E7E3DD] flex items-center justify-between bg-white">
             <div className="flex items-center gap-2">
               <Shirt className="w-4 h-4 text-[#171717]" />
-              <h3 className="font-bold text-sm text-[#171717]">Katalog Varian Produk Fashion (15 Baseline SKU)</h3>
+              <h3 className="font-bold text-sm text-[#171717]">Katalog Varian Produk Fashion ({products.length} SKU)</h3>
             </div>
-            <span className="text-xs text-[#8C8983] font-mono">{filteredProducts.length} Varian</span>
+            <span className="text-xs text-[#8C8983] font-mono tabular-nums">{filteredProducts.length} Varian</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -285,7 +327,21 @@ export const ProductsModule: React.FC = () => {
                     >
                       <td className="py-3 px-4 font-mono font-bold text-[#C18B42]">{p.sku}</td>
                       <td className="py-3 px-4 font-medium text-[#171717] group-hover:text-[#C18B42]">
-                        {p.product_name}
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-md bg-[#F5F0E8] border border-[#E7E3DD] overflow-hidden shrink-0 flex items-center justify-center">
+                            {p.imageUrl ? (
+                              <img
+                                src={p.imageUrl}
+                                alt={p.product_name}
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Shirt className="w-3.5 h-3.5 text-[#8C8983]" />
+                            )}
+                          </div>
+                          <span>{p.product_name}</span>
+                        </div>
                       </td>
                       <td className="py-3 px-4 font-semibold text-[#171717]">{p.size}</td>
                       <td className="py-3 px-4 text-[#8C8983]">{p.color}</td>
@@ -298,10 +354,23 @@ export const ProductsModule: React.FC = () => {
                       <td className="py-3 px-4 text-right font-mono font-medium text-[#171717]">{wh}</td>
                       <td className="py-3 px-4 text-right font-mono font-medium text-[#171717]">{store}</td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-[#54745B]">{total}</td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-[11px] font-medium text-[#C18B42] hover:underline">
-                          Detail ›
-                        </span>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditPriceModal(p);
+                            }}
+                            className="px-2.5 py-1 bg-[#F5F0E8] hover:bg-[#EAE5DC] border border-[#E7E3DD] rounded text-[11px] font-semibold text-[#171717] inline-flex items-center gap-1"
+                          >
+                            <Pencil className="w-3 h-3 text-[#C18B42]" />
+                            <span>Edit Harga</span>
+                          </button>
+                          <span className="text-[11px] font-medium text-[#C18B42] hover:underline">
+                            Detail ›
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -317,7 +386,7 @@ export const ProductsModule: React.FC = () => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-[#FFFEFC] rounded-2xl max-w-lg w-full border border-[#E7E3DD] shadow-2xl overflow-hidden text-[#171717]">
             <div className="p-6 border-b border-[#E7E3DD] flex items-center justify-between bg-white">
-              <h3 className="font-bold text-base text-[#171717]">Tambah Varian Produk Baru (SR-11)</h3>
+              <h3 className="font-bold text-base text-[#171717]">Tambah Varian Produk Baru</h3>
               <button onClick={() => setShowCreateModal(false)} className="text-[#8C8983] hover:text-[#171717]">
                 ✕
               </button>
@@ -337,7 +406,7 @@ export const ProductsModule: React.FC = () => {
                   className="w-full bg-[#F5F0E8] p-2.5 rounded-lg border border-[#E7E3DD] font-mono focus:border-[#171717] focus:outline-none"
                 />
                 <span className="text-[10px] text-[#8C8983] mt-1 block">
-                  *Sistem akan menolak jika SKU sudah ada (Uji T-06).
+                  *SKU harus unik dan belum terdaftar di katalog.
                 </span>
               </div>
 
@@ -413,6 +482,64 @@ export const ProductsModule: React.FC = () => {
                   className="px-4 py-2 bg-[#171717] text-white rounded-lg hover:bg-[#282828] font-medium"
                 >
                   Simpan Varian
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Price Modal (in List View) */}
+      {editingPriceSku && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#FFFEFC] rounded-xl max-w-md w-full border border-[#E7E3DD] shadow-xl overflow-hidden text-[#171717]">
+            <div className="px-6 py-4 border-b border-[#E7E3DD] flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-base text-[#171717]">Edit Harga Produk</h3>
+                <p className="text-xs text-[#8C8983] font-mono">{editingPriceSku}</p>
+              </div>
+              <button onClick={() => setEditingPriceSku(null)} className="text-[#8C8983] hover:text-[#171717]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleSavePrice} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-[#171717] mb-1">Harga Jual Satuan (IDR)</label>
+                <input
+                  type="text"
+                  value={editSalesPrice}
+                  onChange={(e) => setEditSalesPrice(e.target.value.replace(/\D/g, ''))}
+                  className="w-full bg-[#F5F0E8] p-2.5 rounded-lg border border-[#E7E3DD] font-mono focus:outline-none focus:border-[#171717]"
+                />
+                <p className="text-[11px] text-[#8C8983] mt-1 font-mono">
+                  Rp{(Number(editSalesPrice) || 0).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <label className="block font-semibold text-[#171717] mb-1">Standar Cost / HPP (IDR)</label>
+                <input
+                  type="text"
+                  value={editCostPrice}
+                  onChange={(e) => setEditCostPrice(e.target.value.replace(/\D/g, ''))}
+                  className="w-full bg-[#F5F0E8] p-2.5 rounded-lg border border-[#E7E3DD] font-mono focus:outline-none focus:border-[#171717]"
+                />
+                <p className="text-[11px] text-[#8C8983] mt-1 font-mono">
+                  Rp{(Number(editCostPrice) || 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="pt-4 border-t border-[#E7E3DD] flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingPriceSku(null)}
+                  className="px-4 py-2 bg-white border border-[#E7E3DD] rounded-lg hover:bg-[#F5F0E8]"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#171717] text-white rounded-lg hover:bg-[#282828] font-semibold flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Simpan Harga</span>
                 </button>
               </div>
             </form>

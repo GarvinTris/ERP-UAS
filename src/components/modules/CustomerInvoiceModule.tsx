@@ -10,10 +10,8 @@ export const CustomerInvoiceModule: React.FC = () => {
   const {
     customerInvoices,
     postCustomerInvoice,
-    createCustomerInvoiceFromDelivery,
     setActiveApp,
     setActiveView,
-    addNotification,
   } = useERP();
 
   const [selectedInvId, setSelectedInvId] = useState<string>(
@@ -28,18 +26,11 @@ export const CustomerInvoiceModule: React.FC = () => {
     postCustomerInvoice(currentInvoice.invoice_id);
   };
 
-  const handleTestOverBilling = () => {
-    // Try to invoice 3 units when only 2 delivered (T-21)
-    createCustomerInvoiceFromDelivery('WH/OUT/00007', 3);
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-10"
-        flowHint="S-10 Tagih pelanggan & buat faktur ➔ S-12 Register Payment (SR-13)"
         title="Customer Invoice Form"
-        subtitle="Faktur Pelanggan Berbasis Kuantitas Terkirim (SR-02) & Pengakuan Piutang (F-09, F-14)"
+        subtitle="Faktur Pelanggan Berbasis Kuantitas Terkirim & Pengakuan Piutang"
         extraActions={
           customerInvoices.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs">
@@ -73,24 +64,13 @@ export const CustomerInvoiceModule: React.FC = () => {
             actionButtons={
               <div className="flex items-center gap-2">
                 {currentInvoice.status === 'draft' ? (
-                  <>
-                    <button
-                      onClick={handlePostInvoice}
-                      className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Post Customer Invoice (T-20)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestOverBilling}
-                      className="px-3 py-1.5 bg-white border border-[#B94B4B] text-[#B94B4B] hover:bg-red-50 text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Penagihan Melebihi Pengiriman (T-21)"
-                    >
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>Uji Tagih 3 Unit Terkirim 2 (T-21)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={handlePostInvoice}
+                    className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Post Customer Invoice</span>
+                  </button>
                 ) : currentInvoice.status !== 'paid' ? (
                   <button
                     onClick={() => {
@@ -100,7 +80,7 @@ export const CustomerInvoiceModule: React.FC = () => {
                     className="px-3.5 py-1.5 bg-[#171717] hover:bg-[#282828] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
                   >
                     <CreditCard className="w-3.5 h-3.5 text-[#C18B42]" />
-                    <span>Register Payment (F-15)</span>
+                    <span>Register Payment</span>
                   </button>
                 ) : (
                   <span className="text-xs font-semibold text-[#54745B] bg-[#54745B]/10 px-3 py-1 rounded-md border border-[#54745B]/20">
@@ -223,7 +203,7 @@ export const CustomerInvoiceModule: React.FC = () => {
         </>
       ) : (
         <div className="p-12 text-center text-xs text-[#8C8983]">
-          Belum ada Customer Invoice. Validasi Delivery Order terlebih dahulu untuk menerbitkan invoice berbasis kuantitas terkirim (SR-02).
+          Belum ada Customer Invoice. Validasi Delivery Order terlebih dahulu untuk menerbitkan invoice berbasis kuantitas terkirim.
         </div>
       )}
     </div>

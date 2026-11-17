@@ -4,8 +4,6 @@ import { Search, Filter, LayoutGrid, List, FileSpreadsheet, Plus } from 'lucide-
 interface ControlPanelProps {
   title: string;
   subtitle?: string;
-  screenCode?: string;
-  flowHint?: string;
   currentView?: 'list' | 'kanban' | 'form';
   onViewChange?: (view: 'list' | 'kanban' | 'form') => void;
   availableViews?: ('list' | 'kanban' | 'form')[];
@@ -22,8 +20,6 @@ interface ControlPanelProps {
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   title,
   subtitle,
-  screenCode,
-  flowHint,
   currentView = 'list',
   onViewChange,
   availableViews = ['list'],
@@ -41,11 +37,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Title & Subtitle */}
       <div>
         <div className="flex items-center gap-2.5 flex-wrap">
-          {screenCode && (
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#171717] text-[#C18B42] border border-[#333333]">
-              {screenCode}
-            </span>
-          )}
           <h1 className="text-xl font-bold tracking-tight text-[#171717]">{title}</h1>
           {onCreateNew && (
             <button
@@ -57,14 +48,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             </button>
           )}
         </div>
-        <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-          {subtitle && <p className="text-xs text-[#8C8983]">{subtitle}</p>}
-          {flowHint && (
-            <span className="text-[10px] font-mono text-[#54745B] bg-[#54745B]/10 px-2 py-0.2 rounded border border-[#54745B]/20">
-              Alur: {flowHint}
-            </span>
-          )}
-        </div>
+        {subtitle && (
+          <div className="mt-0.5">
+            <p className="text-xs text-[#8C8983]">{subtitle}</p>
+          </div>
+        )}
       </div>
 
       {/* Search, Filter, Views & Extra Actions */}

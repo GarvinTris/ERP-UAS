@@ -57,19 +57,11 @@ export const ReturnsModule: React.FC = () => {
     issueCreditNoteForReturn(currentReturn.return_id, currentReturn.accepted_qty);
   };
 
-  const handleTestT31OverCredit = () => {
-    if (!currentReturn) return;
-    // Try to issue Credit Note for 2 units when only 1 return accepted (T-31)
-    issueCreditNoteForReturn(currentReturn.return_id, 2);
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#F5F0E8] overflow-y-auto">
       <ControlPanel
-        screenCode="S-15"
-        flowHint="S-15 Retur barang & credit note ➔ S-13 Jurnal Pembalikan HPP & Piutang (SR-07)"
         title="Customer Returns & Credit Note"
-        subtitle="Alur Pengembalian Fisik, Inspeksi Gudang, Pembalikan HPP & Nota Kredit (SR-07, F-17)"
+        subtitle="Alur Pengembalian Fisik, Inspeksi Gudang, Pembalikan HPP & Nota Kredit"
         onCreateNew={() => setShowCreateModal(true)}
         createButtonLabel="Proses Retur Pelanggan"
         extraActions={
@@ -104,24 +96,13 @@ export const ReturnsModule: React.FC = () => {
             actionButtons={
               <div className="flex items-center gap-2">
                 {currentReturn.status !== 'done' ? (
-                  <>
-                    <button
-                      onClick={handleIssueCreditNote}
-                      className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Terbitkan Credit Note ({currentReturn.accepted_qty} Unit Layak) (T-30)</span>
-                    </button>
-
-                    <button
-                      onClick={handleTestT31OverCredit}
-                      className="px-3 py-1.5 bg-white border border-[#B94B4B] text-[#B94B4B] hover:bg-red-50 text-xs font-medium rounded-lg flex items-center gap-1"
-                      title="Uji Coba Terbitkan CN 2 Unit saat Retur 1 Unit (T-31)"
-                    >
-                      <AlertOctagon className="w-3.5 h-3.5" />
-                      <span>Uji CN 2 Unit (T-31)</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={handleIssueCreditNote}
+                    className="px-3.5 py-1.5 bg-[#54745B] hover:bg-[#435e49] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Terbitkan Credit Note ({currentReturn.accepted_qty} Unit Layak)</span>
+                  </button>
                 ) : (
                   <span className="text-xs font-semibold text-[#54745B] bg-[#54745B]/10 px-3 py-1 rounded-md border border-[#54745B]/20">
                     Credit Note {currentReturn.credit_note_id} Telah Dibukukan
@@ -174,7 +155,7 @@ export const ReturnsModule: React.FC = () => {
                   <span className="font-mono text-xs font-bold text-[#C18B42] bg-[#C18B42]/10 px-2.5 py-0.5 rounded">
                     {currentReturn.return_id}
                   </span>
-                  <h2 className="text-2xl font-bold text-[#171717] mt-1.5">Customer Return & Credit Note (S-15)</h2>
+                  <h2 className="text-2xl font-bold text-[#171717] mt-1.5">Customer Return & Credit Note</h2>
                   <div className="text-xs text-[#8C8983] mt-1">
                     Pelanggan: <span className="font-semibold text-[#171717]">{currentReturn.customer_id}</span> · Tanggal Retur: {currentReturn.date} · Alasan: {currentReturn.reason}
                   </div>
@@ -218,7 +199,7 @@ export const ReturnsModule: React.FC = () => {
 
               {/* Inspection details */}
               <div className="p-4 rounded-xl bg-[#F5F0E8] border border-[#E7E3DD] text-xs text-[#171717] space-y-2 mb-6">
-                <div className="font-bold">Laporan Pemeriksaan Gudang & Pembalikan Akuntansi (SR-07):</div>
+                <div className="font-bold">Laporan Pemeriksaan Gudang & Pembalikan Akuntansi:</div>
                 <div className="text-[#8C8983]">{currentReturn.inspection_notes}</div>
                 <div className="pt-2 border-t border-[#E7E3DD] flex items-center justify-between font-mono">
                   <span>Pembalikan HPP (Dr 1200 Persediaan / Cr 5000 HPP):</span>
@@ -244,7 +225,7 @@ export const ReturnsModule: React.FC = () => {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-[#FFFEFC] rounded-2xl max-w-lg w-full border border-[#E7E3DD] shadow-2xl p-6 text-[#171717]">
-            <h3 className="font-bold text-base mb-4">Pengajuan & Inspeksi Retur Pelanggan (SR-07)</h3>
+            <h3 className="font-bold text-base mb-4">Pengajuan & Inspeksi Retur Pelanggan</h3>
             <form onSubmit={handleCreateReturn} className="space-y-4 text-xs">
               <div>
                 <label className="block text-[#8C8983] mb-1">SKU Barang yang Diretur</label>
@@ -295,7 +276,7 @@ export const ReturnsModule: React.FC = () => {
               </div>
 
               <div className="p-3 rounded-lg bg-[#54745B]/10 text-[#54745B] text-[11px]">
-                *Unit lolos inspeksi akan mengembalikan stok gudang WH-JKT dan membalik HPP secara otomatis (T-30).
+                *Unit lolos inspeksi akan mengembalikan stok gudang WH-JKT dan membalik HPP secara otomatis.
               </div>
 
               <div className="pt-4 border-t border-[#E7E3DD] flex justify-end gap-2">
