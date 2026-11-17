@@ -21,7 +21,88 @@
 
 ---
 
-## 2. Akun Uji Demo Sesuai Role (RBAC)
+## 2. Tautan Penting
+### 2.1
+(App Maintainence)
+### 2.2 Video Demo
+https://youtu.be/Y2ya9xjc-BA?si=JZ-UyldUdpYbGV76
+### 2.3 Presentasi
+https://canva.link/fvkc86emy5kr8yw
+
+---
+
+## 3. Cara Menjalankan Aplikasi
+
+### 3.1 Prasyarat
+
+Hapus lockfile atau `node_modules` yang belum lengkap (jika ada):
+
+```bash
+rm -rf node_modules package-lock.json
+```
+
+### 3.2 Instalasi
+
+```bash
+npm install --legacy-peer-deps
+```
+
+### 3.3 Konfigurasi Environment
+
+Salin file contoh lalu isi nilainya:
+
+```bash
+cp .env.example .env
+```
+
+Isi `.env`:
+
+```bash
+VITE_SUPABASE_URL=https://<project-id>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-public-key>
+```
+
+Nilai diambil dari Supabase Dashboard → Project Settings → API.
+
+
+### 3.4 Load Seed Data & Reset Baseline
+Menu `Settings → Reset Baseline` atau `ikon refresh`.
+
+Kondisi baseline setelah reset:
+
+| Item | Nilai |
+|---|---|
+| Total stok | 106 unit |
+| Nilai persediaan | Rp11.140.000 |
+| Kas/Bank Mandiri | Rp5.000.000 |
+| Modal disetor | Rp16.140.000 |
+| Kontak | C01–C06 (pelanggan), V01–V04 (vendor) |
+| Produk | 15 varian SKU |
+| Dokumen awal | S00007 (reservasi 3 unit AP-TS-BLK-M), PO00007, LEAD-001 |
+
+### 3.5 Menjalankan Aplikasi
+
+Jalan kan di terminal 
+
+npm run dev
+
+Setelah server Vite aktif, buka browser dan akses:
+
+http://localhost:3000
+
+Aplikasi dapat digunakan secara lokal melalui browser.
+
+### 3.6 Deployment
+
+Vercel
+
+```text
+(Link Deployment)
+```
+
+---
+
+## 4. Akun Uji Demo Sesuai Role (RBAC)
 
 Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung pada halaman Login:
 
@@ -36,7 +117,17 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ---
 
-## 3. Cakupan 16 Kelompok Layar (S-01 s/d S-16)
+## 5. Arsitektur & Model Data
+-
+### 5.1 Diagram Arsitektur
+-
+### 5.2 Diagram Data (ERD)
+(Gambar ERD Diagram)
+### 5.3 Architecture Note
+-
+---
+
+## 6. Cakupan 16 Kelompok Layar (S-01 s/d S-16)
 
 1. **S-01 Beranda App Switcher:** Grid 13 modul aplikasi bergaya Odoo 17.0 dengan indikator hak akses dan badge dinamis.
 2. **S-02 Form Contacts:** Master pelanggan C01–C06 dan vendor V01–V04, limit kredit, dan termin pembayaran.
@@ -55,9 +146,105 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 15. **S-15 Customer Returns & Credit Note:** Inspeksi fisik retur gudang, pembalikan persediaan & HPP, dan penerbitan Credit Note.
 16. **S-16 Sales & Inventory Dashboard:** 6 KPI utama (Net Sales, PPN, Gross Sales, Inventory, AR/AP, Unit Sold), filter kanal, dan penelusuran drill-down.
 
+### 6.1 Wireframe Checklist
+
+| Layar | Nama | Fitur |
+|---|---|---|
+| S-01 | Beranda App Switcher | F-01 |
+| S-02 | Form Contacts | F-02 | 
+| S-03 | Form Products/Variants | F-03 | 
+| S-04 | CRM Pipeline (Kanban) | F-04 | 
+| S-05 | Quotation/Sales Order | F-05, F-06, F-10 | 
+| S-06 | Delivery Order | F-08 | 
+| S-07 | Stock Overview & Transfers | F-07, F-18 | 
+| S-08 | RFQ/Purchase Order | F-11 | 
+| S-09 | Receipt/Quality Acceptance | F-12 | 
+| S-10 | Customer Invoice | F-09 | 
+| S-11 | Vendor Bill | F-13 | 
+| S-12 | Register Payment | F-15 | 
+| S-13 | Journal Entries/GL | F-14, F-20 | 
+| S-14 | POS Checkout | F-16 | 
+| S-15 | Returns & Credit Note | F-17 | 
+| S-16 | Dashboard | F-19 | 
+
 ---
 
-## 4. Format Wajib Decision Defense (Handout Hal. 48)
+## 7. Analisis Kebutuhan & Pemetaan Fitur
+
+### 7.1 Klasifikasi Kebutuhan Pemangku Kepentingan (SR-01 s.d. SR-16)
+
+**Kebijakan Bisnis:** SR-01, SR-02, SR-05, SR-06, SR-08, SR-10
+**Permasalahan Kuantitas Stock:** SR-03, SR-04, SR-07, SR-11, SR-12
+**Monitoring, Transparansi & Jejak Audit:** SR-09, SR-13, SR-14, SR-15, SR-16
+
+### 7.2 Identifikasi Area Konflik
+
+| No | Area Konflik | Pihak Berlawanan | Keputusan Sistem |
+|---|---|---|---|
+| 1 | Invoicing Sales | Sales (SR-01) vs Finance (SR-02) | Invoice berdasarkan kuantitas terkirim (lihat Bagian 8) |
+| 2 | Stok POS vs Gudang | Toko (SR-03) vs Gudang (SR-04) | Stok tidak boleh negatif (lihat Bagian 8) |
+| 3 | Vendor Bill | Purchase (SR-05) vs Finance (SR-06) | Bill dibatasi kuantitas diterima dan lolos QA (lihat Bagian 8) |
+
+### 7.3 Rule to Feature
+
+| SR | Pemangku Kepentingan | Ketentuan | Fitur Terkait | Prioritas |
+|---|---|---|---|---|
+| SR-01 | Nadya Kinasih (Sales) | Penagihan cepat setelah SO dikonfirmasi | F-05 | Must |
+| SR-02 | Fajar Pratama (Finance) | Tagihan hanya untuk barang terkirim dan belum ditagih | F-09 | Must |
+| SR-03 | Salsa Widianti (Store) | Transaksi POS tidak terhenti saat stok komputer kosong | F-16 | Must |
+| SR-04 | Bayu Firmansyah (Warehouse) | Stok tidak negatif; reservasi mengurangi available; POS hanya mengurangi stok toko | F-07, F-08, F-16 | Must |
+| SR-05 | Rizki Wardana (Purchase) | Vendor Bill sebesar seluruh kuantitas PO | F-11 | Must |
+| SR-06 | Fajar Pratama (Finance) | Bill dibatasi kuantitas diterima baik (lolos QC) | F-12, F-13 | Must |
+| SR-07 | Bayu Firmansyah (Warehouse) | Retur menambah stok hanya setelah fisik dicek; Credit Note sesuai retur tervalidasi | F-08, F-17 | Must |
+| SR-08 | Nadya Kinasih (Sales) | Diskon ≤ 10% diizinkan; di atasnya butuh approval Manajer; dokumen Confirmed terkunci | F-05, F-06 | Must |
+| SR-09 | Salsa Widianti (Store) | POS memicu penjualan, PPN keluaran, HPP, dan stok dalam satu transaksi | F-14, F-16 | Must |
+| SR-10 | Fajar Pratama (Finance) | Piutang terbuka + nilai bruto order baru ≤ credit limit; pelanggan TUNAI tanpa kredit | F-02, F-10 | Must |
+| SR-11 | Bayu Firmansyah (Warehouse) | Setiap kombinasi ukuran-warna punya SKU unik | F-03, F-07 | Must |
+| SR-12 | Rizki Wardana (Purchase) | Transfer antar lokasi tidak mengubah stok total dan nilai persediaan | F-18 | Should |
+| SR-13 | Fajar Pratama (Finance) | Pembayaran parsial mengurangi saldo; Paid hanya jika saldo nol | F-15 | Must |
+| SR-14 | Arga Mahendra (Owner) | Dashboard terpisah (sebelum PPN, PPN, unit, saldo, persediaan) dan dapat ditelusuri | F-19, F-21 (opsional) | Should |
+| SR-15 | Arga Mahendra (Owner) | Nomor dokumen unik; posting, retur, pembayaran, mutasi stok idempoten | F-04, F-14, F-20 | Must |
+| SR-16 | Arga Mahendra (Owner) | Hak akses minimal per peran; perubahan tercatat di audit log | F-01, F-20 | Must |
+
+### 7.4 Prioritas Fitur dan Rencana Pengerjaan
+
+| No | Kode | Fitur | Prioritas | Rencana Pengerjaan | Alasan |
+|---|---|---|---|---|---|
+| 1 | F-03 | Master produk dan SKU varian | Prioritas 1 (Core Bisnis) | 24–25 Okt 2026 | Fondasi katalog agar penjualan dan POS berjalan |
+| 2 | F-02 | Master kontak dan termin kredit | Prioritas 1 | 26–27 Okt 2026 | Basis pelanggan/vendor, batas kredit, termin |
+| 3 | F-04 | CRM Pipeline | Prioritas 1 | 28–29 Okt 2026 | Lead sampai Opportunity |
+| 4 | F-05 | Quotation sampai Sales Order | Prioritas 1 | 30–31 Okt 2026 | Transaksi penjualan utama |
+| 5 | F-06 | Diskon dan penguncian harga | Prioritas 1 | 1–2 Nov 2026 | Otorisasi diskon dan penguncian order Confirmed |
+| 6 | F-07 | Reservasi dan stok tersedia | Prioritas 1 | 2–3 Nov 2026 | Mencegah stok negatif |
+| 7 | F-09 | Customer Invoice berbasis pengiriman | Prioritas 1 | 3–4 Nov 2026 | Faktur akurat sesuai pengiriman fisik |
+| 8 | F-16 | Point of Sale untuk toko | Prioritas 1 | 4–5 Nov 2026 | Kasir real-time, stok dan omzet |
+| 9 | F-17 | Retur barang dan Credit Note | Prioritas 1 | 5–6 Nov 2026 | Retur, pengembalian persediaan, nota kredit |
+| 10 | F-08 | Pengiriman parsial dan Backorder | Prioritas 2 (Operasional) | 6–7 Nov 2026 | Sisa pengiriman dan HPP |
+| 11 | F-10 | Pemeriksaan credit limit | Prioritas 2 | 7–8 Nov 2026 | Blokir order melebihi limit |
+| 12 | F-11 | RFQ dan Purchase Order | Prioritas 2 | 8–9 Nov 2026 | Pengadaan dari vendor |
+| 13 | F-12 | Receipt dan penerimaan diterima baik | Prioritas 2 | 9–10 Nov 2026 | Penerimaan fisik dan stok layak jual |
+| 14 | F-13 | Vendor Bill dengan pencocokan 3 arah | Prioritas 2 | 10–11 Nov 2026 | PO, receipt, dan bill |
+| 15 | F-18 | Transfer lokasi terlacak | Prioritas 3 (Integrasi Sampingan) | 11–12 Nov 2026 | Pindah stok tanpa ubah total |
+| 16 | F-14 | Posting buku besar dan HPP | Prioritas 3 | 12 Nov 2026 | Jurnal otomatis dan HPP |
+| 17 | F-15 | Registrasi pembayaran parsial | Prioritas 3 | 12 Nov 2026 | Pembayaran bertahap sampai lunas |
+| 18 | F-01 | Navigasi aplikasi dan otorisasi | Prioritas 4 (Sistem & Akses) | 13 Nov 2026 | Hak akses per peran |
+| 19 | F-19 | Dashboard operasional | Prioritas 5 (Audit & Review) | 13–14 Nov 2026 | KPI operasional |
+| 20 | F-20 | Audit log dan relasi dokumen | Prioritas 5 | 14 Nov 2026 | Riwayat aktivitas dan tautan dokumen |
+| 21 | F-21 | Loyalty sederhana toko | Opsional | Ditunda / ditiadakan | Fitur tambahan non-kritis |
+
+### 7.5 Peta Cakupan Modul dan Pengujian
+
+| Modul | Fitur | Pengujian |
+|---|---|---|
+| CRM & Sales | F-04, F-05, F-06 | T-07 s.d. T-11, T-34, T-35 |
+| Inventory & Procurement | F-03, F-07, F-08, F-11, F-12, F-18 | T-05, T-06, T-12 s.d. T-19 |
+| Accounting & Invoicing | F-02, F-09, F-10, F-13, F-14, F-15, F-17 | T-03, T-04, T-20 s.d. T-27, T-30, T-31, T-36 |
+| Point of Sale (co-owned) | F-16, F-21 | T-28, T-29 |
+| System & Dashboard | F-01, F-19, F-20 | T-01, T-02, T-32, T-33 |
+
+---
+
+## 8. Decision Log
 
 | Masalah/Konflik SR | Opsi Dipertimbangkan | Keputusan + F/S | Trade-Off / Siapa Dirugikan | Bukti Pengujian |
 |---|---|---|---|---|
@@ -70,7 +257,7 @@ Aplikasi dilengkapi tombol **Quick Switch Role** dan pilihan akun uji langsung p
 
 ---
 
-## 5. Rangkuman Pengujian Skenario T-01 s.d. T-36
+## 9. Test Results T-01 s.d. T-36
 
 Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dijalankan secara instan dengan 1 klik atau satu per satu:
 
@@ -111,26 +298,189 @@ Aplikasi menyediakan **Pusat Pengujian Interaktif (Test Runner)** yang dapat dij
 - **T-35 (Passed):** Quotation dengan diskon 15% tanpa otorisasi Manajer -> Konfirmasi ditahan (SR-08).
 - **T-36 (Passed):** Pelunasan utang Vendor Bill Rp632.700 via Bank -> AP menjadi Rp0, Bank berkurang Rp632.700, status Paid.
 
+### 9.1 Tabel Hasil Pengujian (Expected vs Actual, Status, Bukti)
+
+Expected pada tes aturan (🔒) ditentukan oleh SR-xx. Tes yang bertanda ♻️ ditemukan celah saat peninjauan dan diperbaiki (lihat [9.3 Defect Log](#93-defect-log)), sehingga hasil di bawah adalah hasil setelah perbaikan.
+
+| Tes | Jenis | Fitur | SR | Expected | Actual | Status | Bukti |
+|:---:|:---:|:---:|:---:|---|---|:---:|---|
+| T-01 | Normal | F-01 | SR-16 | Beranda Sales menampilkan `Sales`, `CRM` dan tautan kerja relevan; tidak membuka jurnal. | Login Sales hanya menampilkan modul berwenang; Jurnal tidak tampil. | ✅ Pass | Screenshot home + akun/peran |
+| T-02 | 🔒 Aturan | F-01 | SR-16 | Akses Sales ke Journal Entries ditolak, muncul peringatan, upaya tercatat di audit log. | Akses ditolak (Access Denied) dengan peringatan; upaya tercatat di audit log. | ✅ Pass | Screenshot penolakan + audit log |
+| T-03 | Normal | F-02 | SR-10 | C02 tampil dengan limit Rp400.000 dan NET14. | Form C02 menampilkan limit Rp400.000 dan termin NET14. | ✅ Pass | Screenshot form + baris seed |
+| T-04 | 🔒 Aturan | F-02 | SR-10 | Transaksi kredit untuk C04 (TUNAI) ditolak. | Transaksi kredit C04 ditolak dengan pesan validasi; hanya tunai diizinkan. | ✅ Pass | Screenshot penolakan/validasi |
+| T-05 | Normal | F-03 | SR-11 | Dua SKU berbeda; stok gudang `AP-TS-BLK-M` 4 dan `AP-TS-BLK-L` 0. | Dua SKU tampil terpisah dengan stok WH-JKT 4 dan 0 unit. | ✅ Pass | Screenshot produk berdampingan |
+| T-06 | 🔒 Aturan | F-03 | SR-11 | Pembuatan varian dengan SKU `AP-TS-BLK-M` ditolak; data lama tidak tertimpa. | Validasi keunikan SKU menolak penyimpanan; data lama utuh. | ✅ Pass | Screenshot pesan validasi SKU |
+| T-07 | Normal | F-04 | SR-15 | LEAD-001 menjadi Opportunity, stage `Qualified`, tautan asal dan log tercatat. | Stage berpindah ke `Qualified`, tautan asal dan log tercatat. | ✅ Pass | Screenshot Kanban sebelum/sesudah |
+| T-08 ♻️ | 🔒 Aturan | F-04, F-20 | SR-15 | Konversi ulang Opportunity yang sudah punya Quotation ditolak; tidak ada Quotation ganda (jumlah tetap 1); stage tidak turun; upaya tercatat di audit log. | Konversi ulang ditolak, sistem mengarahkan ke Q00008. Jumlah Quotation tetap 1, stage tetap `Proposition`, audit log `VALIDATION_FAILED`. | ✅ Pass | Jumlah Quotation + audit log |
+| T-09 | Normal | F-05, F-10 | SR-01, SR-10 | C03 order 2 `AP-DR-BLU-M` kredit: subtotal Rp900.000, PPN Rp99.000, total Rp999.000; reservasi 2 unit; limit cukup. | Nilai sesuai; reservasi 2 unit; limit tidak menghambat. | ✅ Pass | Quotation + SO + reservasi |
+| T-10 | 🔒 Aturan | F-10 | SR-10 | Konfirmasi C02 3 `AP-TS-BLK-S` ditolak: eksposur Rp0 + Rp499.500 (bruto termasuk PPN) melebihi limit Rp400.000; tidak ada SO baru. | Modal validasi kredit muncul, order tidak terkonfirmasi, tidak ada SO baru. | ✅ Pass | Screenshot validasi kredit |
+| T-11 | 🔒 Aturan | F-06, F-05, F-20 | SR-08 | Perubahan harga S00007 setelah Confirmed ditolak; harga tetap Rp150.000; tercatat di audit log. | Perubahan ditolak, dokumen terkunci, audit log `BLOCKED` mencatat nilai asli dan nilai yang dicoba. | ✅ Pass | Audit log + harga semula |
+| T-12 | Normal | F-08, F-07, F-14 | SR-04 | Kirim 2 `AP-TS-BLK-M` dari WH-JKT: stok 4→2, backorder 1, HPP Rp160.000, persediaan turun Rp160.000. | Stok 4→2, backorder 1, HPP Rp160.000 terposting. | ✅ Pass | Delivery + backorder + stok + jurnal |
+| T-13 ♻️ | 🔒 Aturan | F-08 | SR-04 | Validasi kirim 4 unit pada pesanan 3 ditolak; stok, mutasi, dan jurnal tidak berubah. | Validasi ditolak (kuantitas 4 melampaui sisa 3); stok tetap 4, tidak ada mutasi/jurnal baru; audit log `VALIDATION_FAILED`. | ✅ Pass | Pesan validasi + jumlah mutasi tetap |
+| T-14 | Normal | F-07 | SR-04 | `AP-TS-BLK-M` WH-JKT: On Hand 4, Reserved 3 (S00007), Available 1. | On Hand 4, Reserved 3, Available 1. | ✅ Pass | Tabel stok + smart button reservasi |
+| T-15 | 🔒 Aturan | F-18 | SR-12 | Transfer 1 `AP-TS-BLK-L` STORE-BDG→WH-JKT tercatat sebagai dua mutasi sama besar; total tetap 2 unit dan nilai persediaan tetap. | STORE 2→1, WH 0→1; stock move sumber dan tujuan tercatat; total dan nilai tetap. | ✅ Pass | Stock move sumber/tujuan + saldo akhir |
+| T-16 | Normal | F-11 | SR-05 | PO00007: subtotal Rp760.000, PPN Rp83.600, total Rp843.600, status `Confirmed`. | Nilai sesuai, status `Confirmed`. | ✅ Pass | Form PO + kalkulasi |
+| T-17 | 🔒 Aturan | F-11, F-20 | SR-08 | Perubahan qty PO00007 4→7 tanpa revisi ditolak; qty tetap 4; tercatat di audit log. | Perubahan ditolak, qty tetap 4, upaya tercatat di audit log. | ✅ Pass | Screenshot penolakan + audit |
+| T-18 | Normal | F-12, F-14 | SR-06 | Terima 3 hoodie M lolos QA: stok WH 2→5, persediaan +Rp570.000, sisa PO 1. | Stok 2→5, persediaan +Rp570.000, sisa PO 1. | ✅ Pass | Receipt + valuasi + jurnal |
+| T-19 | 🔒 Aturan | F-12 | SR-06 | Dengan 3 accepted + 1 rejected, pengakuan 4 accepted diblokir; hanya 3 unit masuk stok; 1 unit rejected tercatat. | 3 unit diakui (stok 2→5), 1 unit rejected tidak masuk stok, sisa PO 1; pengakuan 4 accepted diblokir. | ✅ Pass | Bukti blokir accepted tanpa dukungan inspeksi |
+| T-20 | Normal | F-09 | SR-02 | Invoice 2 `AP-TS-BLK-M`: subtotal Rp300.000, PPN Rp33.000, piutang Rp333.000; sisa 1 belum dapat ditagih. | Nilai sesuai; sisa 1 unit belum dapat ditagih. | ✅ Pass | Invoice + counter SO + AR ledger |
+| T-21 ♻️ | 🔒 Aturan | F-09 | SR-02 | Penagihan 3 unit setelah terkirim 2 ditolak (batas = terkirim − sudah ditagih); tidak ada invoice baru; AR tetap. | Ditolak dengan pesan diminta 3, terkirim 2, sudah ditagih 0, boleh ditagih 2. Penagihan ulang setelah invoice pertama juga ditolak. | ✅ Pass | Penjagaan qty tagih + saldo AR |
+| T-22 | Normal | F-13 | SR-06 | Bill 3 hoodie M: subtotal Rp570.000, PPN masukan Rp62.700, AP Rp632.700; sisa 1 belum dapat ditagih. | Nilai sesuai. | ✅ Pass | Bill + tautan receipt + AP ledger |
+| T-23 | 🔒 Aturan | F-13 | SR-06 | Posting bill 4 hoodie saat accepted 3 ditolak (three-way match). | Ditolak dengan peringatan bahwa qty hanya boleh sebatas accepted (3). | ✅ Pass | Screenshot pemeriksaan three-way match |
+| T-24 | Normal | F-15 | SR-13 | Bayar Rp200.000 atas invoice Rp333.000: sisa Rp133.000, `Partially Paid`, bank +Rp200.000. | Sisa Rp133.000, status `Partially Paid`, bank +Rp200.000. | ✅ Pass | Payment + residual + jurnal |
+| T-25 | 🔒 Aturan | F-15 | SR-13 | Pembayaran Rp133.000 hanya melunasi sisa: saldo tepat Rp0, status `Paid`, jurnal kedua seimbang. | Saldo Rp0, status `Paid`, jurnal Dr Bank / Cr Piutang Rp133.000 seimbang. | ✅ Pass | Saldo akhir + status + jurnal kedua |
+| T-26 | Normal | F-14 | SR-15 | Delivery: Dr HPP / Cr Persediaan Rp160.000; invoice: Dr AR Rp333.000, Cr Sales Rp300.000, Cr PPN Rp33.000. | Jurnal sesuai; total debit = total kredit. | ✅ Pass | Journal entries + kesamaan debit/kredit |
+| T-27 | 🔒 Aturan | F-14, F-20 | SR-15 | Posting ulang `WH/OUT/00007` berstatus `Done` ditolak; jurnal dan mutasi tidak bertambah. | Aksi idempoten; jumlah jurnal dan saldo stok tidak berubah; audit log `BLOCKED`. | ✅ Pass | Jumlah jurnal/saldo sebelum-sesudah |
+| T-28 | Normal | F-16, F-14 | SR-09 | Jual 2 Scarf tunai: net Rp240.000, PPN Rp26.400, struk Rp266.400, stok toko 6→4, HPP Rp120.000. | Nilai sesuai, stok 6→4, jurnal seimbang. | ✅ Pass | Struk + stok + jurnal |
+| T-29 | 🔒 Aturan | F-16 | SR-03, SR-04 | Penjualan 3 `AP-TS-BLK-L` saat stok toko 2 ditolak. Keputusan: SR-04 diprioritaskan, stok tidak boleh negatif. | Ditolak dengan pesan stok toko tidak mencukupi; stok tetap 2; tidak ada struk/jurnal. | ✅ Pass | Screenshot kasir + stok akhir + alasan |
+| T-30 | Normal | F-17, F-14 | SR-07 | Retur 1 kaos M layak: stok WH 2→3, HPP dibalik Rp80.000, credit note Rp166.500. | Stok 2→3, HPP dibalik Rp80.000, credit note Rp166.500, piutang berkurang. | ✅ Pass | Retur + credit note + jurnal pembalikan |
+| T-31 ♻️ | 🔒 Aturan | F-17 | SR-07, SR-15 | Credit note 2 unit saat retur valid 1 unit ditolak (maks. creditable 1); tidak ada mutasi/jurnal baru; credit note kedua untuk retur sama ditolak. | Credit note 2 unit ditolak (maks. 1); stok tetap 3; tidak ada jurnal baru. Credit note kedua ditolak (`BLOCKED`). | ✅ Pass | Maks. qty creditable + mutasi stok |
+| T-32 | Normal | F-19 | SR-14 | Filter transaksi POS T-28: net Rp240.000, PPN Rp26.400, gross Rp266.400, unit 2. | Nilai sesuai. | ✅ Pass | Dashboard + tautan ke POS/stok |
+| T-33 | 🔒 Aturan | F-19, F-20 | SR-16 | Cashier tidak dapat melihat jurnal dan AR perusahaan via dashboard. | Jurnal dan AR global disembunyikan; akses dibatasi ke modul POS. | ✅ Pass | Screenshot filter akses + audit |
+| T-34 | Normal | F-06 | SR-08 | Diskon 10% pada 2 `AP-DR-BLU-M`: subtotal Rp810.000, PPN Rp89.100, total Rp899.100. | Nilai sesuai; diskon diterapkan sebelum pajak. | ✅ Pass | Baris diskon + total + quotation |
+| T-35 | 🔒 Aturan | F-06 | SR-08 | Konfirmasi diskon 15% tanpa Manajer ditolak; status tetap `Draft`. | Konfirmasi ditahan dengan peringatan error; status `Draft`. | ✅ Pass | Status + persetujuan + log |
+| T-36 | Normal | F-15 | SR-13 | Bayar BILL Rp632.700: AP jadi Rp0, bank −Rp632.700, status `Paid`, jurnal seimbang. | Nilai sesuai. | ✅ Pass | Bill + payment + AP ledger |
+
+**Ringkasan:** 36 dari 36 tes Pass (18 tes normal dan 18 tes aturan).
+
+### 9.2 Catatan Fixture & Baseline Seed
+
+- Semua tes dijalankan dari kondisi baseline (Bagian 1 dan 3.4). Lakukan reset sebelum menjalankan ulang.
+- **Urutan penting:** beberapa tes memakai hasil tes sebelumnya.
+  - T-14 (baseline stok) harus dijalankan **sebelum** T-12 (pengiriman mengubah stok).
+  - T-24 → T-25 berurutan (bayar parsial lalu pelunasan pada faktur dari T-20).
+  - T-22 → T-36 berurutan (bill lalu pelunasan utang).
+  - T-12 mengubah stok WH `AP-TS-BLK-M` dari 4 ke 2, yang menjadi dasar T-30 (2→3).
+- Fixture utama:
+
+| Fixture | Nilai awal | Dipakai di |
+|---|---|---|
+| C02 | Limit Rp400.000, NET14 | T-03, T-10 |
+| C03 | Limit mencukupi | T-09 |
+| C04 | Termin TUNAI | T-04 |
+| `AP-TS-BLK-M` WH-JKT | On Hand 4, Reserved 3 (S00007) | T-12, T-13, T-14 |
+| `AP-TS-BLK-L` | STORE-BDG 2, WH-JKT 0 | T-05, T-15, T-29 |
+| Scarf STORE-BDG | 6 unit @Rp120.000 | T-28 |
+| Hoodie M WH-JKT | 2 unit | T-18 |
+| S00007 | Confirmed, 3 unit | T-11, T-12, T-20 |
+| PO00007 | Confirmed, qty 4 | T-16, T-17, T-18 |
+| LEAD-001 | Lead baru | T-07, T-08 |
+
+### 9.3 Defect Log
+
+| ID | Tes | Temuan | Aturan | Dampak | Perbaikan | Status |
+|:---:|:---:|---|:---:|---|---|:---:|
+| D-01 | T-08 | Setelah Quotation terbit, stage menjadi `Proposition` dan tombol konversi hilang, sehingga uji konversi ulang tidak bisa dijalankan dari UI. `convertLeadToOpportunity` juga tidak menjaga lead yang sudah terkonversi, sehingga stage dapat turun ke `Qualified`. | SR-15 | Riwayat lead bisa rusak; tes tidak dapat dibuktikan | Tombol "Uji Konversi Ulang (T-08)" ditambahkan; konversi lead yang sudah terhubung ditolak dan dicatat di audit log. | ✅ Fixed |
+| D-02 | T-21 | Batas tagih hanya membandingkan dengan jumlah terkirim, tanpa mengurangi yang sudah ditagih; delivery yang sama bisa ditagih berulang. Tombol uji terkunci pada `WH/OUT/00007`. | SR-02 | Over-billing; piutang dan PPN keluaran berlebih | Batas tagih = terkirim − sudah ditagih (invoice non-cancelled); tombol uji memakai delivery dari invoice terpilih. | ✅ Fixed |
+| D-03 | T-31 | Credit Note dapat diterbitkan berkali-kali untuk satu retur. | SR-07, SR-15 | Jurnal dan pengurangan piutang ganda | Retur yang sudah memiliki `credit_note_id` menolak Credit Note kedua (`BLOCKED`). | ✅ Fixed |
+| D-04 | Test runner | Tombol "Run All Tests" menandai tes lulus tanpa menjalankan skenario. Pada T-08, T-13, T-21, dan T-31 skrip hanya mencatat log lalu menandai lulus. | Integritas pengujian | Hasil tes tidak dapat dipercaya | Pengujian dijalankan manual lewat tombol uji di tiap layar, dengan bukti screenshot dan audit log. | ⚠️ Mitigasi: gunakan uji manual |
+| D-05 | Input nominal | Input Rp100.000 berubah menjadi Rp33.000. | Akurasi nominal | Nilai transaksi salah | Penanganan input angka diperbaiki (09/11/2026). | ✅ Fixed |
+| D-06 | F-01 | Satu akun dapat berpindah ke banyak peran. | SR-16 | Pembatasan hak akses dapat dilewati | Satu user dibatasi satu peran. | ✅ Fixed |
+| D-07 | T-11, T-17 | UI tidak menyediakan field harga/qty yang dapat diedit pada dokumen `Confirmed`; pengujian memakai tombol uji dengan nilai tetap (Rp120.000 dan 7 unit). | SR-08 | Bukti penguncian hanya lewat tombol uji | Diterima sebagai batasan; penguncian dibuktikan lewat penolakan dan audit log. | ℹ️ Diterima |
+
 ---
 
-## 6. Jawaban Pertanyaan Refleksi (Handout Hal. 49)
+## 10. Tim & Kolaborasi
 
-### Refleksi 1: Konflik antar pemangku kepentingan mana yang paling sulit diselesaikan?
+### 10.1 Role Assignment Sheet
+
+| No | Nama Mahasiswa | NIM | Anggota | Peran Fungsional | Modul / Area yang Dimiliki | Fokus Pekerjaan |
+|---|---|---|---|---|---|---|
+| 1 | Garvin Triskie | 03081240059 | Anggota 1 | Product Owner, Project Manager & Business Analyst | Sales / CRM, co-owner Point of Sale | Dokumentasi GitHub, analisa SR, analisa business rule, memastikan aplikasi berjalan lancar, review UI/UX dan tombol testing |
+| 2 | Mikha Sula | 03081240058 | Anggota 2 | Lead AI Developer | Database, arsitektur | Database Supabase, ERD, diagram arsitektur, integrasi Supabase ke frontend |
+| 3 | Naura Syafira | 03081240057 | Anggota 3 | UI/UX, QA & Deployment Lead | Accounting / Invoicing, co-owner Point of Sale | Frontend UI/UX, pengujian semua fitur terhadap SR, perbaikan hasil temuan |
+
+### 10.2 Team Agreement
+
+| No | Topik | Kesepakatan |
+|---|---|---|
+| 1 | Jadwal rapat | Rapat dilakukan dengan mencari waktu yang cocok bersama. Karena anggota lain sibuk, koordinasi lebih banyak lewat chat daripada rapat tatap muka. |
+| 2 | Prosedur persetujuan keputusan | Belum ada prosedur formal. Keputusan teknis dan bisnis dikonsultasikan ke Garvin (Anggota 1) sebagai Product Owner. |
+| 3 | Jika ada anggota terlambat | Tidak ada sanksi atau mekanisme khusus. Tiap anggota mengerjakan bagiannya sendiri dan menyerahkan hasil sesuai tenggat yang diminta Garvin. |
+| 4 | Pembagian kerja di GitHub (branch, commit, merge) | Anggota lain mengerjakan bagiannya di luar repository dan mengirim hasilnya lewat WhatsApp ke Garvin, lalu Garvin yang memasukkannya ke GitHub. Branch dan merge antar anggota belum dipakai. |
+| 5 | Media komunikasi | WhatsApp (chat) |
+
+### 10.3 Tabel Kontribusi
+
+| Anggota | Role | Modul / Area | F-xx yang Dibangun | T-xx yang Diuji | Kontribusi Aktual | Commit Penting |
+|---|---|---|---|---|---|---|
+| Garvin Triskie (Anggota 1) | PO / PM / BA | Sales / CRM, co-owner POS | F-02, F-03 (kolaborasi), F-04, F-05, F-06, F-16 (co-owner), F-21 (opsional, ditunda) | T-07 s.d. T-11, T-34, T-35 | Dokumentasi GitHub, analisa SR dan business rule (Decision Log, rule-to-feature, prioritas fitur), memastikan aplikasi berjalan lancar, review UI/UX dan tombol testing, meminta perbaikan ke Naura (3 kali) | ... |
+| Mikha Sula (Anggota 2) | Lead AI Developer | Database, arsitektur (rencana awal: Purchase / Inventory) | F-07, F-08, F-11, F-12, F-18 (rencana awal; kini sebagai fondasi database) | T-12 s.d. T-19, T-30 | Database Supabase, ERD (ongoing), diagram arsitektur, integrasi Supabase ke frontend | ... |
+| Naura Syafira (Anggota 3) | UI/UX, QA & Deployment Lead | Frontend semua modul, co-owner POS (rencana awal: Accounting / Invoicing) | F-01, F-09, F-10, F-13, F-14, F-15, F-17, F-19, F-20 | T-01 s.d. T-04, T-20 s.d. T-29, T-31 s.d. T-33, T-36 | Frontend UI/UX, pengujian fitur terhadap SR, perbaikan hasil temuan | ... |
+
+Catatan: hasil kerja Mikha dan Naura diserahkan lewat WhatsApp, lalu di-commit ke GitHub oleh Garvin. Perubahan dari rencana awal dicatat di 10.4.
+
+### 10.4 Riwayat Perubahan Kepemilikan/Peran
+
+| No | Tahap | Tanggal | Pihak | Perubahan / Aktivitas | Alasan / Hasil |
+|---|---|---|---|---|---|
+| 1 | Awal pembangunan | 30/10/2026 | Naura Syafira | Membangun frontend UI/UX dan mencari desain yang cocok | Menentukan tampilan aplikasi |
+| 2 | Pengujian awal | 30/10/2026 | Naura Syafira → Garvin Triskie | Naura menguji lalu menyerahkan hasil ke Garvin | Garvin mengecek dan meminta perbaikan |
+| 3 | Perbaikan 1 | 03/11/2026 | Naura Syafira | Tombol testing otomatis diganti pengujian manual | Pengujian harus dijalankan sendiri dengan bukti, bukan diasumsikan lulus |
+| 4 | Perbaikan 2 | 09/11/2026 | Naura Syafira | Memperbaiki input yang tidak tepat (nilai Rp100.000 berubah menjadi Rp33.000) | Nilai input harus sesuai angka yang dimasukkan |
+| 5 | Pembangunan database | 09/11/2026 | Mikha Sula | Membangun database Supabase, ERD (ongoing) | Perancangan database dan struktur ERD |
+| 6 | Integrasi database | 15/11/2026 | Mikha Sula | mengintegrasikan database ke sistem aplikasi, ERD (ongoing), dan integrasi Supabase ke frontend | Data persisten dan siap deploy via Vercel + Supabase |
+
+---
+
+## 11. AI-Tool Usage Note
+
+### 11.1 Daftar Tool yang Digunakan
+AI Studio, Emergent SH, Claude
+### 11.2 Contoh Output AI yang Salah dan Perbaikannya
+
+| No | Tool | Output AI yang Salah | Aturan yang Dilanggar | Perbaikan |
+|---|---|---|---|---|
+| 1 | AI Studio / Emergent | Konfirmasi SO langsung memotong `on_hand` | SR-04 | `on_hand` tetap; hanya `reserved` naik dan `available` turun. Pemotongan fisik saat delivery divalidasi. |
+| 2 | AI Studio / Emergent | Vendor Bill dibuat dari seluruh qty PO | SR-06 | Qty bill divalidasi terhadap `accepted_qty` hasil QA (Three-Way Match). |
+| 3 | AI Studio / Emergent | Klik ganda pada pengiriman/pembayaran membuat mutasi ganda | SR-15 | Penguncian status `locked`/`done` dan cek keunikan referensi jurnal. |
+| 4 | AI Studio / Emergent | Tombol "Run All Tests" menandai semua tes lulus tanpa menjalankan skenario | Integritas pengujian | Diganti pengujian manual dengan bukti. |
+| 5 | AI Studio / Emergent | Input Rp100.000 berubah menjadi Rp33.000 | Akurasi nominal | Perbaikan penanganan input angka. |
+| 6 | AI Studio / Emergent | Satu akun dapat berpindah ke banyak peran | SR-16 | Satu user dibatasi satu peran. |
+---
+
+## 12. Jawaban Pertanyaan Refleksi
+
+### 12.1 Refleksi 1: Konflik antar pemangku kepentingan mana yang paling sulit diselesaikan?
 Konflik paling sengit terjadi antara **Nadya Kinasih (Manajer Penjualan - SR-01)** yang menuntut penagihan penuh sejak order disetujui demi percepatan arus kas, melawan **Fajar Pratama (Kepala Keuangan - SR-02)** yang melarang keras penagihan mendahului pengiriman barang nyata.
 
 - **Nilai yang dikorbankan:** Kecepatan penagihan di muka oleh Sales dikorbankan demi kepatuhan pengakuan pendapatan dan perlindungan reputasi pelanggan.
 - **Mitigasi:** Sistem menerapkan otomatisasi pengiriman bertahap dengan pelacakan *Backorder* (F-08), di mana penagihan dapat langsung diterbitkan secara instan begitu sebagian barang keluar dari gudang (F-09), tanpa harus menunggu seluruh order selesai.
 
-### Refleksi 2: Pada bagian mana AI tool menghasilkan UI yang tampak benar tetapi melanggar aturan bisnis?
+### 12.2 Refleksi 2: Pada bagian mana AI tool menghasilkan UI yang tampak benar tetapi melanggar aturan bisnis?
 1. **Reservasi Stok (SR-04):** UI default AI kerap memotong `on_hand` begitu SO dikonfirmasi. Perbaikan: `on_hand` tetap utuh, hanya `reserved` yang bertambah dan `available` yang berkurang. Pemotongan fisik baru terjadi saat pengiriman tervalidasi.
 2. **Three-Way Matching (SR-06):** AI sering langsung membuat Vendor Bill dari seluruh kuantitas PO. Perbaikan: Kuantitas tagihan wajib diverifikasi terhadap barang yang lolos inspeksi (`accepted_qty`), bukan barang yang rusak atau belum tiba.
 3. **Idempotensi Transaksi (SR-15):** Tombol klik ganda pada pengiriman atau pembayaran rawan membuat mutasi ganda. Perbaikan: Status penguncian dokumen (`locked`/`done`) dan verifikasi keunikan referensi jurnal.
 
 ---
 
-## 7. Rekomendasi Pengembangan Masa Depan (Now / Next / Later)
+## 13. Rekomendasi Pengembangan Masa Depan (Now / Next / Later)
 
 - **Performance (Now):** Optimasi caching client-side IndexedDB untuk riwayat ribuan mutasi stok toko retail.
 - **Functions (Next):** Integrasi pemindaian barcode kamera untuk kasir POS dan serah terima gudang mobile.
 - **Efficacy (Next):** Rekonsiliasi mutasi rekening bank otomatis via integrasi API Bank Mandiri/BCA.
 - **Convenience (Later):** Modul Customer Loyalty Poin terpadu pada POS kasir retail (F-21) dan integrasi omnichannel e-commerce.
+
+---
+
+## 14. Integritas Akademik & Orisinalitas Kode
+
+### 14.1 Pernyataan Orisinalitas
+Kami menyatakan bahwa aplikasi ERP PT Rona Karsa Apparel ini dibangun oleh kelompok kami sendiri. Kami tidak menyalin kode sumber maupun aset (logo, ikon, gambar, stylesheet) dari Odoo. Odoo Web 17.0 hanya dijadikan acuan struktur dan pengalaman pengguna (app switcher, tampilan List/Kanban/Form, status bar, smart button), sesuai ketentuan handout.
+
+### 14.2 Kolaborasi
+Kolaborasi dilakukan di dalam kelompok (Garvin Triskie, Mikha Sula, Naura Syafira). Kami tidak membagikan atau menerima kode, prompt, maupun solusi dari kelompok lain. Diskusi dengan kelompok lain, jika ada, terbatas pada konsep.
+
+### 14.3 Penggunaan AI
+Pembangunan fitur dibantu AI coding tool. Seluruh tool yang digunakan diungkapkan di Bagian 11. Hasil keluaran AI kami tinjau dan uji terhadap aturan bisnis SR-xx; kesalahan yang ditemukan dicatat di Bagian 9.3 (Defect Log) dan 11.2.
+
+### 14.4 Pemahaman Anggota
+Setiap anggota bersedia menjelaskan seluruh bagian aplikasi, Decision Log, dan keputusan lintas modul secara langsung saat presentasi dan tanya jawab, termasuk modul yang tidak dikerjakannya.
+
+### 14.5 Referensi
+- Handout Skenario Mahasiswa — PT Rona Karsa Apparel (Fashion & Apparel)
+- DJP, PMK 131/2024 (pajak.go.id/node/113453) — asumsi PPN efektif 11%
+- Odoo 17.0 Documentation: Invoicing Policies dan Automatic Inventory Valuation
+
+### 14.6 Catatan Data
+Semua nama perusahaan, tokoh, dan data transaksi bersifat fiktif dan hanya untuk pembelajaran. Simulasi perpajakan tidak menggantikan proses perpajakan riil.
