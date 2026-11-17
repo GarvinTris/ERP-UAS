@@ -31,21 +31,110 @@ https://canva.link/fvkc86emy5kr8yw
 
 ---
 
+
 ## 3. Cara Menjalankan Aplikasi
+
+Ikuti langkah-langkah berikut untuk menjalankan aplikasi ERP di komputer masing-masing.
 
 ### 3.1 Prasyarat
 
-Hapus lockfile atau `node_modules` yang belum lengkap (jika ada):
+Pastikan aplikasi berikut sudah terinstal:
+
+- [Node.js](https://nodejs.org/)
+- [Git](https://git-scm.com/)
+- [Visual Studio Code](https://code.visualstudio.com/) (disarankan)
+
+### 3.2 Membuat Folder dan Clone Repository
+
+1. Buat folder baru di komputer untuk menyimpan project.
+2. Buka folder tersebut.
+3. Klik kanan dan pilih **Open in Terminal**, atau buka terminal secara manual.
+4. Jalankan perintah berikut untuk mengunduh repository dari GitHub:
 
 ```bash
-rm -rf node_modules package-lock.json
+git clone https://github.com/GarvinTris/ERP-UAS.git
 ```
 
-### 3.2 Instalasi
+5. Masuk ke folder project:
 
 ```bash
-npm install --legacy-peer-deps
+cd ERP-UAS
 ```
+
+### 3.3 Konfigurasi Dependency
+
+Jalankan perintah berikut untuk menyesuaikan versi `esbuild` agar kompatibel dengan Vite:
+
+```bash
+npm pkg set "devDependencies.esbuild=^0.28.2"
+```
+
+### 3.4 Instalasi Dependency
+
+Jalankan perintah berikut untuk menginstal seluruh dependency yang dibutuhkan aplikasi:
+
+```bash
+npm install
+```
+
+Tunggu hingga proses instalasi selesai.
+
+### 3.5 Konfigurasi Supabase (.env.local)
+
+Aplikasi membutuhkan konfigurasi Supabase agar dapat terhubung ke database.
+
+1. Buka folder utama project `ERP-UAS` menggunakan Visual Studio Code.
+2. Buat file baru dengan nama `.env.local`.
+3. Pastikan file tersebut berada sejajar dengan `package.json`, bukan di dalam folder `src`.
+4. Masukkan konfigurasi berikut ke dalam file:
+
+```env
+VITE_SUPABASE_URL=https://xdzjoutpxtmglbvgffag.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_ITZsxPcdAErShyjzv3kpyQ_L4Al25z-
+```
+
+5. Simpan file tersebut.
+
+**Catatan:** Jangan mengunggah file `.env.local` ke GitHub. File ini digunakan untuk konfigurasi lokal masing-masing pengguna.
+
+### 3.6 Menjalankan Aplikasi
+
+Setelah semua proses selesai, buka terminal di folder project dan jalankan:
+
+```bash
+npm run dev
+```
+
+Tunggu sampai Vite menampilkan alamat aplikasi, contohnya:
+
+```text
+Local: http://localhost:3000/
+```
+
+### 3.7 Membuka Aplikasi
+
+1. Buka browser (Google Chrome disarankan).
+2. Masukkan alamat berikut pada kolom URL:
+
+```text
+http://localhost:3000/
+```
+
+3. Tekan Enter.
+4. Aplikasi ERP siap digunakan.
+
+### 3.8 Mengatasi Kendala
+
+Jika aplikasi tidak dapat dijalankan:
+
+- Pastikan Node.js dan Git sudah terinstal.
+- Pastikan perintah `npm install` berhasil.
+- Pastikan file `.env.local` sudah dibuat dan diisi dengan benar.
+- Jika muncul error dependency, periksa kembali versi Node.js dan isi `package.json`.
+- Jika halaman kosong, buka Developer Tools dengan menekan `F12`, lalu periksa tab Console.
+
+**Selamat mencoba!**
+
 
 ### 3.3 Konfigurasi Environment
 
