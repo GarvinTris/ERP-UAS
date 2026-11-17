@@ -44,12 +44,17 @@ Pastikan aplikasi berikut sudah terinstal:
 - [Git](https://git-scm.com/)
 - [Visual Studio Code](https://code.visualstudio.com/) (disarankan)
 
+
 ### 3.2 Membuat Folder dan Clone Repository
+
+Ada dua cara untuk melakukan clone repository:
+
+**Cara 1: Menggunakan Terminal**
 
 1. Buat folder baru di komputer untuk menyimpan project.
 2. Buka folder tersebut.
 3. Klik kanan dan pilih **Open in Terminal**, atau buka terminal secara manual.
-4. Jalankan perintah berikut untuk mengunduh repository dari GitHub:
+4. Jalankan perintah berikut:
 
 ```bash
 git clone https://github.com/GarvinTris/ERP-UAS.git
@@ -60,6 +65,26 @@ git clone https://github.com/GarvinTris/ERP-UAS.git
 ```bash
 cd ERP-UAS
 ```
+
+**Cara 2: Menggunakan Visual Studio Code**
+
+1. Buka **Visual Studio Code**.
+2. Tekan `Ctrl + Shift + P` untuk membuka Command Palette.
+3. Ketik dan pilih **Git: Clone**.
+4. Masukkan URL repository berikut:
+
+```text
+https://github.com/GarvinTris/ERP-UAS.git
+```
+
+5. Pilih folder di komputer yang akan digunakan untuk menyimpan project.
+6. Tunggu hingga proses cloning selesai.
+7. Setelah muncul notifikasi, klik **Open** untuk membuka project di Visual Studio Code.
+8. Jika muncul pertanyaan **Do you trust the authors of the files in this folder?**, pilih **Yes, I trust the authors** jika kamu mempercayai repository tersebut.
+9. Buka terminal di VS Code melalui menu **Terminal → New Terminal**.
+
+Project siap dilanjutkan ke tahap instalasi dependency.
+
 
 ### 3.3 Konfigurasi Dependency
 
