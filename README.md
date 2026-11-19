@@ -114,8 +114,8 @@ Aplikasi membutuhkan konfigurasi Supabase agar dapat terhubung ke database.
 4. Masukkan konfigurasi berikut ke dalam file:
 
 ```env
-VITE_SUPABASE_URL=https://xdzjoutpxtmglbvgffag.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_ITZsxPcdAErShyjzv3kpyQ_L4Al25z-
+VITE_SUPABASE_URL=https://YOUR_PROJECT_URL.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_API_KEY
 ```
 
 5. Simpan file tersebut.
